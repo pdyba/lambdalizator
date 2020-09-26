@@ -1,7 +1,7 @@
 # Lambdalizator
 
 AWS Lambda REST Toolbox inspired by Flask.
-Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by @pdyba and @roland.
+Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by @pdyba and @songofroland.
 
 
 ![Python 3.8+](https://img.shields.io/badge/python-v3.8-blue) ![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
