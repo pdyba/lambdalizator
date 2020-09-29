@@ -3,8 +3,8 @@
 from lbz.resource import Resource
 from lbz.router import Router
 from lbz.router import add_route
-from lbz.communication import Request
-from lbz.communication import Response
+from lbz.request import Request
+from lbz.response import Response
 from lbz.dev.misc import Event
 from lbz.authz import Authorizer
 

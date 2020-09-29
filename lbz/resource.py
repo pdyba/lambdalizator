@@ -10,7 +10,7 @@ from jose import jwt
 from lbz.exceptions import ValidationError
 
 from lbz.authz import Authorizer
-from lbz.communication import Request
+from lbz.request import Request
 from lbz.exceptions import (
     BadRequestError,
     LambdaFWException,

@@ -64,7 +64,7 @@ class Authorizer(metaclass=Singleton):
     def validate(self, function_name):
         if function_name not in self._permissions:
             raise ServerError
-        self.action = self._permissions[function_name]
+        self.set_initial_state(function_name)
         if self.deny:
             self._check_deny()
         self._check_allow()
@@ -72,6 +72,10 @@ class Authorizer(metaclass=Singleton):
             self.outcome = LIMITED_ALLOW
         if self.outcome == DENY:
             raise PermissionDenied
+
+    def set_initial_state(self, function_name: str) -> None:
+        self.outcome = DENY
+        self.action = self._permissions[function_name]
 
     def set_policy(self, token: str):
         policy = self.decode_authz(token)
@@ -88,16 +92,19 @@ class Authorizer(metaclass=Singleton):
             )
 
     def _check_deny(self):
-        if self._deny_if_all(self.allow.get("*", self.allow.get(self.resource))):
-            return
+        self._deny_if_all(self.deny.get("*", self.allow.get(self.resource)))
         if d_domain := self.deny.get(self.resource):
             self._deny_if_all(d_domain)
-            if resources_to_check := d_domain.get(self.action):
-                self._deny_if_all(resources_to_check)
-                for k, v in resources_to_check.items():
-                    self._deny_if_all(k)
-                    self._deny_if_all(v)
-                self.denied_resource = resources_to_check
+            if resource := d_domain.get(self.action):
+                self.check_resource(resource)
+                self.denied_resource = resource
+
+    def check_resource(self, resource):
+        self._deny_if_all(resource)
+        if isinstance(resource, dict):
+            for k, v in resource.items():
+                self._deny_if_all(k)
+                self._deny_if_all(v)
 
     def _allow_if_allow_all(self, permission):
         if permission == ALL:
