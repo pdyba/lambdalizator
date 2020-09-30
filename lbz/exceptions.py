@@ -5,7 +5,7 @@ Exceptions.
 """
 from http import HTTPStatus
 
-from lbz.communication import Response
+from lbz.response import Response
 
 
 class LambdaFWException(Exception):

@@ -2,8 +2,9 @@
 # coding=utf-8
 import pytest
 
-from lbz.communication import Response
-from lbz.communication import Request
+from lbz.response import Response
+from lbz.request import Request
+from lbz.exceptions import BadRequestError
 from lbz.misc import MultiDict
 
 
@@ -85,20 +86,20 @@ class TestRequest:
         assert self.r._json_body == {"x": "abcx"}
 
     def test_json_body_bad_json(self):
-        from lbz.exceptions import BadRequestError
-
         self.r._json_body = None
         self.r._body = '{"x": abcx}'
         with pytest.raises(BadRequestError):
             self.r.json_body
 
-    def test_json_body_bad_req(self):
-        from lbz.exceptions import BadRequestError
-
-        self.r.headers = {}
+    def test_json_body_bad_content_type(self):
+        self.r.headers = {"Content-Type": "application/dzejson"}
         with pytest.raises(BadRequestError) as err:
             self.r.json_body
             assert err.message.startswith("Content-Type header is missing or wrong")
+
+    def test_json_body_none_when_no_content_type(self):
+        self.r.headers = {}
+        assert self.r.json_body is None
 
     def test_to_dict(self):
         assert self.r.to_dict() == {
