@@ -118,14 +118,3 @@ class Unauthorized(LambdaFWException):
 
     message = HTTPStatus.UNAUTHORIZED.description
     status_code = HTTPStatus.UNAUTHORIZED.value
-
-
-class ValidationError(LambdaFWException):
-    """
-    Exception class compatible with marshmallow.
-    Could not validate
-    422
-    """
-
-    message = "Could not validate"
-    status_code = HTTPStatus.UNPROCESSABLE_ENTITY.value

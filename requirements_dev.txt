@@ -1,8 +1,7 @@
--r requirements
+-r requirements.txt
 pytest
 pytest-cov
 coverage
-request
 black
 flake8
 flake8-black
