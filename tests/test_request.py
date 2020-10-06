@@ -2,10 +2,15 @@
 # coding=utf-8
 import pytest
 
-from lbz.response import Response
+from uuid import uuid4
+
+from jose import jwt
+
+from lbz.authentication import User
 from lbz.request import Request
 from lbz.exceptions import BadRequestError
 from lbz.misc import MultiDict
+from tests.fixtures.rsa_pair import sample_private_key, sample_public_key
 
 
 class TestRequestInit:
@@ -30,10 +35,25 @@ class TestRequestInit:
         assert isinstance(req.method, str)
         assert isinstance(req._body, str)
         assert isinstance(req._is_base64_encoded, bool)
+        assert req.user is None
 
 
 class TestRequest:
-    def setup_method(self, test_method):
+    def setup_method(self):
+        self.cognito_user = {
+            "cognito:username": str(uuid4()),
+            "email": f"{str(uuid4())}@{str(uuid4())}.com",
+            "custom:a": str(uuid4()),
+            "custom:b": str(uuid4()),
+            "custom:c": str(uuid4()),
+            "custom:d": str(uuid4()),
+            "custom:e": str(uuid4()),
+        }
+        self.id_token = jwt.encode(
+            self.cognito_user,
+            sample_private_key,
+            "RS256",
+        )
         self.r = Request(
             headers={"Content-Type": "application/json"},
             uri_params={},
@@ -43,10 +63,10 @@ class TestRequest:
             stage_vars={},
             is_base64_encoded=False,
             query_params=None,
-            user=None,
+            user=User(self.id_token, sample_public_key, pool_id=str(uuid4())),
         )
 
-    def teardown_method(self, test_method):
+    def teardown_method(self):
         self.r = None
 
     def test___repr__(self):
@@ -101,6 +121,12 @@ class TestRequest:
         self.r.headers = {}
         assert self.r.json_body is None
 
+    def test_accessing_user_attributes(self):
+        assert isinstance(self.r.user.username, str)
+        assert isinstance(self.r.user.email, str)
+        for letter in ("a", "b", "c", "d", "e"):
+            assert isinstance(getattr(self.r.user, letter), str)
+
     def test_to_dict(self):
         assert self.r.to_dict() == {
             "context": {},
@@ -109,42 +135,5 @@ class TestRequest:
             "query_params": {},
             "stage_vars": {},
             "uri_params": {},
-            "user": None,
+            "user": f"User username={self.r.user.username}",
         }
-
-
-class TestResponseInit:
-    def test___init__(self):
-        resp = Response({})
-        assert isinstance(resp.body, dict)
-        assert resp.headers == {"Content-Type": "application/json"}
-        assert resp.status_code == 200
-        assert not resp.base64
-
-    def test___init__2(self):
-        self.resp = Response("xxx", headers={"xx": "xx"}, status_code=666)
-        assert isinstance(self.resp.body, dict)
-        assert self.resp.body == {"message": "xxx"}
-        assert self.resp.headers == {"xx": "xx"}
-        assert self.resp.status_code == 666
-        assert not self.resp.base64
-
-
-class TestResponse:
-    def setup_method(self):
-        self.r = Response("xxx", headers={"xx": "xx"}, status_code=666)
-
-    def teardown_method(self, test_method):
-        self.r = None
-
-    def test_to_dict(self):
-        assert self.r.to_dict() == {
-            "body": '{"message":"xxx"}',
-            "headers": {"xx": "xx"},
-            "statusCode": 666,
-        }
-
-    def test__encode_base64(self):
-        with pytest.raises(ValueError):
-            assert Response._encode_base64("xx")
-        assert Response._encode_base64(b"xx") == "eHg="

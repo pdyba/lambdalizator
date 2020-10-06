@@ -12,7 +12,6 @@ from lbz.exceptions import (
     UnsupportedMethod,
     WrongURI,
     Unauthorized,
-    ValidationError,
 )
 
 
@@ -81,9 +80,3 @@ def test_Unauthorized():
     exp = Unauthorized()
     assert exp.message == "No permission -- see authorization schemes"
     assert exp.status_code == 401
-
-
-def test_ValidationError():
-    exp = ValidationError()
-    assert exp.message == "Could not validate"
-    assert exp.status_code == 422

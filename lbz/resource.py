@@ -3,26 +3,24 @@
 """
 Resource Handler.
 """
-from os import environ
 import traceback
 
-from jose import jwt
-from lbz.exceptions import ValidationError
+from os import environ
+from typing import Union
 
+from lbz.authentication import User
 from lbz.authz import Authorizer
 from lbz.request import Request
 from lbz.exceptions import (
-    BadRequestError,
     LambdaFWException,
     WrongURI,
+    Unauthorized,
     UnsupportedMethod,
 )
 from lbz.misc import get_logger
 from lbz.router import Router
 
 logger = get_logger(__name__)
-
-PRINT_TRACEBACK = environ.get("PRINT_TRACEBACK", "0")
 
 
 class Resource:
@@ -31,17 +29,14 @@ class Resource:
     _authorizer = Authorizer()
 
     def __init__(self, event):
+        self.print_traceback = bool(int(environ.get("PRINT_TRACEBACK", "0")))
+        self.use_cognito_auth = bool(int(environ.get("COGNITO_AUTHENTICATION", "0")))
         self.path = event.get("requestContext", {}).get("resourcePath")
         self.uids = (
-            event.get("pathParameters")
-            if event.get("pathParameters") is not None
-            else {}
+            event.get("pathParameters") if event.get("pathParameters") is not None else {}
         )
         self.method = event["requestContext"]["httpMethod"]
         headers = event["headers"]
-        # We don't need to authenticate - this will be done by Cognito
-        # Cognito should be parsed later on to something nicer ;)
-        authentication = headers.get("Authentication", headers.get("authentication"))
         self.request = Request(
             headers=headers,
             uri_params=self.uids,
@@ -51,12 +46,23 @@ class Resource:
             stage_vars=event["stageVariables"],
             is_base64_encoded=event.get("isBase64Encoded", False),
             query_params=event["multiValueQueryStringParameters"],
-            user=jwt.get_unverified_claims(authentication) if authentication else None,
+            user=self._get_user(headers),
         )
         if authorization := headers.get("Authorization", headers.get("authorization")):
             self._authorizer.set_policy(authorization)
         else:
             self._authorizer.set_policy(self.get_guest_authorization())
+
+    def _get_user(self, headers: dict) -> Union[None, User]:
+        authentication = headers.get("Authentication", headers.get("authentication"))
+        if authentication and self.use_cognito_auth:
+            pub_key = environ["COGNITO_PUBLIC_JWK"]
+            pool_id = environ["COGNITO_POOL_ID"]
+            return User(authentication, pub_key, pool_id)
+        elif authentication:
+            logger.error(f"Authentication method not supported, token: {authentication}")
+            raise Unauthorized
+        return None
 
     def __call__(self):
         try:
@@ -67,13 +73,10 @@ class Resource:
                 raise WrongURI()
             if self.method not in self._router[self.path]:
                 raise UnsupportedMethod(method=self.method)
-            try:  # Map marshmallow's validation error to LambdaFWException
-                return getattr(self, self._router[self.path][self.method])(**self.uids)
-            except ValidationError as e:
-                raise BadRequestError(e.messages)
+            return getattr(self, self._router[self.path][self.method])(**self.uids)
         except LambdaFWException as e:
             logger.format_error(e)
-            if bool(PRINT_TRACEBACK) and 500 <= e.status_code < 600:
+            if self.print_traceback and 500 <= e.status_code < 600:
                 e.message = traceback.format_exc()
             return e.get_resp()
 

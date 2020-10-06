@@ -86,6 +86,7 @@ class Request:
     def to_dict(self):
         copied = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
         copied["headers"] = dict(copied["headers"])
+        copied["user"] = repr(copied["user"])
         if copied["query_params"] is not None:
             copied["query_params"] = dict(copied["query_params"])
         return copied
