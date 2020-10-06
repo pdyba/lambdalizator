@@ -1,5 +1,8 @@
 from setuptools import setup
 
+with open("version") as file:
+    version = file.read()
+
 setup(
     name="lbz",
     version="0.1.1",
