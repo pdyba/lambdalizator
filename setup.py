@@ -5,7 +5,7 @@ with open("version") as file:
 
 setup(
     name="lbz",
-    version="0.1.1",
+    version=version,
     author="Piotr Dyba",
     author_email="piotr.dyba@localbini.com",
     packages=["lbz", "lbz.dev"],
