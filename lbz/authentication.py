@@ -1,3 +1,6 @@
+import json
+
+from os import environ
 from typing import Union
 
 from jose import jwt
@@ -47,3 +50,15 @@ class User:
         if len(attributes) > 1000:
             logger.error(f"Too many attributes, total={len(attributes)}")
             raise RuntimeError
+
+
+def get_matching_jwk(auth_header: str):
+    keys = json.loads(environ["COGNITO_PUBLIC_KEYS"])["keys"]
+    try:
+        kid = jwt.get_unverified_header(auth_header)["kid"]
+        return list(filter(lambda key: key["kid"] == kid, keys)).pop()
+    except (JWTError, KeyError):
+        raise Unauthorized
+    except IndexError:
+        logger.error(f"Required key not found in configuration.")
+        raise Unauthorized

@@ -11,3 +11,8 @@ Released 2020-10-05
 
 -   Added Cognito authentication and user parsing,
 -   Security bug fixes.
+
+### Version 0.1.4
+Released 2020-10-07
+
+-   Added matching correct JWK based on "kid" parameter in jwt header,
