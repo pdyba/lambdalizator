@@ -3,13 +3,15 @@
 """
 Dev Server.
 """
+import socketserver
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
 import json
 import logging
 import urllib.parse
+from typing import Tuple
 
-from lbz.communication import Response
+from lbz.response import Response
 from lbz.dev.misc import Event
 
 
@@ -22,6 +24,11 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
     done = False
 
     def _get_route_params(self, org_path):
+        """
+        Parses route and params.
+        :param org_path:
+        :return: standarised route, url params / None
+        """
         router = self.cls._router
         if org_path in router:
             return org_path, None
@@ -66,34 +73,34 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
         self._send_json(code, {"error": message})
 
     def handle_request(self):
-        if self.path == "/favicon.ico":
-            return
-        self.done = False
-
-        request_size = int(self.headers.get("Content-Length", 0))
-        if request_size:
-            request_body = self.rfile.read(request_size).decode(
-                encoding="utf_8", errors="strict"
-            )
-            request_obj = json.loads(request_body)
-        else:
-            request_obj = {}
-        parsed_url = urllib.parse.urlparse(self.path)
-        query_params = urllib.parse.parse_qs(parsed_url.query, keep_blank_values=True)
-        route, params = self._get_route_params(self.path)
-        if route is None:
-            return self._error(666, "Path not Found")
-        response = self.cls(
-            Event(
-                resource_path=route,
-                method=self.command,
-                headers=self.headers,
-                path_params=params,
-                query_params=query_params,
-                body=request_obj,
-            )
-        )
         try:
+            if self.path == "/favicon.ico":
+                return
+            self.done = False
+
+            request_size = int(self.headers.get("Content-Length", 0))
+            if request_size:
+                request_body = self.rfile.read(request_size).decode(
+                    encoding="utf_8", errors="strict"
+                )
+                request_obj = json.loads(request_body)
+            else:
+                request_obj = {}
+            parsed_url = urllib.parse.urlparse(self.path)
+            query_params = urllib.parse.parse_qs(parsed_url.query, keep_blank_values=True)
+            route, params = self._get_route_params(self.path)
+            if route is None:
+                return self._error(666, "Path not Found")
+            response = self.cls(
+                Event(
+                    resource_path=route,
+                    method=self.command,
+                    headers=self.headers,
+                    path_params=params,
+                    query_params=query_params,
+                    body=request_obj,
+                )
+            )
             response = response()
             code = response.status_code
             if isinstance(response, Response):
@@ -111,7 +118,6 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
             self._send_json(code, response)
         except Exception:
             logging.exception("Fail trying to send json")
-            logging.error(response)
         return self._error(500, "Server error")
 
     def do_GET(self):

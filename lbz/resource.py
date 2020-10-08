@@ -33,7 +33,9 @@ class Resource:
         self.use_cognito_auth = bool(int(environ.get("COGNITO_AUTHENTICATION", "0")))
         self.path = event.get("requestContext", {}).get("resourcePath")
         self.uids = (
-            event.get("pathParameters") if event.get("pathParameters") is not None else {}
+            event.get("pathParameters")
+            if event.get("pathParameters") is not None
+            else {}
         )
         self.method = event["requestContext"]["httpMethod"]
         headers = event["headers"]
@@ -60,7 +62,9 @@ class Resource:
             pool_id = environ["COGNITO_POOL_ID"]
             return User(authentication, pub_key, pool_id)
         elif authentication:
-            logger.error(f"Authentication method not supported, token: {authentication}")
+            logger.error(
+                f"Authentication method not supported, token: {authentication}"
+            )
             raise Unauthorized
         return None
 

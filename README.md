@@ -21,7 +21,7 @@ For toggling boolean variables, set them to "0" or "1" respectively.
 # simple_resource.py
 
 from lbz.router import add_route
-from lbz.communication import Response
+from lbz.response import Response
 from lbz.resource import Resource
 
 class HelloWorld(Resource):

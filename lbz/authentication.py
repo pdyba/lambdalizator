@@ -34,7 +34,10 @@ class User:
     def decode_cognito_user(self) -> dict:
         try:
             return jwt.decode(
-                self._token, self._public_jwk, algorithms="RS256", audience=self._pool_id
+                self._token,
+                self._public_jwk,
+                algorithms="RS256",
+                audience=self._pool_id,
             )
         except JWTError:
             raise Unauthorized

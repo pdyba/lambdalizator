@@ -25,11 +25,11 @@ event = """
   "stageVariables": null,
   "requestContext": {
     "resourceId": "cszx0g",
-    "resourcePath": "/experiences",
+    "resourcePath": "/test",
     "httpMethod": "GET",
     "extendedRequestId": "N85eCHnfFiAFjQg=",
     "requestTime": "11/Jun/2020:06:57:55 +0000",
-    "path": "/experiences",
+    "path": "/test",
     "accountId": "911122277538",
     "protocol": "HTTP/1.1",
     "stage": "test-invoke-stage",

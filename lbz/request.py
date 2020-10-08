@@ -64,7 +64,9 @@ class Request:
 
     @property
     def json_body(self):
-        content_type = self.headers.get("Content-Type", self.headers.get("content-type"))
+        content_type = self.headers.get(
+            "Content-Type", self.headers.get("content-type")
+        )
         if content_type is None:
             return
         if content_type.startswith("application/json"):
@@ -81,7 +83,9 @@ class Request:
             logging.error(self)
             logging.exception("Wrong Header %s", json.dumps(self.headers))
             c_header = json.dumps(self.headers.get("Content-Type", ""))
-            raise BadRequestError(f"Content-Type header is missing or wrong: {c_header}")
+            raise BadRequestError(
+                f"Content-Type header is missing or wrong: {c_header}"
+            )
 
     def to_dict(self):
         copied = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
