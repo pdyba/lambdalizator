@@ -1,5 +1,5 @@
 from lbz.router import add_route
-from lbz.communication import Response
+from lbz.response import Response
 from lbz.resource import Resource
 
 
