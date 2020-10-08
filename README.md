@@ -10,8 +10,9 @@ Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by @pdy
 For toggling boolean variables, set them to "0" or "1" respectively.
 `CLIENT_SECRET` For decoding authorization jwt. Defaults 'secret'.\
 `COGNITO_AUTHENTICATION` Toggle authenticating user based on Cognito IdToken. Defaults False.\
-`COGNITO_PUBLIC_JWK` For validating signature when Cognito Auth enabled.\
-`COGNITO_POOL_ID` Cognito user Pool ID, for validating signature.\
+`COGNITO_PUBLIC_KEYS` For validating signature when Cognito Auth enabled.\
+(simply paste from https://cognito-idp.{your aws region}.amazonaws.com/{your pool id}/.well-known/jwks.json) \
+`COGNITO_POOL_ID` Cognito user Pool ID, for validating authentication token signature.\
 `PRINT_TRACEBACK` More verbose errors. Defaults False.\
 `LOGGING_LEVEL` For logging level. Defaults INFO.\
 
@@ -62,7 +63,7 @@ if __name__ == '__main__':
 
 ```
 
-### 4. Unittesting
+### 4. Don't forget to unit test
 
 ```python
 # python -m unittest simple_resource_test.py
@@ -81,6 +82,26 @@ class PublicTestCase(unittest.TestCase):
         data = self.client.get("/").to_dict()["body"]
         self.assertEqual(data, '{"message":"HelloWorld"}')
 ```
+
+### 5. Authenticate it
+```python 
+# simple_auth/simple_resource.py
+
+from lbz.router import add_route
+from lbz.response import Response
+from lbz.resource import Resource
+from lbz.authz import add_authz, authorize, set_authz
+
+
+@set_authz
+class HelloWorld(Resource):
+    _name = "helloworld"
+
+    @authorize
+    @add_authz()
+    @add_route("/", method="GET")
+    def list(self, restrictions=None):
+        return Response({"message": f"Hello, {self.request.user.username} !"})
 
 
 

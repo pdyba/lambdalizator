@@ -3,12 +3,13 @@
 """
 Resource Handler.
 """
+import json
 import traceback
 
 from os import environ
 from typing import Union
 
-from lbz.authentication import User
+from lbz.authentication import get_matching_jwk, User
 from lbz.authz import Authorizer
 from lbz.request import Request
 from lbz.exceptions import (
@@ -39,6 +40,7 @@ class Resource:
         )
         self.method = event["requestContext"]["httpMethod"]
         headers = event["headers"]
+        self._validate_configuration()
         self.request = Request(
             headers=headers,
             uri_params=self.uids,
@@ -54,19 +56,6 @@ class Resource:
             self._authorizer.set_policy(authorization)
         else:
             self._authorizer.set_policy(self.get_guest_authorization())
-
-    def _get_user(self, headers: dict) -> Union[None, User]:
-        authentication = headers.get("Authentication", headers.get("authentication"))
-        if authentication and self.use_cognito_auth:
-            pub_key = environ["COGNITO_PUBLIC_JWK"]
-            pool_id = environ["COGNITO_POOL_ID"]
-            return User(authentication, pub_key, pool_id)
-        elif authentication:
-            logger.error(
-                f"Authentication method not supported, token: {authentication}"
-            )
-            raise Unauthorized
-        return None
 
     def __call__(self):
         try:
@@ -86,6 +75,24 @@ class Resource:
 
     def __repr__(self):
         return f"<Resource {self.method} @ {self.path} UIDS: {self.uids}>"
+
+    def _validate_configuration(self):
+        if self.use_cognito_auth:
+            try:
+                json.loads(environ["COGNITO_PUBLIC_KEYS"])["keys"]
+            except (ValueError, KeyError):
+                logger.error("Invalid cognito keys format.")
+
+    def _get_user(self, headers: dict) -> Union[None, User]:
+        authentication = headers.get("Authentication", headers.get("authentication"))
+        if authentication and self.use_cognito_auth:
+            pub_key = get_matching_jwk(authentication)
+            pool_id = environ["COGNITO_POOL_ID"]
+            return User(authentication, pub_key, pool_id)
+        elif authentication:
+            logger.error(f"Authentication method not supported, token: {authentication}")
+            raise Unauthorized
+        return None
 
     def get_guest_authorization(self):
         """

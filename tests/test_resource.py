@@ -1,6 +1,9 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
+import json
 import pytest
+
+from jose import jwt
 
 from os import environ
 from unittest.mock import patch
@@ -94,15 +97,35 @@ class TestResource:
 
     @patch.dict(environ, env_mock)
     @patch.object(User, "__init__", return_value=None)
-    def test_user_loaded_when_cognito_authentication_configured(
+    def test_user_loaded_when_cognito_authentication_configured_correctly(
         self, load_cognito_user_mock, *args
     ):
-        Resource({**event, "headers": {"authentication": "dummy"}})
+        key = json.loads(env_mock["COGNITO_PUBLIC_KEYS"])["keys"][0]
+        key_id = key["kid"]
+        authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
+        Resource({**event, "headers": {"authentication": authentication_token}})
         load_cognito_user_mock.assert_called_once_with(
-            "dummy",
-            env_mock["COGNITO_PUBLIC_JWK"],
+            authentication_token,
+            key,
             env_mock["COGNITO_POOL_ID"],
         )
+
+    @patch.dict(environ, env_mock)
+    def test_unauthorized_when_jwt_header_lacks_kid(self, *args):
+        authentication_token = jwt.encode({"foo": "bar"}, "")
+        with pytest.raises(Unauthorized):
+            Resource({**event, "headers": {"authentication": authentication_token}})
+
+    @patch.dict(environ, env_mock)
+    def test_unauthorized_when_no_matching_key_in_env_variable(self, *args):
+        authentication_token = jwt.encode({"kid": "foobar"}, "")
+        with pytest.raises(Unauthorized):
+            Resource({**event, "headers": {"authentication": authentication_token}})
+
+    @patch.dict(environ, env_mock)
+    def test_unauthorized_when_jwt_header_malformed(self, *args):
+        with pytest.raises(Unauthorized):
+            Resource({**event, "headers": {"authentication": "12345"}})
 
     def test_get_guest_authorization(self):
         atz = self.res.get_guest_authorization()

@@ -12,4 +12,4 @@ class HelloWorld(Resource):
     @add_authz()
     @add_route("/", method="GET")
     def list(self, restrictions=None):
-        return Response({"message": "HelloWorld"})
+        return Response({"message": f"Hello, {self.request.user.username} !"})
