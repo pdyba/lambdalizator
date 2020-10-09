@@ -14,9 +14,7 @@ class Response:
 
     def __init__(self, body, /, headers: dict = None, status_code: int = 200):
         self.body = body if isinstance(body, dict) else {"message": body}
-        self.headers = (
-            {"Content-Type": "application/json"} if headers is None else headers
-        )
+        self.headers = {"Content-Type": "application/json"} if headers is None else headers
         self.status_code = status_code
         self.base64 = False
 

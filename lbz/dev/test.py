@@ -115,9 +115,7 @@ class Client:
             authenticate,
         )
 
-    def _process(
-        self, path, method, params, query_params, body, headers, authorize, authenticate
-    ):
+    def _process(self, path, method, params, query_params, body, headers, authorize, authenticate):
         if query_params:
             for key, value in query_params.items():
                 if not isinstance(value, list):
