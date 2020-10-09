@@ -1,7 +1,7 @@
 # Lambdalizator
 
 AWS Lambda REST Toolbox inspired by Flask.
-Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by @pdyba and @songofroland.
+Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by [pdyba](https://github.com/pdyba) and [songofroland](https://github.com/songofroland).
 
 
 ![Python 3.8+](https://img.shields.io/badge/python-v3.8-blue) ![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
@@ -10,9 +10,9 @@ Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by @pdy
 For toggling boolean variables, set them to "0" or "1" respectively.
 `CLIENT_SECRET` For decoding authorization jwt. Defaults 'secret'.\
 `COGNITO_AUTHENTICATION` Toggle authenticating user based on Cognito IdToken. Defaults False.\
-`COGNITO_PUBLIC_KEYS` For validating signature when Cognito Auth enabled.\
+`COGNITO_PUBLIC_KEYS` For validating IdToken signature when Cognito authentication enabled.\
 (simply paste from https://cognito-idp.{your aws region}.amazonaws.com/{your pool id}/.well-known/jwks.json) \
-`COGNITO_POOL_ID` Cognito user Pool ID, for validating authentication token signature.\
+`COGNITO_ALLOWED_CLIENTS` Space separated string. Allowed Cognito clients id's. Used for verifying IdToken signature.\
 `PRINT_TRACEBACK` More verbose errors. Defaults False.\
 `LOGGING_LEVEL` For logging level. Defaults INFO.\
 

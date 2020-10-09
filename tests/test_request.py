@@ -63,7 +63,7 @@ class TestRequest:
             stage_vars={},
             is_base64_encoded=False,
             query_params=None,
-            user=User(self.id_token, sample_public_key, pool_id=str(uuid4())),
+            user=User(self.id_token, sample_public_key, ["abc"]),
         )
 
     def teardown_method(self):
