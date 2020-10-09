@@ -3,13 +3,12 @@
 """
 Dev Server.
 """
-import socketserver
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
 import json
 import logging
 import urllib.parse
-from typing import Tuple
+from typing import Tuple, Union
 
 from lbz.response import Response
 from lbz.dev.misc import Event
@@ -23,7 +22,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
     cls = None
     done = False
 
-    def _get_route_params(self, org_path):
+    def _get_route_params(self, org_path: str) -> Tuple[Union[str, None], Union[dict, None]]:
         """
         Parses route and params.
         :param org_path:
@@ -111,9 +110,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
                     response = json.loads(body)
             else:
                 logging.warning("Did not create a Response instance:")
-                logging.warning(
-                    f"CLS: {self.cls} REQUEST: {request_obj} QParms: {query_params}"
-                )
+                logging.warning(f"CLS: {self.cls} REQUEST: {request_obj} QParms: {query_params}")
 
             self._send_json(code, response)
         except Exception:

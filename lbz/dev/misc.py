@@ -96,9 +96,7 @@ class Event(dict):
         self["path"] = resource_path.format(**self.get("pathParameters"))
         self["method"] = method
         self["body"] = {} if body is None else body
-        self["headers"] = (
-            {"Content-Type": "application/json"} if headers is None else headers
-        )
+        self["headers"] = {"Content-Type": "application/json"} if headers is None else headers
         if authenticate:
             self["headers"]["Authentication"] = self.admin["Authentication"]
         if authorize:

@@ -19,7 +19,6 @@ from lbz.dev.misc import Event
 from lbz.authz import Authorizer
 from tests.fixtures.cognito_auth import env_mock
 
-
 req = Request(
     headers={"Content-Type": "application/json"},
     uri_params={},
@@ -40,6 +39,29 @@ event = Event(
     query_params={},
     body=req,
 )
+
+event_wrong_uri = Event(
+    resource_path="/xxxs/asdasd/xxx",
+    method="GET",
+    headers={},
+    path_params={},
+    query_params={},
+    body=req,
+)
+
+
+class TestResourceWrongUri:
+    def setup_method(self):
+        self.res = Resource(event_wrong_uri)
+
+    def test___call__wrong_uri(self):
+        resp = self.res()
+        assert isinstance(resp, Response)
+        assert resp.to_dict() == {
+            "body": '{"message":"Server is not able to produce a response"}',
+            "headers": {},
+            "statusCode": 421,
+        }
 
 
 class TestResource:
@@ -63,15 +85,6 @@ class TestResource:
     def test_user_loaded_on_init(self, get_user_mock):
         self.res = Resource(event)
         get_user_mock.assert_called_once_with({})
-
-    def test___call__wrong_uri(self):
-        resp = self.res()
-        assert isinstance(resp, Response)
-        assert resp.to_dict() == {
-            "body": '{"message":"Server is not able to produce a response"}',
-            "headers": {},
-            "statusCode": 421,
-        }
 
     def test___call__(self):
         class X(Resource):
@@ -98,7 +111,7 @@ class TestResource:
     @patch.dict(environ, env_mock)
     @patch.object(User, "__init__", return_value=None)
     def test_user_loaded_when_cognito_authentication_configured_correctly(
-        self, load_cognito_user_mock, *args
+            self, load_cognito_user_mock, *args
     ):
         key = json.loads(env_mock["COGNITO_PUBLIC_KEYS"])["keys"][0]
         key_id = key["kid"]
@@ -130,6 +143,7 @@ class TestResource:
     def test_get_guest_authorization(self):
         atz = self.res.get_guest_authorization()
         assert (
-            atz
-            == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"  # noqa: E501
+                atz
+                == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
+            # noqa: E501
         )

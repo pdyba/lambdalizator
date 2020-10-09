@@ -93,9 +93,7 @@ class TestCognitoAuthentication:
     def test_loading_user_parses_user_attributes(self):
         for k, v in self.cognito_user.items():
             assert (
-                self.sample_user.__getattribute__(
-                    k.replace("cognito:", "").replace("custom:", "")
-                )
+                self.sample_user.__getattribute__(k.replace("cognito:", "").replace("custom:", ""))
                 == v
             )
 

@@ -33,11 +33,7 @@ class Resource:
         self.print_traceback = bool(int(environ.get("PRINT_TRACEBACK", "0")))
         self.use_cognito_auth = bool(int(environ.get("COGNITO_AUTHENTICATION", "0")))
         self.path = event.get("requestContext", {}).get("resourcePath")
-        self.uids = (
-            event.get("pathParameters")
-            if event.get("pathParameters") is not None
-            else {}
-        )
+        self.uids = event.get("pathParameters") if event.get("pathParameters") is not None else {}
         self.method = event["requestContext"]["httpMethod"]
         headers = event["headers"]
         self._validate_configuration()
@@ -60,9 +56,7 @@ class Resource:
     def __call__(self):
         try:
             if self.path is None or self.path not in self._router:
-                logger.error(
-                    "Couldn't find PATH %s in current paths %s", self.path, self._router
-                )
+                logger.error("Couldn't find PATH %s in current paths %s", self.path, self._router)
                 raise WrongURI()
             if self.method not in self._router[self.path]:
                 raise UnsupportedMethod(method=self.method)
