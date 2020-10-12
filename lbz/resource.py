@@ -17,6 +17,7 @@ from lbz.exceptions import (
     WrongURI,
     Unauthorized,
     UnsupportedMethod,
+    ServerError
 )
 from lbz.misc import get_logger
 from lbz.router import Router
@@ -30,13 +31,11 @@ class Resource:
     _authorizer = Authorizer()
 
     def __init__(self, event):
-        self.print_traceback = bool(int(environ.get("PRINT_TRACEBACK", "0")))
-        self.use_cognito_auth = bool(int(environ.get("COGNITO_AUTHENTICATION", "0")))
+        self._load_configuration()
         self.path = event.get("requestContext", {}).get("resourcePath")
         self.uids = event.get("pathParameters") if event.get("pathParameters") is not None else {}
         self.method = event["requestContext"]["httpMethod"]
         headers = event["headers"]
-        self._validate_configuration()
         self.request = Request(
             headers=headers,
             uri_params=self.uids,
@@ -70,19 +69,22 @@ class Resource:
     def __repr__(self):
         return f"<Resource {self.method} @ {self.path} UIDS: {self.uids}>"
 
-    def _validate_configuration(self):
+    def _load_configuration(self):
+        self.print_traceback = bool(int(environ.get("PRINT_TRACEBACK", "0")))
+        self.use_cognito_auth = bool(int(environ.get("COGNITO_AUTHENTICATION", "0")))
         if self.use_cognito_auth:
             try:
-                json.loads(environ["COGNITO_PUBLIC_KEYS"])["keys"]
-            except (ValueError, KeyError):
-                logger.error("Invalid cognito keys format.")
+                self.cognito_public_keys = json.loads(environ["COGNITO_PUBLIC_KEYS"])["keys"]
+                self.cognito_allowed_clients = environ["COGNITO_ALLOWED_CLIENTS"].split()
+            except (ValueError, KeyError, json.JSONDecodeError) as e:
+                logger.error(f"Invalid cognito configuration, details: \n{str(e)}")
+                raise ServerError
 
     def _get_user(self, headers: dict) -> Union[None, User]:
         authentication = headers.get("Authentication", headers.get("authentication"))
         if authentication and self.use_cognito_auth:
-            pub_key = get_matching_jwk(authentication)
-            pool_id = environ["COGNITO_POOL_ID"]
-            return User(authentication, pub_key, pool_id)
+            pub_key = get_matching_jwk(authentication, self.cognito_public_keys)
+            return User(authentication, pub_key, self.cognito_allowed_clients)
         elif authentication:
             logger.error(f"Authentication method not supported, token: {authentication}")
             raise Unauthorized
