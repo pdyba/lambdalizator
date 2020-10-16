@@ -16,3 +16,9 @@ Released 2020-10-05
 Released 2020-10-07
 
 -   Added matching correct JWK based on "kid" parameter in jwt header,
+
+### Version 0.1.5
+Released 2020-10-16
+
+-   Fixed raising authentication errors,
+-   Remove default Cognito claims from User attributes.

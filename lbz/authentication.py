@@ -8,6 +8,8 @@ from lbz.misc import get_logger
 
 logger = get_logger(__file__)
 
+STANDARD_CLAIMS = {"sub", "aud", "auth_time", "iss", "exp", "iat", "token_use"}
+
 
 class User:
     def __init__(self, token: str, public_jwk: Union[dict, str], allowed_clients: List[str]):
@@ -25,10 +27,11 @@ class User:
 
     def load_cognito_user(self) -> dict:
         parsed_user = {}
-        attributes = self.decode_cognito_user(self._allowed_clients.copy())
+        attributes = self.decode_cognito_user(self._allowed_clients)
         self._validate_attributes(attributes)
         for k, v in attributes.items():
-            parsed_user[k.replace("cognito:", "").replace("custom:", "")] = v
+            if k not in STANDARD_CLAIMS:
+                parsed_user[k.replace("cognito:", "").replace("custom:", "")] = v
         return parsed_user
 
     def decode_cognito_user(self, audiences: list) -> dict:
@@ -37,10 +40,10 @@ class User:
                 self._token,
                 self._public_jwk,
                 algorithms="RS256",
-                audience=audiences.pop(),
+                audience=audiences[0],
             )
         except JWTClaimsError:
-            return self.decode_cognito_user(audiences)
+            return self.decode_cognito_user(audiences[1:])
         except (JWTError, IndexError):
             raise Unauthorized
         except Exception:
