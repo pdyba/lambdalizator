@@ -45,7 +45,6 @@ class Resource:
             stage_vars=event["stageVariables"],
             is_base64_encoded=event.get("isBase64Encoded", False),
             query_params=event["multiValueQueryStringParameters"],
-            user=self._get_user(headers),
         )
         if authorization := headers.get("Authorization", headers.get("authorization")):
             self._authorizer.set_policy(authorization)
@@ -59,6 +58,7 @@ class Resource:
                 raise WrongURI()
             if self.method not in self._router[self.path]:
                 raise UnsupportedMethod(method=self.method)
+            self.request.user = self._get_user(self.request.headers)
             return getattr(self, self._router[self.path][self.method])(**self.uids)
         except LambdaFWException as e:
             logger.format_error(e)
@@ -94,5 +94,5 @@ class Resource:
         """
         It should be overwritten after inheritance with a method to obtain guest auth.
         """
-        logger.error("Using default guest authorization which gives Admin.")
+        logger.error("Using default guest authorization which gives root access.")
         return self._authorizer.sign_authz({"allow": {"*": "*"}, "deny": {}})

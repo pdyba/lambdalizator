@@ -1,15 +1,14 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
 import json
-import pytest
 
-from jose import jwt
-
+from http import HTTPStatus
 from os import environ
 from unittest.mock import patch
 
+from jose import jwt
+
 from lbz.authentication import User
-from lbz.exceptions import Unauthorized
 from lbz.resource import Resource
 from lbz.router import Router
 from lbz.router import add_route
@@ -82,11 +81,7 @@ class TestResource:
         assert self.res.request.user is None
 
     @patch.object(Resource, "_get_user")
-    def test_user_loaded_on_init(self, get_user_mock):
-        self.res = Resource(event)
-        get_user_mock.assert_called_once_with({})
-
-    def test___call__(self):
+    def test___call__(self, get_user_mock):
         class X(Resource):
             @add_route("/")
             def a(self):
@@ -100,23 +95,35 @@ class TestResource:
             "statusCode": 200,
             "body": '{"message":"x"}',
         }
+        get_user_mock.assert_called_once_with({})
 
     def test___repr__(self):
         assert str(self.res) == "<Resource GET @ / UIDS: {}>"
 
     def test_unauthorized_when_authentication_not_configured(self):
-        with pytest.raises(Unauthorized):
-            Resource({**event, "headers": {"authentication": "dummy"}})
+        class X(Resource):
+            @add_route("/")
+            def a(self):
+                return Response("x")
+
+        resp = X({**event, "headers": {"authentication": "dummy"}})()
+        assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     @patch.dict(environ, env_mock)
     @patch.object(User, "__init__", return_value=None)
     def test_user_loaded_when_cognito_authentication_configured_correctly(
-            self, load_cognito_user_mock, *args
+        self, load_cognito_user_mock, *args
     ):
+        class X(Resource):
+            @add_route("/")
+            def a(self):
+                return Response("x")
+
         key = json.loads(env_mock["COGNITO_PUBLIC_KEYS"])["keys"][0]
         key_id = key["kid"]
         authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
-        Resource({**event, "headers": {"authentication": authentication_token}})
+
+        X({**event, "headers": {"authentication": authentication_token}})()
         load_cognito_user_mock.assert_called_once_with(
             authentication_token,
             key,
@@ -125,25 +132,40 @@ class TestResource:
 
     @patch.dict(environ, env_mock)
     def test_unauthorized_when_jwt_header_lacks_kid(self, *args):
+        class X(Resource):
+            @add_route("/")
+            def a(self):
+                return Response("x")
+
         authentication_token = jwt.encode({"foo": "bar"}, "")
-        with pytest.raises(Unauthorized):
-            Resource({**event, "headers": {"authentication": authentication_token}})
+        resp = X({**event, "headers": {"authentication": authentication_token}})()
+        assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     @patch.dict(environ, env_mock)
     def test_unauthorized_when_no_matching_key_in_env_variable(self, *args):
+        class X(Resource):
+            @add_route("/")
+            def a(self):
+                return Response("x")
+
         authentication_token = jwt.encode({"kid": "foobar"}, "")
-        with pytest.raises(Unauthorized):
-            Resource({**event, "headers": {"authentication": authentication_token}})
+        resp = X({**event, "headers": {"authentication": authentication_token}})()
+        assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     @patch.dict(environ, env_mock)
     def test_unauthorized_when_jwt_header_malformed(self, *args):
-        with pytest.raises(Unauthorized):
-            Resource({**event, "headers": {"authentication": "12345"}})
+        class X(Resource):
+            @add_route("/")
+            def a(self):
+                return Response("x")
 
-    def test_get_guest_authorization(self):
+        resp = X({**event, "headers": {"authentication": "12345"}})()
+        assert resp.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_get_guest_authorization_returns_root_by_default(self):
         atz = self.res.get_guest_authorization()
         assert (
-                atz
-                == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
+            atz
+            == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
             # noqa: E501
         )
