@@ -127,7 +127,7 @@ class TestResource:
         load_cognito_user_mock.assert_called_once_with(
             authentication_token,
             key,
-            env_mock["COGNITO_ALLOWED_CLIENTS"].split(),
+            env_mock["COGNITO_ALLOWED_CLIENTS"].split(","),
         )
 
     @patch.dict(environ, env_mock)
