@@ -75,7 +75,7 @@ class Resource:
         if self.use_cognito_auth:
             try:
                 self.cognito_public_keys = json.loads(environ["COGNITO_PUBLIC_KEYS"])["keys"]
-                self.cognito_allowed_clients = environ["COGNITO_ALLOWED_CLIENTS"].split()
+                self.cognito_allowed_clients = environ["COGNITO_ALLOWED_CLIENTS"].split(",")
             except (ValueError, KeyError, json.JSONDecodeError) as e:
                 logger.error(f"Invalid cognito configuration, details: \n{str(e)}")
                 raise ServerError

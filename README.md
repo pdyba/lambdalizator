@@ -12,7 +12,7 @@ For toggling boolean variables, set them to "0" or "1" respectively.
 `COGNITO_AUTHENTICATION` Toggle authenticating user based on Cognito IdToken. Defaults False.\
 `COGNITO_PUBLIC_KEYS` For validating IdToken signature when Cognito authentication enabled.\
 (simply paste from https://cognito-idp.{your aws region}.amazonaws.com/{your pool id}/.well-known/jwks.json) \
-`COGNITO_ALLOWED_CLIENTS` Space separated string. Allowed Cognito clients id's. Used for verifying IdToken signature.\
+`COGNITO_ALLOWED_CLIENTS` Allowed Cognito clients id's. String in format "id1,id2,id3". Used for verifying IdToken signature.\
 `PRINT_TRACEBACK` More verbose errors. Defaults False.\
 `LOGGING_LEVEL` For logging level. Defaults INFO.\
 
