@@ -113,7 +113,6 @@ class WrongURI(LambdaFWException):
 class Unauthorized(LambdaFWException):
     """
     No permission -- see authorization schemes
-    401
     """
 
     message = HTTPStatus.UNAUTHORIZED.description

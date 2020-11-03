@@ -23,3 +23,10 @@ Released 2020-10-16
 -   Refined Cognito authentication configuration,
 -   Fixed raising authentication errors,
 -   Remove default Cognito claims from User attributes.
+
+### Version 0.1.8
+Released 2020-11-03
+
+-   Typing applied,
+-   Settings changed to implicitly enable Cognito,
+-   Minor improvements.

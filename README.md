@@ -7,14 +7,19 @@ Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by [pdy
 ![Python 3.8+](https://img.shields.io/badge/python-v3.8-blue) ![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 ## Settings:
-For toggling boolean variables, set them to "0" or "1" respectively.
 `CLIENT_SECRET` For decoding authorization jwt. Defaults 'secret'.\
-`COGNITO_AUTHENTICATION` Toggle authenticating user based on Cognito IdToken. Defaults False.\
 `COGNITO_PUBLIC_KEYS` For validating IdToken signature when Cognito authentication enabled.\
 (simply paste from https://cognito-idp.{your aws region}.amazonaws.com/{your pool id}/.well-known/jwks.json) \
 `COGNITO_ALLOWED_CLIENTS` Allowed Cognito clients id's. String in format "id1,id2,id3". Used for verifying IdToken signature.\
-`PRINT_TRACEBACK` More verbose errors. Defaults False.\
+`PRINT_TRACEBACK` More verbose errors. Defaults False (set as "0" or "1").\
 `LOGGING_LEVEL` For logging level. Defaults INFO.\
+
+---
+**NOTE**
+
+Setting `COGNITO_PUBLIC_KEYS` or `COGNITO_ALLOWED_CLIENTS` implicitly enables Cognito authentication.
+
+---
 
 ## Hello World Example:
 ### 1. Define resource
