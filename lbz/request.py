@@ -7,6 +7,9 @@ import base64
 import json
 import logging
 
+from typing import Union
+
+from lbz.authentication import User
 from lbz.exceptions import BadRequestError
 from lbz.misc import MultiDict
 
@@ -29,7 +32,7 @@ class Request:
         stage_vars: dict,
         is_base64_encoded: bool,
         query_params: dict = None,
-        user: dict = None,
+        user: User = None,
     ):
         self.query_params = MultiDict(query_params)
         self.headers = headers
@@ -45,14 +48,13 @@ class Request:
         return f"<Request {self.method} >"
 
     @staticmethod
-    def _decode_base64(encoded):
+    def _decode_base64(encoded) -> str:
         if not isinstance(encoded, bytes):
             encoded = encoded.encode("ascii")
-        output = base64.b64decode(encoded)
-        return output
+        return base64.b64decode(encoded)
 
     @property
-    def raw_body(self):
+    def raw_body(self) -> Union[bytes, str]:
         if not self._raw_body and self._body is not None:
             if self._is_base64_encoded:
                 self._raw_body = self._decode_base64(self._body)
@@ -63,7 +65,7 @@ class Request:
         return self._raw_body
 
     @property
-    def json_body(self):
+    def json_body(self) -> dict:
         content_type = self.headers.get("Content-Type", self.headers.get("content-type"))
         if content_type is None:
             return
@@ -74,16 +76,15 @@ class Request:
                 try:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError:
-                    logging.error(f"Error during deserialization: {self.raw_body}")
+                    logging.error(f"Invalid json payload: {self.raw_body}")
                     raise BadRequestError()
             return self._json_body
         else:
             logging.error(self)
-            logging.exception("Wrong Header %s", json.dumps(self.headers))
-            c_header = json.dumps(self.headers.get("Content-Type", ""))
-            raise BadRequestError(f"Content-Type header is missing or wrong: {c_header}")
+            logging.exception(f"Wrong headers: {self.headers}")
+            raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         copied = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
         copied["headers"] = dict(copied["headers"])
         copied["user"] = repr(copied["user"])

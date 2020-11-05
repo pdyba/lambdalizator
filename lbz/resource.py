@@ -6,7 +6,7 @@ Resource Handler.
 import json
 import traceback
 
-from os import environ
+from os import environ as env
 from typing import Union
 
 from lbz.authentication import get_matching_jwk, User
@@ -17,7 +17,7 @@ from lbz.exceptions import (
     WrongURI,
     Unauthorized,
     UnsupportedMethod,
-    ServerError
+    ServerError,
 )
 from lbz.misc import get_logger
 from lbz.router import Router
@@ -30,7 +30,7 @@ class Resource:
     _router = Router()
     _authorizer = Authorizer()
 
-    def __init__(self, event):
+    def __init__(self, event: dict):
         self._load_configuration()
         self.path = event.get("requestContext", {}).get("resourcePath")
         self.uids = event.get("pathParameters") if event.get("pathParameters") is not None else {}
@@ -51,7 +51,7 @@ class Resource:
         else:
             self._authorizer.set_policy(self.get_guest_authorization())
 
-    def __call__(self):
+    def __call__(self) -> dict:
         try:
             if self.path is None or self.path not in self._router:
                 logger.error("Couldn't find PATH %s in current paths %s", self.path, self._router)
@@ -69,20 +69,20 @@ class Resource:
     def __repr__(self):
         return f"<Resource {self.method} @ {self.path} UIDS: {self.uids}>"
 
-    def _load_configuration(self):
-        self.print_traceback = bool(int(environ.get("PRINT_TRACEBACK", "0")))
-        self.use_cognito_auth = bool(int(environ.get("COGNITO_AUTHENTICATION", "0")))
-        if self.use_cognito_auth:
+    def _load_configuration(self) -> None:
+        self.print_traceback = bool(int(env.get("PRINT_TRACEBACK", "0")))
+        self.cognito_auth = env.get("COGNITO_PUBLIC_KEYS") or env.get("COGNITO_ALLOWED_CLIENTS")
+        if self.cognito_auth:
             try:
-                self.cognito_public_keys = json.loads(environ["COGNITO_PUBLIC_KEYS"])["keys"]
-                self.cognito_allowed_clients = environ["COGNITO_ALLOWED_CLIENTS"].split(",")
+                self.cognito_public_keys = json.loads(env["COGNITO_PUBLIC_KEYS"])["keys"]
+                self.cognito_allowed_clients = env["COGNITO_ALLOWED_CLIENTS"].split(",")
             except (ValueError, KeyError, json.JSONDecodeError) as e:
                 logger.error(f"Invalid cognito configuration, details: \n{str(e)}")
                 raise ServerError
 
     def _get_user(self, headers: dict) -> Union[None, User]:
         authentication = headers.get("Authentication", headers.get("authentication"))
-        if authentication and self.use_cognito_auth:
+        if authentication and self.cognito_auth:
             pub_key = get_matching_jwk(authentication, self.cognito_public_keys)
             return User(authentication, pub_key, self.cognito_allowed_clients)
         elif authentication:
@@ -90,7 +90,7 @@ class Resource:
             raise Unauthorized
         return None
 
-    def get_guest_authorization(self):
+    def get_guest_authorization(self) -> str:
         """
         It should be overwritten after inheritance with a method to obtain guest auth.
         """

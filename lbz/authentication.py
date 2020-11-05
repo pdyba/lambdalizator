@@ -8,7 +8,7 @@ from lbz.misc import get_logger
 
 logger = get_logger(__file__)
 
-STANDARD_CLAIMS = {"sub", "aud", "auth_time", "iss", "exp", "iat", "token_use"}
+STANDARD_CLAIMS = ("sub", "aud", "auth_time", "iss", "exp", "iat", "token_use")
 
 
 class User:
@@ -51,13 +51,13 @@ class User:
             raise ServerError
 
     @staticmethod
-    def _validate_attributes(attributes: dict):
+    def _validate_attributes(attributes: dict) -> None:
         if len(attributes) > 1000:
             logger.error(f"Too many attributes, total={len(attributes)}")
             raise RuntimeError
 
 
-def get_matching_jwk(auth_header: str, cognito_public_keys: dict):
+def get_matching_jwk(auth_header: str, cognito_public_keys: dict) -> str:
     try:
         kid = jwt.get_unverified_header(auth_header)["kid"]
         return list(filter(lambda key: key["kid"] == kid, cognito_public_keys)).pop()
