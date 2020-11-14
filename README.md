@@ -13,7 +13,7 @@ Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by [pdy
 `COGNITO_ALLOWED_CLIENTS` Allowed Cognito clients id's. String in format "id1,id2,id3". Used for verifying IdToken signature.\
 `PRINT_TRACEBACK` More verbose errors. Defaults False (set as "0" or "1").\
 `LOGGING_LEVEL` For logging level. Defaults INFO.\
-
+`EXPIRATION_KEY` for defining the expiration key used in authorization default "expires-at"
 ---
 **NOTE**
 

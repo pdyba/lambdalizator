@@ -3,18 +3,20 @@
 """
 Authorizer.
 """
+from datetime import datetime
 from functools import wraps
 import json
 from os import environ
+import warnings
 
 from jose import jwt
 
 from lbz.misc import NestedDict, Singleton
-
 from lbz.exceptions import PermissionDenied, ServerError
 
 # NTH: Consider getting that from SSM
 CLIENT_SECRET = environ.get("CLIENT_SECRET", "secret")
+EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "expires-at")
 
 RESTRICTED = ["*", "self"]
 ALL = "*"
@@ -24,7 +26,6 @@ LIMITED_ALLOW = -1
 
 # TODO: add handling TTL for tokens.
 
-
 class Authorizer(metaclass=Singleton):
     allow = {}
     deny = {}
@@ -32,6 +33,7 @@ class Authorizer(metaclass=Singleton):
     outcome = None
     allowed_resource = None
     denied_resource = None
+    expiration = None
 
     def __init__(self, resource=None):
         self.resource = resource
@@ -64,6 +66,12 @@ class Authorizer(metaclass=Singleton):
     def validate(self, function_name):
         if function_name not in self._permissions:
             raise ServerError
+        if self.expiration is None:
+            warnings.warn("EXPIRATION_KEY will be mandatory with 0.2 please upgrade Authz provider", DeprecationWarning)
+        elif self.expiration < datetime.utcnow().timestamp():
+            raise PermissionDenied(
+                f"Your token has expired at {self.expiration} . Please refresh it."
+            )
         self.set_initial_state(function_name)
         if self.deny:
             self._check_deny()
@@ -81,6 +89,7 @@ class Authorizer(metaclass=Singleton):
         policy = self.decode_authz(token)
         self.allow = policy["allow"]
         self.deny = policy["deny"]
+        self.expiration = policy.get(EXPIRATION_KEY)
         self.outcome = DENY
         self.allowed_resource = None
         self.denied_resource = None

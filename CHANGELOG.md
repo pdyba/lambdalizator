@@ -30,3 +30,8 @@ Released 2020-11-03
 -   Typing applied,
 -   Settings changed to implicitly enable Cognito,
 -   Minor improvements.
+
+### Version 0.1.8
+Released 2020-11-15
+
+- adds EXPIRATION_KEY config variable for checking authorization expiration.
