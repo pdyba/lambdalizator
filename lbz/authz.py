@@ -146,17 +146,13 @@ def add_authz(permission_name=""):
     def wrapper(func):
         authz = Authorizer()
         authz.add_permission(permission_name or func.__name__, func.__name__)
-
-        @wraps(func)
-        def wrapped(self, *func_args, **func_kwargs):
-            return func(self, *func_args, **func_kwargs)
-
-        return wrapped
+        return func
 
     return wrapper
 
 
 def authorize(func):
+    @wraps(func)
     def wrapped(self, *func_args, **func_kwargs):
         self._authorizer.validate(func.__name__)
         limited_permissions = self._authorizer.get_restrictions()
