@@ -16,7 +16,7 @@ from lbz.exceptions import PermissionDenied, ServerError
 
 # NTH: Consider getting that from SSM
 CLIENT_SECRET = environ.get("CLIENT_SECRET", "secret")
-EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "expires-at")
+EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "expires_at")
 
 RESTRICTED = ["*", "self"]
 ALL = "*"

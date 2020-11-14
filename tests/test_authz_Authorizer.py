@@ -48,7 +48,7 @@ class TestAuthorizer:
         self.expiration_positive = (datetime.utcnow() + timedelta(minutes=30)).timestamp()
         self.expiration_negative = (datetime.utcnow() - timedelta(minutes=30)).timestamp()
         token = self.authz.sign_authz(
-            {"allow": {ALL: ALL}, "deny": {}, "expires-at": self.expiration_positive}
+            {"allow": {ALL: ALL}, "deny": {}, "expires_at": self.expiration_positive}
         )
         self.authz.set_policy(token)
 
@@ -112,7 +112,7 @@ class TestAuthorizer:
 
     def test_validate_fail_all(self):
         token = self.authz.sign_authz(
-            {"allow": {}, "deny": {}, "expires-at": self.expiration_positive}
+            {"allow": {}, "deny": {}, "expires_at": self.expiration_positive}
         )
         self.authz.set_policy(token)
         with pytest.raises(PermissionDenied):
@@ -137,7 +137,7 @@ class TestAuthorizer:
             {
                 "allow": {"res": {"permission_name": {"allow": ALL}}},
                 "deny": {},
-                "expires-at": self.expiration_positive,
+                "expires_at": self.expiration_positive,
             }
         )
         self.authz.set_policy(token)
@@ -149,7 +149,7 @@ class TestAuthorizer:
             {
                 "allow": {"res": {"permission_name": {"allow": ALL}}},
                 "deny": {},
-                "expires-at": self.expiration_negative,
+                "expires_at": self.expiration_negative,
             }
         )
         self.authz.set_policy(token)
@@ -162,7 +162,7 @@ class TestAuthorizer:
             {
                 "allow": {"res": {"permission_name": {"allow": "self"}}},
                 "deny": {},
-                "expires-at": self.expiration_positive,
+                "expires_at": self.expiration_positive,
             }
         )
         self.authz.set_policy(token)
@@ -175,7 +175,7 @@ class TestAuthorizer:
             {
                 "allow": {"res": {"permission_name": {"deny": "self"}}},
                 "deny": {},
-                "expires-at": self.expiration_positive,
+                "expires_at": self.expiration_positive,
             }
         )
         self.authz.set_policy(token)
@@ -189,7 +189,7 @@ class TestAuthorizer:
 
     def test_set_policy(self):
         token = self.authz.sign_authz(
-            {"allow": {}, "deny": {ALL: ALL}, "expires-at": self.expiration_positive}
+            {"allow": {}, "deny": {ALL: ALL}, "expires_at": self.expiration_positive}
         )
         self.authz.set_policy(token)
         assert self.authz.allow == {}
