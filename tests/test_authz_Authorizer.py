@@ -7,7 +7,7 @@ import string
 import pytest
 
 from lbz.authz import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
-from lbz.exceptions import PermissionDenied, ServerError
+from lbz.exceptions import PermissionDenied, NotAcceptable
 from lbz.misc import NestedDict
 
 
@@ -124,7 +124,18 @@ class TestAuthorizer:
             {
                 "allow": {"res": {"permission_name": {"allow": ALL}}},
                 "deny": {},
-                "expiration-at": self.expiration_positive,
+                "expires_at": self.expiration_positive,
+            }
+        )
+        self.authz.set_policy(token)
+        self.authz.validate("function_name")
+        assert self.authz.outcome == ALLOW
+
+    def test_validate_one_deprecation(self):
+        token = self.authz.sign_authz(
+            {
+                "allow": {"res": {"permission_name": {"allow": ALL}}},
+                "deny": {},
             }
         )
         self.authz.set_policy(token)
@@ -184,7 +195,7 @@ class TestAuthorizer:
         assert self.authz.denied_resource == "self"
 
     def test_validate_raise_server_error(self):
-        with pytest.raises(ServerError):
+        with pytest.raises(NotAcceptable):
             self.authz.validate("function_no_name")
 
     def test_set_policy(self):

@@ -117,3 +117,12 @@ class Unauthorized(LambdaFWException):
 
     message = HTTPStatus.UNAUTHORIZED.description
     status_code = HTTPStatus.UNAUTHORIZED.value
+
+
+class NotAcceptable(LambdaFWException):
+    """
+    No permission -- see authorization schemes
+    """
+
+    message = HTTPStatus.NOT_ACCEPTABLE.description
+    status_code = HTTPStatus.NOT_ACCEPTABLE.value

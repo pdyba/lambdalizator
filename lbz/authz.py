@@ -12,9 +12,8 @@ import warnings
 from jose import jwt
 
 from lbz.misc import NestedDict, Singleton
-from lbz.exceptions import PermissionDenied, ServerError
+from lbz.exceptions import PermissionDenied, NotAcceptable
 
-# NTH: Consider getting that from SSM
 CLIENT_SECRET = environ.get("CLIENT_SECRET", "secret")
 EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "expires_at")
 
@@ -66,7 +65,7 @@ class Authorizer(metaclass=Singleton):
 
     def validate(self, function_name):
         if function_name not in self._permissions:
-            raise ServerError
+            raise NotAcceptable()
         if self.expiration is None:
             warnings.warn(
                 "EXPIRATION_KEY will be mandatory with 0.2 please upgrade Authz provider",
