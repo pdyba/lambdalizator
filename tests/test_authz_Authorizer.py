@@ -47,7 +47,9 @@ class TestAuthorizer:
         self.authz.add_permission("permission_name", "function_name")
         self.expiration_positive = (datetime.utcnow() + timedelta(minutes=30)).timestamp()
         self.expiration_negative = (datetime.utcnow() - timedelta(minutes=30)).timestamp()
-        token = self.authz.sign_authz({"allow": {ALL: ALL}, "deny": {}, "expires-at": self.expiration_positive})
+        token = self.authz.sign_authz(
+            {"allow": {ALL: ALL}, "deny": {}, "expires-at": self.expiration_positive}
+        )
         self.authz.set_policy(token)
 
     def teardown_method(self, method):
@@ -109,18 +111,22 @@ class TestAuthorizer:
         assert self.authz.outcome == ALLOW
 
     def test_validate_fail_all(self):
-        token = self.authz.sign_authz({"allow": {}, "deny": {}, "expires-at": self.expiration_positive})
+        token = self.authz.sign_authz(
+            {"allow": {}, "deny": {}, "expires-at": self.expiration_positive}
+        )
         self.authz.set_policy(token)
         with pytest.raises(PermissionDenied):
             self.authz.validate("function_name")
         assert self.authz.outcome == DENY
 
     def test_validate_one(self):
-        token = self.authz.sign_authz({
-            "allow": {"res": {"permission_name": {"allow": ALL}}},
-            "deny": {},
-            "expiration-at": self.expiration_positive
-        })
+        token = self.authz.sign_authz(
+            {
+                "allow": {"res": {"permission_name": {"allow": ALL}}},
+                "deny": {},
+                "expiration-at": self.expiration_positive,
+            }
+        )
         self.authz.set_policy(token)
         with pytest.warns(DeprecationWarning):
             self.authz.validate("function_name")
@@ -128,7 +134,11 @@ class TestAuthorizer:
 
     def test_validate_one_with_expiration(self):
         token = self.authz.sign_authz(
-            {"allow": {"res": {"permission_name": {"allow": ALL}}}, "deny": {}, "expires-at": self.expiration_positive}
+            {
+                "allow": {"res": {"permission_name": {"allow": ALL}}},
+                "deny": {},
+                "expires-at": self.expiration_positive,
+            }
         )
         self.authz.set_policy(token)
         self.authz.validate("function_name")
@@ -136,7 +146,11 @@ class TestAuthorizer:
 
     def test_validate_one_with_expired(self):
         token = self.authz.sign_authz(
-            {"allow": {"res": {"permission_name": {"allow": ALL}}}, "deny": {}, "expires-at": self.expiration_negative}
+            {
+                "allow": {"res": {"permission_name": {"allow": ALL}}},
+                "deny": {},
+                "expires-at": self.expiration_negative,
+            }
         )
         self.authz.set_policy(token)
         with pytest.raises(PermissionDenied):
@@ -148,8 +162,8 @@ class TestAuthorizer:
             {
                 "allow": {"res": {"permission_name": {"allow": "self"}}},
                 "deny": {},
-                "expires-at": self.expiration_positive
-             }
+                "expires-at": self.expiration_positive,
+            }
         )
         self.authz.set_policy(token)
         self.authz.validate("function_name")
@@ -161,7 +175,7 @@ class TestAuthorizer:
             {
                 "allow": {"res": {"permission_name": {"deny": "self"}}},
                 "deny": {},
-                "expires-at": self.expiration_positive
+                "expires-at": self.expiration_positive,
             }
         )
         self.authz.set_policy(token)
@@ -174,7 +188,9 @@ class TestAuthorizer:
             self.authz.validate("function_no_name")
 
     def test_set_policy(self):
-        token = self.authz.sign_authz({"allow": {}, "deny": {ALL: ALL}, "expires-at": self.expiration_positive})
+        token = self.authz.sign_authz(
+            {"allow": {}, "deny": {ALL: ALL}, "expires-at": self.expiration_positive}
+        )
         self.authz.set_policy(token)
         assert self.authz.allow == {}
         assert self.authz.deny == {ALL: ALL}
@@ -255,9 +271,9 @@ class TestAuthorizer:
         # noqa: E501
         token = self.authz.sign_authz({"allow": {ALL: ALL}, "deny": {}})
         assert (
-                token
-                == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
-        # noqa: E501
+            token
+            == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
+            # noqa: E501
         )
 
     def test_decode_authz(self):

@@ -110,7 +110,7 @@ class TestCognitoAuthentication:
             "token_use": "id",
             "auth_time": random.randrange(9999999999),
             "iss": str(uuid4()),
-            "exp":  random.randrange(9999999999),
+            "exp": random.randrange(9999999999),
             "iat": random.randrange(9999999999),
         }
 

@@ -26,6 +26,7 @@ LIMITED_ALLOW = -1
 
 # TODO: add handling TTL for tokens.
 
+
 class Authorizer(metaclass=Singleton):
     allow = {}
     deny = {}
@@ -67,7 +68,10 @@ class Authorizer(metaclass=Singleton):
         if function_name not in self._permissions:
             raise ServerError
         if self.expiration is None:
-            warnings.warn("EXPIRATION_KEY will be mandatory with 0.2 please upgrade Authz provider", DeprecationWarning)
+            warnings.warn(
+                "EXPIRATION_KEY will be mandatory with 0.2 please upgrade Authz provider",
+                DeprecationWarning,
+            )
         elif self.expiration < datetime.utcnow().timestamp():
             raise PermissionDenied(
                 f"Your token has expired at {self.expiration} . Please refresh it."

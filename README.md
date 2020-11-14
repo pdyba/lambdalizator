@@ -14,6 +14,7 @@ Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by [pdy
 `PRINT_TRACEBACK` More verbose errors. Defaults False (set as "0" or "1").\
 `LOGGING_LEVEL` For logging level. Defaults INFO.\
 `EXPIRATION_KEY` for defining the expiration key used in authorization default "expires-at"
+
 ---
 **NOTE**
 
