@@ -98,7 +98,7 @@ class Authorizer(metaclass=Singleton):
             policy = self.decode_authz(token)
         except ExpiredSignatureError:
             raise PermissionDenied(
-                f"Your token has expired at {self.expiration} . Please refresh it."
+                f"Your token has expired. Please refresh it."
             )
         self.allow = policy["allow"]
         self.deny = policy["deny"]
