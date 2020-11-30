@@ -7,7 +7,7 @@ import string
 import pytest
 
 from lbz.authz import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
-from lbz.exceptions import PermissionDenied, NotAcceptable
+from lbz.exceptions import PermissionDenied, NotAcceptable, SecurityRiskWarning
 from lbz.misc import NestedDict
 
 
@@ -45,10 +45,17 @@ class TestAuthorizer:
     def setup_method(self, method):
         self.authz = Authorizer(resource="res")
         self.authz.add_permission("permission_name", "function_name")
-        self.expiration_positive = (datetime.utcnow() + timedelta(minutes=30)).timestamp()
-        self.expiration_negative = (datetime.utcnow() - timedelta(minutes=30)).timestamp()
+        self.iat = int(datetime.utcnow().timestamp())
+        self.exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
+        self.iss = "test"
         token = self.authz.sign_authz(
-            {"allow": {ALL: ALL}, "deny": {}, "expires_at": self.expiration_positive}
+            {
+                "allow": {ALL: ALL},
+                "deny": {},
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
+            }
         )
         self.authz.set_policy(token)
 
@@ -111,20 +118,40 @@ class TestAuthorizer:
         assert self.authz.outcome == ALLOW
 
     def test_validate_fail_all(self):
-        token = self.authz.sign_authz(
-            {"allow": {}, "deny": {}, "expires_at": self.expiration_positive}
-        )
+        token = self.authz.sign_authz({
+            "allow": {},
+            "deny": {},
+            "exp": self.exp,
+            "iat": self.iat,
+            "iss": self.iss,
+        })
         self.authz.set_policy(token)
         with pytest.raises(PermissionDenied):
             self.authz.validate("function_name")
         assert self.authz.outcome == DENY
+
+    def test_wrong_iss(self):
+        token = self.authz.sign_authz({
+            "allow": {},
+            "deny": {},
+            "exp": self.exp,
+            "iat": self.iat,
+            "iss": "test2",
+        })
+        self.authz.set_policy(token)
+        with pytest.raises(PermissionDenied):
+            self.authz.validate("function_name")
+        assert self.authz.outcome == DENY
+
 
     def test_validate_one(self):
         token = self.authz.sign_authz(
             {
                 "allow": {"res": {"permission_name": {"allow": ALL}}},
                 "deny": {},
-                "expires_at": self.expiration_positive,
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
             }
         )
         self.authz.set_policy(token)
@@ -141,6 +168,8 @@ class TestAuthorizer:
         self.authz.set_policy(token)
         with pytest.warns(DeprecationWarning):
             self.authz.validate("function_name")
+        with pytest.warns(SecurityRiskWarning):
+            self.authz.validate("function_name")
         assert self.authz.outcome == ALLOW
 
     def test_validate_one_with_expiration(self):
@@ -148,7 +177,9 @@ class TestAuthorizer:
             {
                 "allow": {"res": {"permission_name": {"allow": ALL}}},
                 "deny": {},
-                "expires_at": self.expiration_positive,
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
             }
         )
         self.authz.set_policy(token)
@@ -156,24 +187,29 @@ class TestAuthorizer:
         assert self.authz.outcome == ALLOW
 
     def test_validate_one_with_expired(self):
+        expiration_negative = int((datetime.utcnow() + timedelta(seconds=1)).timestamp())
         token = self.authz.sign_authz(
             {
                 "allow": {"res": {"permission_name": {"allow": ALL}}},
                 "deny": {},
-                "expires_at": self.expiration_negative,
+                "exp": expiration_negative,
+                "iat": self.iat,
+                "iss": self.iss,
             }
         )
-        self.authz.set_policy(token)
+
         with pytest.raises(PermissionDenied):
-            self.authz.validate("function_name")
-        assert self.authz.outcome == DENY
+            self.authz.set_policy(token)
+            assert self.authz.outcome == DENY
 
     def test_validate_one_scope(self):
         token = self.authz.sign_authz(
             {
                 "allow": {"res": {"permission_name": {"allow": "self"}}},
                 "deny": {},
-                "expires_at": self.expiration_positive,
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
             }
         )
         self.authz.set_policy(token)
@@ -186,7 +222,9 @@ class TestAuthorizer:
             {
                 "allow": {"res": {"permission_name": {"deny": "self"}}},
                 "deny": {},
-                "expires_at": self.expiration_positive,
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
             }
         )
         self.authz.set_policy(token)
@@ -199,9 +237,13 @@ class TestAuthorizer:
             self.authz.validate("function_no_name")
 
     def test_set_policy(self):
-        token = self.authz.sign_authz(
-            {"allow": {}, "deny": {ALL: ALL}, "expires_at": self.expiration_positive}
-        )
+        token = self.authz.sign_authz({
+            "allow": {},
+            "deny": {ALL: ALL},
+            "exp": self.exp,
+            "iat": self.iat,
+            "iss": self.iss,
+        })
         self.authz.set_policy(token)
         assert self.authz.allow == {}
         assert self.authz.deny == {ALL: ALL}
@@ -282,8 +324,8 @@ class TestAuthorizer:
         # noqa: E501
         token = self.authz.sign_authz({"allow": {ALL: ALL}, "deny": {}})
         assert (
-            token
-            == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
+                token
+                == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
             # noqa: E501
         )
 

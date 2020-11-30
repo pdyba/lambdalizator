@@ -126,3 +126,7 @@ class NotAcceptable(LambdaFWException):
 
     message = HTTPStatus.NOT_ACCEPTABLE.description
     status_code = HTTPStatus.NOT_ACCEPTABLE.value
+
+
+class SecurityRiskWarning(Warning):
+    pass
