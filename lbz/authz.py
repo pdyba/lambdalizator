@@ -78,7 +78,6 @@ class Authorizer(metaclass=Singleton):
                 SecurityRiskWarning,
             )
         elif self.iss and self.iss != ALLOWED_ISS:
-            print(ALLOWED_ISS)
             raise PermissionDenied(f"{self.iss} is not allowed token issuer")
         self.set_initial_state(function_name)
         if self.deny:
@@ -97,9 +96,7 @@ class Authorizer(metaclass=Singleton):
         try:
             policy = self.decode_authz(token)
         except ExpiredSignatureError:
-            raise PermissionDenied(
-                f"Your token has expired. Please refresh it."
-            )
+            raise PermissionDenied(f"Your token has expired. Please refresh it.")
         self.allow = policy["allow"]
         self.deny = policy["deny"]
         self.expiration = policy.get(EXPIRATION_KEY)
