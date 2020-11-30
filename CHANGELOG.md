@@ -35,3 +35,4 @@ Released 2020-11-03
 Released 2020-11-14
 
 - adds EXPIRATION_KEY config variable for checking authorization expiration.
+- adds ALLOWED_ISS config variable setting the allowed JWT issues.
