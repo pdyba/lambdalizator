@@ -30,3 +30,9 @@ Released 2020-11-03
 -   Typing applied,
 -   Settings changed to implicitly enable Cognito,
 -   Minor improvements.
+
+### Version 0.1.9
+Released 2020-11-14
+
+- adds EXPIRATION_KEY config variable for checking authorization expiration.
+- adds ALLOWED_ISS config variable setting the allowed JWT issues.

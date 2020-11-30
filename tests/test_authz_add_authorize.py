@@ -19,8 +19,9 @@ def test_wrapper():
     authz = Authorizer()
     assert authz["y"] == "y"
     a = A()
-    with pytest.raises(PermissionDenied):
-        assert a.y()
+    with pytest.warns(DeprecationWarning):
+        with pytest.raises(PermissionDenied):
+            assert a.y()
 
-    a._authorizer.allow = {"*": "*"}
-    assert a.y()
+        a._authorizer.allow = {"*": "*"}
+        assert a.y()

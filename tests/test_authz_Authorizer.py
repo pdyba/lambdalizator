@@ -1,12 +1,13 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
+from datetime import datetime, timedelta
 import random
 import string
 
 import pytest
 
 from lbz.authz import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
-from lbz.exceptions import PermissionDenied, ServerError
+from lbz.exceptions import PermissionDenied, NotAcceptable, SecurityRiskWarning
 from lbz.misc import NestedDict
 
 
@@ -44,7 +45,18 @@ class TestAuthorizer:
     def setup_method(self, method):
         self.authz = Authorizer(resource="res")
         self.authz.add_permission("permission_name", "function_name")
-        token = self.authz.sign_authz({"allow": {ALL: ALL}, "deny": {}})
+        self.iat = int(datetime.utcnow().timestamp())
+        self.exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
+        self.iss = "test"
+        token = self.authz.sign_authz(
+            {
+                "allow": {ALL: ALL},
+                "deny": {},
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
+            }
+        )
         self.authz.set_policy(token)
 
     def teardown_method(self, method):
@@ -106,7 +118,30 @@ class TestAuthorizer:
         assert self.authz.outcome == ALLOW
 
     def test_validate_fail_all(self):
-        token = self.authz.sign_authz({"allow": {}, "deny": {}})
+        token = self.authz.sign_authz(
+            {
+                "allow": {},
+                "deny": {},
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
+            }
+        )
+        self.authz.set_policy(token)
+        with pytest.raises(PermissionDenied):
+            self.authz.validate("function_name")
+        assert self.authz.outcome == DENY
+
+    def test_wrong_iss(self):
+        token = self.authz.sign_authz(
+            {
+                "allow": {},
+                "deny": {},
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": "test2",
+            }
+        )
         self.authz.set_policy(token)
         with pytest.raises(PermissionDenied):
             self.authz.validate("function_name")
@@ -114,15 +149,71 @@ class TestAuthorizer:
 
     def test_validate_one(self):
         token = self.authz.sign_authz(
-            {"allow": {"res": {"permission_name": {"allow": ALL}}}, "deny": {}}
+            {
+                "allow": {"res": {"permission_name": {"allow": ALL}}},
+                "deny": {},
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
+            }
         )
         self.authz.set_policy(token)
         self.authz.validate("function_name")
         assert self.authz.outcome == ALLOW
 
+    def test_validate_one_deprecation(self):
+        token = self.authz.sign_authz(
+            {
+                "allow": {"res": {"permission_name": {"allow": ALL}}},
+                "deny": {},
+            }
+        )
+        self.authz.set_policy(token)
+        with pytest.warns(DeprecationWarning):
+            self.authz.validate("function_name")
+        with pytest.warns(SecurityRiskWarning):
+            self.authz.validate("function_name")
+        assert self.authz.outcome == ALLOW
+
+    def test_validate_one_with_expiration(self):
+        token = self.authz.sign_authz(
+            {
+                "allow": {"res": {"permission_name": {"allow": ALL}}},
+                "deny": {},
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
+            }
+        )
+        self.authz.set_policy(token)
+        self.authz.validate("function_name")
+        assert self.authz.outcome == ALLOW
+
+    def test_validate_one_with_expired(self):
+        expiration_negative = int((datetime.utcnow() + timedelta(seconds=1)).timestamp())
+        token = self.authz.sign_authz(
+            {
+                "allow": {"res": {"permission_name": {"allow": ALL}}},
+                "deny": {},
+                "exp": expiration_negative,
+                "iat": self.iat,
+                "iss": self.iss,
+            }
+        )
+
+        with pytest.raises(PermissionDenied):
+            self.authz.set_policy(token)
+            assert self.authz.outcome == DENY
+
     def test_validate_one_scope(self):
         token = self.authz.sign_authz(
-            {"allow": {"res": {"permission_name": {"allow": "self"}}}, "deny": {}}
+            {
+                "allow": {"res": {"permission_name": {"allow": "self"}}},
+                "deny": {},
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
+            }
         )
         self.authz.set_policy(token)
         self.authz.validate("function_name")
@@ -131,19 +222,33 @@ class TestAuthorizer:
 
     def test_validate_fail_one_scope(self):
         token = self.authz.sign_authz(
-            {"allow": {"res": {"permission_name": {"deny": "self"}}}, "deny": {}}
+            {
+                "allow": {"res": {"permission_name": {"deny": "self"}}},
+                "deny": {},
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
+            }
         )
         self.authz.set_policy(token)
         self.authz.validate("function_name")
         assert self.authz.outcome == LIMITED_ALLOW
         assert self.authz.denied_resource == "self"
 
-    def test_validate_raise_server_error(self):
-        with pytest.raises(ServerError):
+    def test_validate_raises_not_acceptable(self):
+        with pytest.raises(NotAcceptable):
             self.authz.validate("function_no_name")
 
     def test_set_policy(self):
-        token = self.authz.sign_authz({"allow": {}, "deny": {ALL: ALL}})
+        token = self.authz.sign_authz(
+            {
+                "allow": {},
+                "deny": {ALL: ALL},
+                "exp": self.exp,
+                "iat": self.iat,
+                "iss": self.iss,
+            }
+        )
         self.authz.set_policy(token)
         assert self.authz.allow == {}
         assert self.authz.deny == {ALL: ALL}
@@ -225,11 +330,13 @@ class TestAuthorizer:
         token = self.authz.sign_authz({"allow": {ALL: ALL}, "deny": {}})
         assert (
             token
-            == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"  # noqa: E501
+            == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
+            # noqa: E501
         )
 
     def test_decode_authz(self):
         token = self.authz.decode_authz(
-            "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"  # noqa: E501, W505
+            "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
+            # noqa: E501, W505
         )
         assert token == {"allow": {ALL: ALL}, "deny": {}}

@@ -3,26 +3,27 @@
 """
 Authorizer.
 """
+from datetime import datetime
 from functools import wraps
 import json
 from os import environ
+import warnings
 
 from jose import jwt
+from jose.exceptions import ExpiredSignatureError
 
 from lbz.misc import NestedDict, Singleton
+from lbz.exceptions import PermissionDenied, NotAcceptable, SecurityRiskWarning
 
-from lbz.exceptions import PermissionDenied, ServerError
-
-# NTH: Consider getting that from SSM
 CLIENT_SECRET = environ.get("CLIENT_SECRET", "secret")
+EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
+ALLOWED_ISS = environ.get("ALLOWED_ISS")
 
 RESTRICTED = ["*", "self"]
 ALL = "*"
 ALLOW = 1
 DENY = 0
 LIMITED_ALLOW = -1
-
-# TODO: add handling TTL for tokens.
 
 
 class Authorizer(metaclass=Singleton):
@@ -32,6 +33,8 @@ class Authorizer(metaclass=Singleton):
     outcome = None
     allowed_resource = None
     denied_resource = None
+    expiration = None
+    iss = None
 
     def __init__(self, resource=None):
         self.resource = resource
@@ -63,7 +66,19 @@ class Authorizer(metaclass=Singleton):
 
     def validate(self, function_name):
         if function_name not in self._permissions:
-            raise ServerError
+            raise NotAcceptable()
+        if self.expiration is None:
+            warnings.warn(
+                "EXPIRATION_KEY will be mandatory with 0.2 please upgrade Authz provider",
+                DeprecationWarning,
+            )
+        if self.iss is None:
+            warnings.warn(
+                "Lack ALLOWED_ISS is a security risk You should add it.",
+                SecurityRiskWarning,
+            )
+        elif self.iss and self.iss != ALLOWED_ISS:
+            raise PermissionDenied(f"{self.iss} is not allowed token issuer")
         self.set_initial_state(function_name)
         if self.deny:
             self._check_deny()
@@ -78,9 +93,14 @@ class Authorizer(metaclass=Singleton):
         self.action = self._permissions[function_name]
 
     def set_policy(self, token: str):
-        policy = self.decode_authz(token)
+        try:
+            policy = self.decode_authz(token)
+        except ExpiredSignatureError:
+            raise PermissionDenied(f"Your token has expired. Please refresh it.")
         self.allow = policy["allow"]
         self.deny = policy["deny"]
+        self.expiration = policy.get(EXPIRATION_KEY)
+        self.iss = policy.get("iss")
         self.outcome = DENY
         self.allowed_resource = None
         self.denied_resource = None
