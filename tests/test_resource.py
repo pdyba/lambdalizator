@@ -119,16 +119,12 @@ class TestResource:
             def a(self):
                 return Response("x")
 
-        key = json.loads(env_mock["COGNITO_PUBLIC_KEYS"])["keys"][0]
+        key = json.loads(env_mock["ALLOWED_PUBLIC_KEYS"])["keys"][0]
         key_id = key["kid"]
         authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
 
         X({**event, "headers": {"authentication": authentication_token}})()
-        load_cognito_user_mock.assert_called_once_with(
-            authentication_token,
-            key,
-            env_mock["COGNITO_ALLOWED_CLIENTS"].split(","),
-        )
+        load_cognito_user_mock.assert_called_once_with(authentication_token)
 
     @patch.dict(environ, env_mock)
     def test_unauthorized_when_jwt_header_lacks_kid(self, *args):
@@ -166,6 +162,6 @@ class TestResource:
         atz = self.res.get_guest_authorization()
         assert (
             atz
-            == "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.rv8AvMUIdiOqrK7CscYoxc53OgqP1L76k4xd9hBv-218EYbcU5n52Tg7rWzjsxQ_9ig18vJFjk5WeHkQsMZ_rQ"
+            == "eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk0OTRhZDc1LTNmNTQtNDE1NS04NGZhLWMxYTE3ZGEyMmIzNSIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6eyIqIjoiKiJ9LCJkZW55Ijp7fX0.nDqCxO2Q1iXpxzbH7syxuyqw7kCY0sDfi9RX-VSUMTRN5aWTLt1bcPw4oN_jx89-YHBzDwnwBc07RsMgpFuo4zz2LU9PF0ciYxMNX-atTNsaIn05NkXT08au2AYb0DRCDS76MZ4QNi-4mRpLrj1SD4mSCwGtc2WNw9f0J0Vm4ZCYPVW6BqpcHcaFXzcFZ6EIoooaK6GvdTOjy498lWsAXjAen2U6Jles_BwFjqW1lW_ky4WV4J9NnK3v5wWKgR1Pg4R4LpnhIXe0dU_l64JHoJA3YcYxl-qilHfoBduc3La4kRKk7FAQDIqbOv4uN03BIoDXLH5t2uJ1Sm79Pe0ngGd5pSBmfUDKOGsHtx_3_9ZKfp-E2IVS0C7r36p4Ue0gKQzn0pXxa591bxm_puJAQ399SdbmlOJsM2cVFYAtlUQvWgErc57WcUJ0Qe4jEycury7hagNbP2fLn-7Gg4gZHiZ_Ul7L6GukbDfCHnhxSS4P3t3cVtWuslZi16hDhNbOTKD95y7PXvHePvI57ALV2v0RecQ5Blwurt1OuDRSjCYXyO6U4Y9MBHcd1wMtDoVW0jjvjXvqkEhuB52Zajh_yTNnJo0OAHpuK5wldVpECGFVx1rkW1ypKqlukGIgD--m6ElKnl6jw5VWSbdh2TJsZHnzjovbQUeqZOeMxwX6SE8"
             # noqa: E501
         )

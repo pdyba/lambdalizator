@@ -3,21 +3,28 @@
 """
 Authorizer.
 """
-from datetime import datetime
-from functools import wraps
 import json
-from os import environ
 import warnings
+from functools import wraps
+from json import JSONDecodeError
+from os import environ
 
 from jose import jwt
-from jose.exceptions import ExpiredSignatureError
 
-from lbz.misc import NestedDict, Singleton
 from lbz.exceptions import PermissionDenied, NotAcceptable, SecurityRiskWarning
+from lbz.jwt_utils import decode_jwt
+from lbz.misc import NestedDict, Singleton, logger
 
-CLIENT_SECRET = environ.get("CLIENT_SECRET", "secret")
 EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
 ALLOWED_ISS = environ.get("ALLOWED_ISS")
+
+if internal_jwk_string := environ.get("INTERNAL_AUTH_JWK", "secret"):
+    try:
+        INTERNAL_AUTH_JWK = json.loads(internal_jwk_string)
+    except JSONDecodeError:
+        logger.warning("The INTERNAL_AUTH_JWK environment variable doesn't contain a JSON object")
+        INTERNAL_AUTH_JWK = internal_jwk_string
+
 
 RESTRICTED = ["*", "self"]
 ALL = "*"
@@ -93,10 +100,7 @@ class Authorizer(metaclass=Singleton):
         self.action = self._permissions[function_name]
 
     def set_policy(self, token: str):
-        try:
-            policy = self.decode_authz(token)
-        except ExpiredSignatureError:
-            raise PermissionDenied(f"Your token has expired. Please refresh it.")
+        policy = self.decode_authz(token)
         self.allow = policy["allow"]
         self.deny = policy["deny"]
         self.expiration = policy.get(EXPIRATION_KEY)
@@ -154,18 +158,17 @@ class Authorizer(metaclass=Singleton):
     @staticmethod
     def sign_authz(authz_data: dict) -> str:
         """Generates JWT token"""
-        return jwt.encode(authz_data, CLIENT_SECRET, algorithm="HS512")
+        return jwt.encode(authz_data, INTERNAL_AUTH_JWK, algorithm="RS256", headers={"kid": INTERNAL_AUTH_JWK["kid"]})
 
     @staticmethod
     def decode_authz(token: str) -> dict:
         """Generates dict from JWT token."""
-        return jwt.decode(token, CLIENT_SECRET)
+        return decode_jwt(token)
 
 
 def add_authz(permission_name=""):
     def wrapper(func):
-        authz = Authorizer()
-        authz.add_permission(permission_name or func.__name__, func.__name__)
+        Authorizer().add_permission(permission_name or func.__name__, func.__name__)
         return func
 
     return wrapper
