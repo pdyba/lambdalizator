@@ -36,3 +36,15 @@ Released 2020-11-14
 
 - adds EXPIRATION_KEY config variable for checking authorization expiration.
 - adds ALLOWED_ISS config variable setting the allowed JWT issues.
+
+### Version 0.2.0
+Released 2020-12-03
+
+- Improve authorization module so that it's not coupled with Cognito
+- Use RS256 instead of HS512 for signing internal JWT tokens
+- Rename some env variables:
+  - `CLIENT_SECRET` to `INTERNAL_AUTH_JWK`
+  - `COGNITO_PUBLIC_KEYS` to `ALLOWED_PUBLIC_KEYS`
+  - `COGNITO_ALLOWED_CLIENTS` to `ALLOWED_AUDIENCES`
+- Add `AUTH_REMOVE_PREFIXES` env variable for controlling whether prefixes (like `cognito:`)
+  should be removed from the user data
