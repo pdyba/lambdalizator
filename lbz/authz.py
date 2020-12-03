@@ -100,7 +100,7 @@ class Authorizer(metaclass=Singleton):
         self.action = self._permissions[function_name]
 
     def set_policy(self, token: str):
-        policy = self.decode_authz(token)
+        policy = decode_jwt(token)
         self.allow = policy["allow"]
         self.deny = policy["deny"]
         self.expiration = policy.get(EXPIRATION_KEY)
@@ -159,11 +159,6 @@ class Authorizer(metaclass=Singleton):
     def sign_authz(authz_data: dict) -> str:
         """Generates JWT token"""
         return jwt.encode(authz_data, INTERNAL_AUTH_JWK, algorithm="RS256", headers={"kid": INTERNAL_AUTH_JWK["kid"]})
-
-    @staticmethod
-    def decode_authz(token: str) -> dict:
-        """Generates dict from JWT token."""
-        return decode_jwt(token)
 
 
 def add_authz(permission_name=""):
