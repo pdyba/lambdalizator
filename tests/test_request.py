@@ -1,16 +1,14 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-import pytest
-
 from uuid import uuid4
 
-from jose import jwt
+import pytest
 
 from lbz.authentication import User
-from lbz.request import Request
 from lbz.exceptions import BadRequestError
 from lbz.misc import MultiDict
-from tests.fixtures.rsa_pair import sample_private_key, sample_public_key
+from lbz.request import Request
+from tests.utils import encode_token
 
 
 class TestRequestInit:
@@ -49,11 +47,7 @@ class TestRequest:
             "custom:d": str(uuid4()),
             "custom:e": str(uuid4()),
         }
-        self.id_token = jwt.encode(
-            self.cognito_user,
-            sample_private_key,
-            "RS256",
-        )
+        self.id_token = encode_token(self.cognito_user)
         self.r = Request(
             headers={"Content-Type": "application/json"},
             uri_params={},
@@ -63,7 +57,7 @@ class TestRequest:
             stage_vars={},
             is_base64_encoded=False,
             query_params=None,
-            user=User(self.id_token, sample_public_key, ["abc"]),
+            user=User(self.id_token),
         )
 
     def teardown_method(self):

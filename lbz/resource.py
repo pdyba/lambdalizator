@@ -3,23 +3,20 @@
 """
 Resource Handler.
 """
-import json
 import traceback
-
 from os import environ as env
 from typing import Union
 
-from lbz.authentication import get_matching_jwk, User
+from lbz.authentication import User
 from lbz.authz import Authorizer
-from lbz.request import Request
 from lbz.exceptions import (
     LambdaFWException,
     WrongURI,
     Unauthorized,
     UnsupportedMethod,
-    ServerError,
 )
 from lbz.misc import get_logger
+from lbz.request import Request
 from lbz.router import Router
 
 logger = get_logger(__name__)
@@ -71,20 +68,12 @@ class Resource:
 
     def _load_configuration(self) -> None:
         self.print_traceback = bool(int(env.get("PRINT_TRACEBACK", "0")))
-        self.cognito_auth = env.get("COGNITO_PUBLIC_KEYS") or env.get("COGNITO_ALLOWED_CLIENTS")
-        if self.cognito_auth:
-            try:
-                self.cognito_public_keys = json.loads(env["COGNITO_PUBLIC_KEYS"])["keys"]
-                self.cognito_allowed_clients = env["COGNITO_ALLOWED_CLIENTS"].split(",")
-            except (ValueError, KeyError, json.JSONDecodeError) as e:
-                logger.error(f"Invalid cognito configuration, details: \n{str(e)}")
-                raise ServerError
+        self.auth_enabled = env.get("ALLOWED_PUBLIC_KEYS") or env.get("ALLOWED_AUDIENCES")
 
     def _get_user(self, headers: dict) -> Union[None, User]:
         authentication = headers.get("Authentication", headers.get("authentication"))
-        if authentication and self.cognito_auth:
-            pub_key = get_matching_jwk(authentication, self.cognito_public_keys)
-            return User(authentication, pub_key, self.cognito_allowed_clients)
+        if authentication and self.auth_enabled:
+            return User(authentication)
         elif authentication:
             logger.error(f"Authentication method not supported, token: {authentication}")
             raise Unauthorized

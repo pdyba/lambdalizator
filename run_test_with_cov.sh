@@ -1,1 +1,1 @@
-pytest --cov=lbz tests/
+pytest --cov=lbz --cov-report term-missing tests/
