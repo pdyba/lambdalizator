@@ -18,6 +18,7 @@ from lbz.exceptions import (
 from lbz.misc import get_logger
 from lbz.request import Request
 from lbz.router import Router
+from tests import sample_private_key
 
 logger = get_logger(__name__)
 
@@ -84,4 +85,4 @@ class Resource:
         It should be overwritten after inheritance with a method to obtain guest auth.
         """
         logger.error("Using default guest authorization which gives root access.")
-        return self._authorizer.sign_authz({"allow": {"*": "*"}, "deny": {}})
+        return self._authorizer.sign_authz({"allow": {"*": "*"}, "deny": {}}, sample_private_key)

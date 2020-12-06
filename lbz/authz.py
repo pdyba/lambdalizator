@@ -6,24 +6,16 @@ Authorizer.
 import json
 import warnings
 from functools import wraps
-from json import JSONDecodeError
 from os import environ
 
 from jose import jwt
 
 from lbz.exceptions import PermissionDenied, NotAcceptable, SecurityRiskWarning
 from lbz.jwt_utils import decode_jwt
-from lbz.misc import NestedDict, Singleton, logger
+from lbz.misc import NestedDict, Singleton
 
 EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
 ALLOWED_ISS = environ.get("ALLOWED_ISS")
-
-if internal_jwk_string := environ.get("INTERNAL_AUTH_JWK", "secret"):
-    try:
-        INTERNAL_AUTH_JWK = json.loads(internal_jwk_string)
-    except JSONDecodeError:
-        logger.warning("The INTERNAL_AUTH_JWK environment variable doesn't contain a JSON object")
-        INTERNAL_AUTH_JWK = internal_jwk_string
 
 
 RESTRICTED = ["*", "self"]
@@ -156,9 +148,15 @@ class Authorizer(metaclass=Singleton):
         return {"allow": self.allowed_resource, "deny": self.denied_resource}
 
     @staticmethod
-    def sign_authz(authz_data: dict) -> str:
-        """Generates JWT token"""
-        return jwt.encode(authz_data, INTERNAL_AUTH_JWK, algorithm="RS256", headers={"kid": INTERNAL_AUTH_JWK["kid"]})
+    def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
+        if not isinstance(private_key_jwk, dict):
+            raise ValueError("private_key_jwk must be a jwk dict")
+        if "kid" not in private_key_jwk:
+            raise ValueError("private_key_jwk must have the 'kid' field")
+
+        return jwt.encode(
+            authz_data, private_key_jwk, algorithm="RS256", headers={"kid": private_key_jwk["kid"]}
+        )
 
 
 def add_authz(permission_name=""):

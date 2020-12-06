@@ -40,11 +40,11 @@ Released 2020-11-14
 ### Version 0.2.0
 Released 2020-12-03
 
-- Improve authorization module so that it's not coupled with Cognito
 - Use RS256 instead of HS512 for signing internal JWT tokens
+- Improve authorization module so that it's not coupled with Cognito
 - Rename some env variables:
-  - `CLIENT_SECRET` to `INTERNAL_AUTH_JWK`
   - `COGNITO_PUBLIC_KEYS` to `ALLOWED_PUBLIC_KEYS`
   - `COGNITO_ALLOWED_CLIENTS` to `ALLOWED_AUDIENCES`
+- Remove the `CLIENT_SECRET` env variable to avoid storing secrets in the Lambda configuration
 - Add `AUTH_REMOVE_PREFIXES` env variable for controlling whether prefixes (like `cognito:`)
   should be removed from the user data
