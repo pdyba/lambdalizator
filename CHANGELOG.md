@@ -48,3 +48,4 @@ Released 2020-12-03
 - Remove the `CLIENT_SECRET` env variable to avoid storing secrets in the Lambda configuration
 - Add `AUTH_REMOVE_PREFIXES` env variable for controlling whether prefixes (like `cognito:`)
   should be removed from the user data
+- Remove the guest authorization feature from the Resource class

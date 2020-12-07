@@ -101,6 +101,15 @@ class Authorizer(metaclass=Singleton):
         self.allowed_resource = None
         self.denied_resource = None
 
+    def reset_policy(self):
+        self.allow = {}
+        self.deny = {}
+        self.expiration = None
+        self.iss = None
+        self.outcome = DENY
+        self.allowed_resource = None
+        self.denied_resource = None
+
     def _deny_if_all(self, permission):
         if permission == ALL:
             raise PermissionDenied(
