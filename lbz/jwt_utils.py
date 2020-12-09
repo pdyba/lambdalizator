@@ -10,12 +10,12 @@ from lbz.misc import logger
 PUBLIC_KEYS = []
 ALLOWED_AUDIENCES = []
 
-if allowed_pubkeys_str := os.environ.get('ALLOWED_PUBLIC_KEYS'):
+if allowed_pubkeys_str := os.environ.get("ALLOWED_PUBLIC_KEYS"):
     PUBLIC_KEYS.extend(json.loads(allowed_pubkeys_str)["keys"])
-if allowed_audiences_str := os.environ.get('ALLOWED_AUDIENCES'):
-    ALLOWED_AUDIENCES.extend(allowed_audiences_str.split(','))
+if allowed_audiences_str := os.environ.get("ALLOWED_AUDIENCES"):
+    ALLOWED_AUDIENCES.extend(allowed_audiences_str.split(","))
 
-if any('kid' not in public_key for public_key in PUBLIC_KEYS):
+if any("kid" not in public_key for public_key in PUBLIC_KEYS):
     raise ValueError("One of the provided public keys doesn't have the 'kid' field")
 
 
@@ -34,7 +34,7 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
 
 def decode_jwt(auth_jwt_token: str) -> dict:
     if not PUBLIC_KEYS:
-        logger.error('Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable')
+        logger.error("Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable")
         raise Unauthorized
 
     jwk = get_matching_jwk(auth_jwt_token)

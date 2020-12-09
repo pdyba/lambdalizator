@@ -1,4 +1,3 @@
-import random
 import time
 from unittest.mock import patch
 from uuid import uuid4
@@ -13,12 +12,13 @@ from tests.utils import encode_token
 allowed_audiences = [str(uuid4()), str(uuid4())]
 
 
-@patch('lbz.jwt_utils.PUBLIC_KEYS', [sample_public_key])
-@patch('lbz.jwt_utils.ALLOWED_AUDIENCES', allowed_audiences)
+@patch("lbz.jwt_utils.PUBLIC_KEYS", [sample_public_key])
+@patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences)
 class TestAuthentication:
     def setup_class(self):
-        with patch('lbz.jwt_utils.PUBLIC_KEYS', [sample_public_key]), \
-             patch('lbz.jwt_utils.ALLOWED_AUDIENCES', allowed_audiences):
+        with patch("lbz.jwt_utils.PUBLIC_KEYS", [sample_public_key]), patch(
+            "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
+        ):
             self.cognito_user = {
                 "cognito:username": str(uuid4()),
                 "custom:id": str(uuid4()),
@@ -59,12 +59,13 @@ class TestAuthentication:
             User(self.id_token + "?")
 
     def test_decoding_user_raises_unauthorized_when_invalid_audience(self):
-        with pytest.raises(Unauthorized), patch('lbz.jwt_utils.ALLOWED_AUDIENCES', [str(uuid4())]):
+        with pytest.raises(Unauthorized), patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [str(uuid4())]):
             User(self.id_token)
 
     def test_decoding_user_raises_unauthorized_when_invalid_public_key(self):
-        with pytest.raises(Unauthorized), \
-             patch('lbz.jwt_utils.PUBLIC_KEYS', [{**sample_public_key.copy(), "n": str(uuid4())}]):
+        with pytest.raises(Unauthorized), patch(
+            "lbz.jwt_utils.PUBLIC_KEYS", [{**sample_public_key.copy(), "n": str(uuid4())}]
+        ):
             User(self.id_token)
 
     def test_loading_user_parses_user_attributes(self):
@@ -88,11 +89,13 @@ class TestAuthentication:
             "iat": current_ts,
         }
 
-        id_token = encode_token({
-            "cognito:username": str(uuid4()),
-            "custom:id": str(uuid4()),
-            **standard_claims,
-        })
+        id_token = encode_token(
+            {
+                "cognito:username": str(uuid4()),
+                "custom:id": str(uuid4()),
+                **standard_claims,
+            }
+        )
         user = User(id_token)
         for k in standard_claims.keys():
             assert not hasattr(user, k)
@@ -104,5 +107,5 @@ class TestAuthentication:
 
     def test_nth_cognito_client_validated_as_audience(self):
         allowed_audiences = [str(uuid4()) for _ in range(10)]
-        with patch('lbz.jwt_utils.ALLOWED_AUDIENCES', allowed_audiences):
+        with patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences):
             assert User(encode_token({"aud": allowed_audiences[9]}))

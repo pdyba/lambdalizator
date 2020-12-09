@@ -46,7 +46,7 @@ class Resource:
         if authorization := headers.get("Authorization", headers.get("authorization")):
             self._authorizer.set_policy(authorization)
         else:
-            self._authorizer.set_policy(self.get_guest_authorization())
+            self._authorizer.reset_policy()
 
     def __call__(self) -> dict:
         try:
@@ -78,10 +78,3 @@ class Resource:
             logger.error(f"Authentication method not supported, token: {authentication}")
             raise Unauthorized
         return None
-
-    def get_guest_authorization(self) -> str:
-        """
-        It should be overwritten after inheritance with a method to obtain guest auth.
-        """
-        logger.error("Using default guest authorization which gives root access.")
-        return self._authorizer.sign_authz({"allow": {"*": "*"}, "deny": {}})

@@ -8,11 +8,11 @@ logger = get_logger(__file__)
 
 STANDARD_CLAIMS = ("sub", "aud", "auth_time", "iss", "exp", "iat", "token_use")
 
-REMOVE_PREFIXES = os.environ.get('AUTH_REMOVE_PREFIXES') == '1'
+REMOVE_PREFIXES = os.environ.get("AUTH_REMOVE_PREFIXES") == "1"
 
 
 def remove_prefix(text: str):
-    return text[text.index(':') + 1:] if ':' in text else text
+    return text[text.index(":") + 1 :] if ":" in text else text
 
 
 class User:
@@ -40,5 +40,7 @@ class User:
 
     def _validate_attributes(self, attributes: dict) -> None:
         if len(attributes) > self._max_attributes:
-            logger.error(f"Too many attributes, total={len(attributes)}, limit: {self._max_attributes}")
+            logger.error(
+                f"Too many attributes, total={len(attributes)}, limit: {self._max_attributes}"
+            )
             raise RuntimeError
