@@ -8,7 +8,6 @@ from typing import Union
 from multidict import CIMultiDict
 
 from lbz.authentication import User
-from lbz.authz import Authorizer
 from lbz.exceptions import (
     LambdaFWException,
     NotFound,
@@ -26,7 +25,6 @@ logger = get_logger(__name__)
 class Resource:
     _name = ""
     _router = Router()
-    _authorizer = Authorizer()
 
     def __init__(self, event: dict):
         self._load_configuration()
@@ -45,10 +43,6 @@ class Resource:
             is_base64_encoded=event.get("isBase64Encoded", False),
             query_params=event["multiValueQueryStringParameters"],
         )
-        if authorization := headers.get("Authorization"):
-            self._authorizer.set_policy(authorization)
-        else:
-            self._authorizer.reset_policy()
 
     def __call__(self) -> Response:
         try:

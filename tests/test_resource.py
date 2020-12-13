@@ -9,7 +9,6 @@ from jose import jwt
 from multidict import CIMultiDict
 
 from lbz.authentication import User
-from lbz.authz import Authorizer, authorize, add_authz
 from lbz.dev.misc import Event
 from lbz.exceptions import NotFound
 from lbz.request import Request
@@ -17,7 +16,6 @@ from lbz.resource import Resource
 from lbz.response import Response
 from lbz.router import Router
 from lbz.router import add_route
-from tests import sample_private_key
 from tests.fixtures.cognito_auth import env_mock
 
 req = Request(
@@ -62,8 +60,6 @@ class TestResource:
         assert self.res.method == "GET"
         assert self.res.path_params == {}
         assert isinstance(self.res.request, Request)
-        assert self.res._authorizer is not None
-        assert isinstance(self.res._authorizer, Authorizer)
         assert self.res._router is not None
         assert isinstance(self.res._router, Router)
         assert self.res.request.user is None
@@ -165,35 +161,3 @@ class TestResource:
 
         resp = X({**event, "headers": {"authentication": "12345"}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
-
-    @patch.dict(environ, env_mock)
-    def test_authorization_success(self, *args):
-        Authorizer()._del()
-        Resource._authorizer = Authorizer()
-
-        class X(Resource):
-            @authorize
-            @add_authz()
-            @add_route("/")
-            def a(self, restrictions):
-                assert restrictions == {"allow": "*", "deny": None}
-                return Response("x")
-
-        auth_header = Authorizer.sign_authz({"allow": "*", "deny": {}}, sample_private_key)
-        resp = X({**event, "headers": {"authorization": auth_header}})()
-        assert resp.status_code == HTTPStatus.OK
-
-    @patch.dict(environ, env_mock)
-    def test_authorization_no_auth_header(self, *args):
-        Authorizer()._del()
-        Resource._authorizer = Authorizer()
-
-        class X(Resource):
-            @authorize
-            @add_authz()
-            @add_route("/")
-            def asdfasdf(self, restrictions):
-                return Response("x")
-
-        resp = X({**event, "headers": {}})()
-        assert resp.status_code == HTTPStatus.FORBIDDEN
