@@ -1,33 +1,43 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-"""
-Communication Helpers
-"""
 import base64
 import json
+from typing import Union
 
 
 class Response:
-    """
-    Response from lambda.
-    """
+    """Response from lambda.
 
-    def __init__(self, body, /, headers: dict = None, status_code: int = 200):
-        self.body = body if isinstance(body, dict) else {"message": body}
-        self.headers = {"Content-Type": "application/json"} if headers is None else headers
+    Performs automatic dumping when body is dict. Otherwise payload just passes through."""
+
+    def __init__(
+        self,
+        body: Union[str, dict],
+        /,
+        headers: dict = None,
+        status_code: int = 200,
+        base64_encoded: bool = False,
+    ):
+        self.body = body
+        self.is_json = isinstance(body, dict)
+        self.headers = headers if headers is not None else self.get_content_header()
         self.status_code = status_code
-        self.base64 = False
+        self.is_base64 = base64_encoded
 
-    def to_dict(self, binary_types=None):
-        if binary_types is not None:
-            self.base64 = True
-            body = self._encode_base64(self.body)
-        else:
-            body = json.dumps(self.body, separators=(",", ":"))
+    def get_content_header(self) -> dict:
+        if self.is_json:
+            return {"Content-Type": "application/json"}
+        elif isinstance(self.body, str):
+            return {"Content-Type": "text/plain"}
+        raise RuntimeError("Response body type not supported yet.")
+
+    def to_dict(self):
+        body = json.dumps(self.body, separators=(",", ":")) if self.is_json else self.body
         response = {
             "headers": self.headers,
-            "statusCode": int(self.status_code),
+            "statusCode": self.status_code,
             "body": body,
+            "isBase64Encoded": self.is_base64,
         }
 
         return response

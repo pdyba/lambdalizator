@@ -49,3 +49,12 @@ Released 2020-12-03
 - Add `AUTH_REMOVE_PREFIXES` env variable for controlling whether prefixes (like `cognito:`)
   should be removed from the user data
 - Remove the guest authorization feature from the Resource class
+
+
+### Version 0.2.1
+Released 2020-12-15
+
+- Removed implicit wrapping response body to "{message: <body>}" format.
+- Added base64 flag to Response instance.
+- Improved automatic header resolution.
+- Added emojis in Readme.
