@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-from lbz.response import Response
 from lbz.exceptions import (
     LambdaFWException,
     AccessDenied,
@@ -13,6 +12,7 @@ from lbz.exceptions import (
     WrongURI,
     Unauthorized,
 )
+from lbz.response import Response
 
 
 def test_LambdaFWException():
@@ -25,6 +25,7 @@ def test_LambdaFWException():
         "body": '{"message":"Nope"}',
         "headers": {},
         "statusCode": 500,
+        "isBase64Encoded": False,
     }
 
 

@@ -1,7 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
 import json
-
 from http import HTTPStatus
 from os import environ
 from unittest.mock import patch
@@ -9,13 +8,13 @@ from unittest.mock import patch
 from jose import jwt
 
 from lbz.authentication import User
+from lbz.authz import Authorizer, authorize, add_authz
+from lbz.dev.misc import Event
+from lbz.request import Request
 from lbz.resource import Resource
+from lbz.response import Response
 from lbz.router import Router
 from lbz.router import add_route
-from lbz.request import Request
-from lbz.response import Response
-from lbz.dev.misc import Event
-from lbz.authz import Authorizer, authorize, add_authz
 from tests import sample_private_key
 from tests.fixtures.cognito_auth import env_mock
 
@@ -61,6 +60,7 @@ class TestResourceWrongUri:
             "body": '{"message":"Server is not able to produce a response"}',
             "headers": {},
             "statusCode": 421,
+            "isBase64Encoded": False,
         }
 
 
@@ -86,7 +86,7 @@ class TestResource:
         class X(Resource):
             @add_route("/")
             def a(self):
-                return Response("x")
+                return Response({"message": "x"})
 
         cls = X(event)
         resp = cls()
@@ -95,6 +95,7 @@ class TestResource:
             "headers": {"Content-Type": "application/json"},
             "statusCode": 200,
             "body": '{"message":"x"}',
+            "isBase64Encoded": False,
         }
         get_user_mock.assert_called_once_with({})
 
@@ -169,10 +170,10 @@ class TestResource:
             @add_authz()
             @add_route("/")
             def a(self, restrictions):
-                assert restrictions == {'allow': '*', 'deny': None}
+                assert restrictions == {"allow": "*", "deny": None}
                 return Response("x")
 
-        auth_header = Authorizer.sign_authz({'allow': '*', 'deny': {}}, sample_private_key)
+        auth_header = Authorizer.sign_authz({"allow": "*", "deny": {}}, sample_private_key)
         resp = X({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 

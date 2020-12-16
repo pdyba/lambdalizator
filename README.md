@@ -37,7 +37,7 @@ Lambdalizator can be configured using the following environment variables:
 
 ## Hello World Example:
 ### 1. Define resource
-```python 
+```python
 # simple_resource.py
 
 from lbz.router import add_route
@@ -49,6 +49,7 @@ class HelloWorld(Resource):
     @add_route("/", method="GET")
     def list(self):
         return Response({"message": "HelloWorld"})
+        
 ```
 ### 2. Define handler
 ```python
@@ -68,7 +69,7 @@ def handle(event, context):
         return LambdaFWException().to_dict()
 
 ```
-### 3. Create dev Server [Optional]
+### 3. Create dev Server 🖥️
 ```python
 # simple_resource_dev.py
 
@@ -82,7 +83,7 @@ if __name__ == '__main__':
 
 ```
 
-### 4. Don't forget to unit test
+### 4. Don't forget to unit test ⌨️ 
 
 ```python
 # python -m unittest simple_resource_test.py
@@ -102,8 +103,8 @@ class PublicTestCase(unittest.TestCase):
         self.assertEqual(data, '{"message":"HelloWorld"}')
 ```
 
-### 5. Authenticate it
-```python 
+### 5. Authenticate it 💂
+```python
 # simple_auth/simple_resource.py
 
 from lbz.router import add_route
@@ -121,10 +122,8 @@ class HelloWorld(Resource):
     @add_route("/", method="GET")
     def list(self, restrictions=None):
         return Response({"message": f"Hello, {self.request.user.username} !"})
-
-
-
-
+     
+```
 
 ## Documentation
 
