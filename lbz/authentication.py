@@ -1,5 +1,4 @@
 import os
-from typing import Union, List
 
 from lbz.jwt_utils import decode_jwt
 from lbz.misc import get_logger

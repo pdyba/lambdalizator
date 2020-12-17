@@ -1,9 +1,10 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-"""
-Helper class for testing.
-"""
+"""Helper class for testing."""
 from lbz.dev.misc import Event
+from lbz.misc import get_logger
+
+logger = get_logger(__name__)
 
 
 class Client:
@@ -17,8 +18,8 @@ class Client:
         query_params=None,
         body=None,
         headers=None,
-        authorize=True,
-        authenticate=True,
+        authorize=False,
+        authenticate=False,
     ):
         return self._process(
             resource,
@@ -38,8 +39,8 @@ class Client:
         query_params=None,
         body=None,
         headers=None,
-        authorize=True,
-        authenticate=True,
+        authorize=False,
+        authenticate=False,
     ):
         return self._process(
             resource,
@@ -59,8 +60,8 @@ class Client:
         query_params=None,
         body=None,
         headers=None,
-        authorize=True,
-        authenticate=True,
+        authorize=False,
+        authenticate=False,
     ):
         return self._process(
             resource,
@@ -80,8 +81,8 @@ class Client:
         query_params=None,
         body=None,
         headers=None,
-        authorize=True,
-        authenticate=True,
+        authorize=False,
+        authenticate=False,
     ):
         return self._process(
             resource,
@@ -101,8 +102,8 @@ class Client:
         query_params=None,
         body=None,
         headers=None,
-        authorize=True,
-        authenticate=True,
+        authorize=False,
+        authenticate=False,
     ):
         return self._process(
             resource,
@@ -116,6 +117,8 @@ class Client:
         )
 
     def _process(self, path, method, params, query_params, body, headers, authorize, authenticate):
+        if authorize or authenticate:
+            logger.warn("Deprecation warning. Automatic authorization will be disabled soon.")
         if query_params:
             for key, value in query_params.items():
                 if not isinstance(value, list):

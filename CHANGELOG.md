@@ -58,3 +58,11 @@ Released 2020-12-15
 - Added base64 flag to Response instance.
 - Improved automatic header resolution.
 - Added emojis in Readme.
+
+### Version 0.2.2
+Released 2020-12-17
+
+- Headers made case-insensitive dictionary,
+- Added version ranges to requirements,
+- Added "urn" attribute to Resource,
+- Deprecation of authorization and authentication flags in test utility.
