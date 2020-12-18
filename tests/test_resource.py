@@ -51,16 +51,6 @@ event_wrong_uri = Event(
 )
 
 
-class TestResourceWrongUri:
-    def setup_method(self):
-        self.res = Resource(event_wrong_uri)
-
-    def test___call__wrong_uri(self):
-        resp = self.res()
-        assert isinstance(resp, Response)
-        assert resp.status_code == HTTPStatus.MISDIRECTED_REQUEST
-
-
 class TestResource:
     def setup_method(self):
         self.res = Resource(event)
@@ -95,6 +85,11 @@ class TestResource:
             "isBase64Encoded": False,
         }
         get_user.assert_called_once_with({})
+
+    def test_not_found_returned_when_path_not_defined(self):
+        response = Resource(event_wrong_uri)()
+        assert isinstance(response, Response)
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_request_id_added_when_frameworks_exception_raised(self):
         class TestAPI(Resource):
