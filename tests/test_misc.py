@@ -1,15 +1,8 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-"""
-Misc Helpers of Lambda Framework.
-"""
 from collections.abc import MutableMapping
 
-from lbz.misc import NestedDict
-from lbz.misc import Singleton
-from lbz.misc import MultiDict
-from lbz.misc import get_logger
-from lbz.misc import error_catcher
+from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger
 
 
 def test_NestedDict():
@@ -33,23 +26,20 @@ def test_Singleton():
 
 def test_MultiDict():
     assert issubclass(MultiDict, MutableMapping)
-    x = MultiDict(None)
-    # setitem
-    x["a"] = "b"
-    # getitem
-    assert x["a"] == "b"
-    assert x.get("a") == "b"
+    multi_dict = MultiDict({"a": ["a", "b", "c"]})
+    assert multi_dict["a"] == "c"
+    assert multi_dict.get("a") == "c"
+    assert multi_dict.getlist("a") == ["a", "b", "c"]
 
-    del x["a"]
-    assert x.get("a") is None
-    assert x.__repr__() == str(x)
-    assert str(x) == "MultiDict({})"
-    x["b"] = "abc"
-    acc = 0
-    for a in x:
-        acc += 1
-    assert acc == 1
-    assert x.getlist("b") == ["abc"]
+    del multi_dict["a"]
+    assert multi_dict.get("a") is None
+    assert multi_dict.__repr__() == str(multi_dict)
+    assert str(multi_dict) == "MultiDict({})"
+    multi_dict["b"] = "abc"
+    for letter in multi_dict:
+        assert letter == "b"
+    assert len(multi_dict) == 1
+    assert multi_dict.getlist("b") == ["abc"]
 
 
 def test_get_logger(caplog):

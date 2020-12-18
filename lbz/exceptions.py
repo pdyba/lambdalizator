@@ -1,8 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-"""
-Exceptions.
-"""
 from http import HTTPStatus
 
 from lbz.response import Response
@@ -33,28 +30,21 @@ class LambdaFWException(Exception):
 
 
 class AccessDenied(LambdaFWException):
-    """
-    'Request forbidden -- authorization will not help'
-    403
-    """
+    """Request forbidden -- authorization will not help"""
 
     message = HTTPStatus.FORBIDDEN.description
     status_code = HTTPStatus.FORBIDDEN.value
 
 
 class BadRequestError(LambdaFWException):
-    """
-    'Bad request syntax or unsupported method'
-    """
+    """Bad request syntax or unsupported method"""
 
     message = HTTPStatus.BAD_REQUEST.description
     status_code = HTTPStatus.BAD_REQUEST.value
 
 
 class InvalidResolutionError(LambdaFWException):
-    """
-    Unaccepted image resolution
-    """
+    """Unaccepted image resolution"""
 
     message = "Unaccepted image resolution"
     status_code = HTTPStatus.BAD_REQUEST.value
@@ -71,29 +61,21 @@ class ServerError(LambdaFWException):
 
 
 class NotFound(LambdaFWException):
-    """
-    Nothing matches the given URI
-    404
-    """
+    """Nothing matches the given URI"""
 
     message = HTTPStatus.NOT_FOUND.description
     status_code = HTTPStatus.NOT_FOUND.value
 
 
 class PermissionDenied(LambdaFWException):
-    """
-    Request forbidden -- authorization will not help
-    """
+    """Request forbidden -- authorization will not help"""
 
     message = HTTPStatus.FORBIDDEN.description
     status_code = HTTPStatus.FORBIDDEN.value
 
 
 class UnsupportedMethod(LambdaFWException):
-    """
-    Unsupported method: <method>
-
-    """
+    """Unsupported method: <method>"""
 
     status_code = HTTPStatus.METHOD_NOT_ALLOWED.value
 
@@ -102,27 +84,21 @@ class UnsupportedMethod(LambdaFWException):
 
 
 class WrongURI(LambdaFWException):
-    """
-    Server is not able to produce a response
-    """
+    """Server is not able to produce a response"""
 
     message = HTTPStatus.MISDIRECTED_REQUEST.description
     status_code = HTTPStatus.MISDIRECTED_REQUEST.value
 
 
 class Unauthorized(LambdaFWException):
-    """
-    No permission -- see authorization schemes
-    """
+    """No permission -- see authorization schemes"""
 
     message = HTTPStatus.UNAUTHORIZED.description
     status_code = HTTPStatus.UNAUTHORIZED.value
 
 
 class NotAcceptable(LambdaFWException):
-    """
-    No permission -- see authorization schemes
-    """
+    """URI not available in preferred format"""
 
     message = HTTPStatus.NOT_ACCEPTABLE.description
     status_code = HTTPStatus.NOT_ACCEPTABLE.value

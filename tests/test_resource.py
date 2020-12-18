@@ -6,6 +6,7 @@ from os import environ
 from unittest.mock import patch
 
 from jose import jwt
+from multidict import CIMultiDict
 
 from lbz.authentication import User
 from lbz.authz import Authorizer, authorize, add_authz
@@ -19,7 +20,7 @@ from tests import sample_private_key
 from tests.fixtures.cognito_auth import env_mock
 
 req = Request(
-    headers={"Content-Type": "application/json"},
+    headers=CIMultiDict({"Content-Type": "application/json"}),
     uri_params={},
     method="GET",
     body="",
@@ -73,7 +74,7 @@ class TestResource:
         assert self.res.path == "/"
         assert isinstance(self.res.method, str)
         assert self.res.method == "GET"
-        assert self.res.uids == {}
+        assert self.res.path_params == {}
         assert isinstance(self.res.request, Request)
         assert self.res._authorizer is not None
         assert isinstance(self.res._authorizer, Authorizer)
@@ -100,7 +101,8 @@ class TestResource:
         get_user_mock.assert_called_once_with({})
 
     def test___repr__(self):
-        assert str(self.res) == "<Resource GET @ / UIDS: {}>"
+        self.res.urn = "/foo/id-12345/bar"
+        assert str(self.res) == "<Resource GET @ /foo/id-12345/bar >"
 
     def test_unauthorized_when_authentication_not_configured(self):
         class X(Resource):

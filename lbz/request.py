@@ -1,13 +1,11 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-"""
-Communication Helpers
-"""
 import base64
 import json
 import logging
+from typing import Optional, Union
 
-from typing import Union
+from multidict import CIMultiDict
 
 from lbz.authentication import User
 from lbz.exceptions import BadRequestError
@@ -15,16 +13,14 @@ from lbz.misc import MultiDict
 
 
 class Request:
-    """
-    Represent request from API gateway.
-    """
+    """Represents request from API gateway."""
 
     _json_body = None
     _raw_body = b""
 
     def __init__(
         self,
-        headers: dict,
+        headers: CIMultiDict,
         uri_params: dict,
         method: str,
         body: str,
@@ -48,7 +44,7 @@ class Request:
         return f"<Request {self.method} >"
 
     @staticmethod
-    def _decode_base64(encoded) -> str:
+    def _decode_base64(encoded) -> bytes:
         if not isinstance(encoded, bytes):
             encoded = encoded.encode("ascii")
         return base64.b64decode(encoded)
@@ -65,10 +61,10 @@ class Request:
         return self._raw_body
 
     @property
-    def json_body(self) -> dict:
-        content_type = self.headers.get("Content-Type", self.headers.get("content-type"))
+    def json_body(self) -> Optional[dict]:
+        content_type = self.headers.get("Content-Type")
         if content_type is None:
-            return
+            return None
         if content_type.startswith("application/json"):
             if isinstance(self._body, dict):
                 return self._body
@@ -77,7 +73,7 @@ class Request:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError:
                     logging.error(f"Invalid json payload: {self.raw_body}")
-                    raise BadRequestError()
+                    raise BadRequestError
             return self._json_body
         else:
             logging.error(self)

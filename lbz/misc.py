@@ -3,13 +3,12 @@
 """
 Misc Helpers of Lambda Framework.
 """
-from collections.abc import MutableMapping
-from functools import wraps
-from os import environ
-
 import logging
 import logging.handlers
 import traceback
+from collections.abc import MutableMapping
+from functools import wraps
+from os import environ
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
@@ -43,7 +42,7 @@ class Singleton(type):
 
 
 class MultiDict(MutableMapping):  # pylint: disable=too-many-ancestors
-    def __init__(self, mapping):
+    def __init__(self, mapping: dict):
         if mapping is None:
             mapping = {}
 
@@ -78,9 +77,7 @@ class MultiDict(MutableMapping):  # pylint: disable=too-many-ancestors
 
 
 def get_logger(name: str):
-    """
-    Setting options for logger
-    """
+    """Shortcut for creating logger instance."""
     logger_obj = logging.getLogger(name)
     logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
 

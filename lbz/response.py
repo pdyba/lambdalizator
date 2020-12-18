@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-import base64
 import json
 from typing import Union
 
@@ -41,13 +40,3 @@ class Response:
         }
 
         return response
-
-    @staticmethod
-    def _encode_base64(data):
-        if not isinstance(data, bytes):
-            raise ValueError(
-                "Expected bytes type for body with binary "
-                "Content-Type. Got %s type body instead." % type(data)
-            )
-        data = base64.b64encode(data)
-        return data.decode("ascii")

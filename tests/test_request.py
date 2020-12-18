@@ -3,6 +3,7 @@
 from uuid import uuid4
 
 import pytest
+from multidict import CIMultiDict
 
 from lbz.authentication import User
 from lbz.exceptions import BadRequestError
@@ -14,7 +15,7 @@ from tests.utils import encode_token
 class TestRequestInit:
     def test__init__(self):
         req = Request(
-            headers={},
+            headers=CIMultiDict(),
             uri_params={},
             method="",
             body="",
@@ -25,7 +26,7 @@ class TestRequestInit:
             user=None,
         )
         assert isinstance(req.query_params, MultiDict)
-        assert isinstance(req.headers, dict)
+        assert isinstance(req.headers, CIMultiDict)
         assert isinstance(req.uri_params, dict)
         assert isinstance(req.uri_params, dict)
         assert isinstance(req.context, dict)
@@ -49,7 +50,7 @@ class TestRequest:
         }
         self.id_token = encode_token(self.cognito_user)
         self.r = Request(
-            headers={"Content-Type": "application/json"},
+            headers=CIMultiDict({"Content-Type": "application/json"}),
             uri_params={},
             method="GET",
             body="",
@@ -120,6 +121,11 @@ class TestRequest:
         assert isinstance(self.r.user.email, str)
         for letter in ("a", "b", "c", "d", "e"):
             assert isinstance(getattr(self.r.user, letter), str)
+
+    def test_headers_are_case_insensitive(self):
+        assert (
+            self.r.headers["content-type"] == self.r.headers["CoNtEnT-TyPe"] == "application/json"
+        )
 
     def test_to_dict(self):
         assert self.r.to_dict() == {
