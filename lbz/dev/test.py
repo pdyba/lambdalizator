@@ -133,7 +133,5 @@ class Client:
                 path_params=params,
                 query_params=query_params,
                 headers=headers,
-                authorize=authorize,
-                authenticate=authenticate,
             )
         )()

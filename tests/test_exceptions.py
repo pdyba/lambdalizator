@@ -12,21 +12,12 @@ from lbz.exceptions import (
     WrongURI,
     Unauthorized,
 )
-from lbz.response import Response
 
 
 def test_LambdaFWException():
     exp = LambdaFWException("Nope")
     assert exp.message == "Nope"
     assert exp.status_code == 500
-
-    assert isinstance(exp.get_resp(), Response)
-    assert exp.to_dict() == {
-        "body": '{"message":"Nope"}',
-        "headers": {},
-        "statusCode": 500,
-        "isBase64Encoded": False,
-    }
 
 
 def test_AccessDenied():

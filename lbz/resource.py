@@ -17,6 +17,7 @@ from lbz.exceptions import (
 )
 from lbz.misc import get_logger
 from lbz.request import Request
+from lbz.response import Response
 from lbz.router import Router
 
 logger = get_logger(__name__)
@@ -49,7 +50,7 @@ class Resource:
         else:
             self._authorizer.reset_policy()
 
-    def __call__(self) -> dict:
+    def __call__(self) -> Response:
         try:
             if self.path is None or self.path not in self._router:
                 logger.error("Couldn't find %s in current paths: %s", self.path, self._router)
@@ -62,7 +63,11 @@ class Resource:
             logger.format_error(e)
             if self.print_traceback and 500 <= e.status_code < 600:
                 e.message = traceback.format_exc()
-            return e.get_resp()
+            return Response(
+                {"message": e.message, "request_id": self.request.context["requestId"]},
+                status_code=e.status_code,
+                headers={"Content-Type": "application/json"},
+            )
 
     def __repr__(self):
         return f"<Resource {self.method} @ {self.urn} >"

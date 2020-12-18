@@ -6,6 +6,8 @@ Dev misc tools.
 import json
 import pathlib
 
+from uuid import uuid4
+
 WORKING_DIR = pathlib.Path(__file__).parent.absolute()
 
 event = """
@@ -60,13 +62,6 @@ event = """
 }
 """
 
-admin = """
-{
-  "Authentication": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzci0wYzllMzM4MzRiZTQ0NGY5OTc1M2I2MGQ2N2IxYTA2ZCIsInBlcm1pc3Npb25faWQiOiJyb290In0.nwCADHsVwFztqACjkUW-lg_JywzDEFBK4o4c8MtB9-vdfsumBg4BqVzYuZsxaLugwsll0NtN9oKogDQJKKm96Q",
-  "Authorization": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhbGxvdyI6IioiLCJkZW55Ijp7fX0.piurrcn054AY6MBqlMCAPmEXEb0BlCISRm74EyaOSySJzCE9256vHxFW3SdAhZimEhssaUq-cz5IcaFABNtgzQ"
-}
-"""
-
 
 class Event(dict):
     def __init__(
@@ -77,19 +72,9 @@ class Event(dict):
         query_params=None,
         path_params=None,
         headers=None,
-        authorize=False,
-        authenticate=False,
     ):
-        """Create fake Event object.
-
-        :param body dict
-        :param query_params dict
-        :param path_params dict
-        :param headers dict
-        """
-
+        """Creates fake Event object."""
         super().__init__(**json.loads(event))
-        self.admin = json.loads(admin)
 
         self["resource"] = resource_path
         self["pathParameters"] = {} if path_params is None else path_params
@@ -97,15 +82,12 @@ class Event(dict):
         self["method"] = method
         self["body"] = {} if body is None else body
         self["headers"] = {"Content-Type": "application/json"} if headers is None else headers
-        if authenticate:
-            self["headers"]["Authentication"] = self.admin["Authentication"]
-        if authorize:
-            self["headers"]["Authorization"] = self.admin["Authorization"]
         self["queryStingParameters"] = query_params
         self["multiValueQueryStringParameters"] = query_params
         self["requestContext"]["resourcePath"] = self["resource"]
         self["requestContext"]["path"] = self["path"]
         self["requestContext"]["httpMethod"] = method
+        self["requestContext"]["requestId"] = str(uuid4())
 
     def __repr__(self):
         return f"<Fake Event {self['method']} @ {self['path']} body: {self['body']}>"

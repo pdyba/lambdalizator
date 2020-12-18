@@ -2,31 +2,14 @@
 # coding=utf-8
 from http import HTTPStatus
 
-from lbz.response import Response
-
 
 class LambdaFWException(Exception):
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
-    headers = {}
-    resp = None
 
-    def __init__(self, message=""):
+    def __init__(self, message: str = ""):
         if message:
             self.message = message
-
-    def get_resp(self):
-        self.resp = Response(
-            {"message": self.message},
-            status_code=self.status_code,
-            headers=self.headers,
-        )
-        return self.resp
-
-    def to_dict(self):
-        if self.resp is None:
-            self.get_resp()
-        return self.resp.to_dict()
 
 
 class AccessDenied(LambdaFWException):
