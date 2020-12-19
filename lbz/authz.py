@@ -26,9 +26,10 @@ class Authorizer:
         self.outcome = DENY
         self.allowed_resource = None
         self.denied_resource = None
-
         self.resource = resource_name
         self.permission = permission_name
+        self.allow = {}
+        self.deny = {}
         self._set_policy(auth_jwt)
 
     def __repr__(self):
@@ -36,17 +37,6 @@ class Authorizer:
             f"Authorizer(auth_jwt=<jwt>, resource_name='{self.resource}', "
             f"permission_name='{self.permission}')"
         )
-
-    def check_access(self):
-        self.outcome = DENY
-
-        if self.deny:
-            self._check_deny()
-        self._check_allow()
-        if self.denied_resource and self.outcome:
-            self.outcome = LIMITED_ALLOW
-        if self.outcome == DENY:
-            raise PermissionDenied
 
     def _set_policy(self, auth_jwt: str):
         policy = decode_jwt(auth_jwt)
@@ -72,6 +62,17 @@ class Authorizer:
             )
         elif issuer != ALLOWED_ISS:
             raise PermissionDenied(f"{issuer} is not an allowed token issuer")
+
+    def check_access(self):
+        self.outcome = DENY
+
+        if self.deny:
+            self._check_deny()
+        self._check_allow_and_set_resources()
+        if self.denied_resource and self.outcome:
+            self.outcome = LIMITED_ALLOW
+        if self.outcome == DENY:
+            raise PermissionDenied
 
     def _deny_if_all(self, permission):
         if permission == ALL:
@@ -100,7 +101,7 @@ class Authorizer:
             self.allowed_resource = ALL
             return True
 
-    def _check_allow(self):
+    def _check_allow_and_set_resources(self):
         if not self.allow:
             raise PermissionDenied
         elif self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(

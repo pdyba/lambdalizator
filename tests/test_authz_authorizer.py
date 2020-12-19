@@ -134,29 +134,29 @@ class TestAuthorizer:
         assert self.authz.allowed_resource == ALL
 
     def test_check_allow_all(self):
-        self.authz._check_allow()
+        self.authz._check_allow_and_set_resources()
         assert self.authz.outcome == ALLOW
 
     def test_check_allow_fail_all(self):
         self.authz.allow = None
         with pytest.raises(PermissionDenied):
-            self.authz._check_allow()
+            self.authz._check_allow_and_set_resources()
             assert self.authz.outcome == ALLOW
 
     def test_check_allow_one(self):
         self.authz.allow = {"res": {"permission_name": {"allow": ALL}}}
-        self.authz._check_allow()
+        self.authz._check_allow_and_set_resources()
         assert self.authz.outcome == ALLOW
 
     def test_check_allow_one_scope(self):
         self.authz.allow = {"res": {"permission_name": {"allow": "self"}}}
-        self.authz._check_allow()
+        self.authz._check_allow_and_set_resources()
         assert self.authz.outcome == ALLOW
         assert self.authz.allowed_resource == "self"
 
     def test_check_allow_fail_one_scope(self):
         self.authz.allow = {"res": {"permission_name": {"deny": "self"}}}
-        self.authz._check_allow()
+        self.authz._check_allow_and_set_resources()
         assert self.authz.outcome == ALLOW
         assert self.authz.denied_resource == "self"
 
