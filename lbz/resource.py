@@ -11,12 +11,13 @@ from lbz.authentication import User
 from lbz.authz import Authorizer
 from lbz.exceptions import (
     LambdaFWException,
-    WrongURI,
+    NotFound,
     Unauthorized,
     UnsupportedMethod,
 )
 from lbz.misc import get_logger
 from lbz.request import Request
+from lbz.response import Response
 from lbz.router import Router
 
 logger = get_logger(__name__)
@@ -49,11 +50,11 @@ class Resource:
         else:
             self._authorizer.reset_policy()
 
-    def __call__(self) -> dict:
+    def __call__(self) -> Response:
         try:
             if self.path is None or self.path not in self._router:
                 logger.error("Couldn't find %s in current paths: %s", self.path, self._router)
-                raise WrongURI
+                raise NotFound
             if self.method not in self._router[self.path]:
                 raise UnsupportedMethod(method=self.method)
             self.request.user = self._get_user(self.request.headers)
@@ -62,7 +63,7 @@ class Resource:
             logger.format_error(e)
             if self.print_traceback and 500 <= e.status_code < 600:
                 e.message = traceback.format_exc()
-            return e.get_resp()
+            return e.get_response(self.request.context["requestId"])
 
     def __repr__(self):
         return f"<Resource {self.method} @ {self.urn} >"

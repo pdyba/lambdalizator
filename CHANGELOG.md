@@ -60,9 +60,10 @@ Released 2020-12-15
 - Added emojis in Readme.
 
 ### Version 0.2.2
-Released 2020-12-17
+Released 2020-12-18
 
 - Headers made case-insensitive dictionary,
 - Added version ranges to requirements,
 - Added "urn" attribute to Resource,
-- Deprecation of authorization and authentication flags in test utility.
+- Deprecation of authorization and authentication flags in test utility,
+- "LambdaFWException" class reworked: added request ID.

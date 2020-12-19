@@ -8,25 +8,17 @@ from lbz.response import Response
 class LambdaFWException(Exception):
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
-    headers = {}
-    resp = None
 
-    def __init__(self, message=""):
+    def __init__(self, message: str = ""):
         if message:
             self.message = message
 
-    def get_resp(self):
-        self.resp = Response(
-            {"message": self.message},
+    def get_response(self, request_id: str) -> Response:
+        return Response(
+            {"message": self.message, "request_id": request_id},
             status_code=self.status_code,
-            headers=self.headers,
+            headers={"Content-Type": "application/json"},
         )
-        return self.resp
-
-    def to_dict(self):
-        if self.resp is None:
-            self.get_resp()
-        return self.resp.to_dict()
 
 
 class AccessDenied(LambdaFWException):
@@ -81,13 +73,6 @@ class UnsupportedMethod(LambdaFWException):
 
     def __init__(self, method):
         self.message = "Unsupported method: %s" % method
-
-
-class WrongURI(LambdaFWException):
-    """Server is not able to produce a response"""
-
-    message = HTTPStatus.MISDIRECTED_REQUEST.description
-    status_code = HTTPStatus.MISDIRECTED_REQUEST.value
 
 
 class Unauthorized(LambdaFWException):

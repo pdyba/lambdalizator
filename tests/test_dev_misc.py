@@ -1,7 +1,8 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-from lbz.dev.misc import Event, admin, event
 from hashlib import sha1
+
+from lbz.dev.misc import event
 
 
 def hash_string(string):
@@ -10,10 +11,6 @@ def hash_string(string):
 
 def test_Event():
     pass
-
-
-def test_admin():
-    assert hash_string(admin) == "447ab9d67869ac9db813b453e862bfb89e57f389"
 
 
 def test_event():

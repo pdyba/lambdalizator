@@ -3,7 +3,7 @@
 import json
 from http import HTTPStatus
 from os import environ
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from jose import jwt
 from multidict import CIMultiDict
@@ -11,6 +11,7 @@ from multidict import CIMultiDict
 from lbz.authentication import User
 from lbz.authz import Authorizer, authorize, add_authz
 from lbz.dev.misc import Event
+from lbz.exceptions import NotFound
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
@@ -50,21 +51,6 @@ event_wrong_uri = Event(
 )
 
 
-class TestResourceWrongUri:
-    def setup_method(self):
-        self.res = Resource(event_wrong_uri)
-
-    def test___call__wrong_uri(self):
-        resp = self.res()
-        assert isinstance(resp, Response)
-        assert resp.to_dict() == {
-            "body": '{"message":"Server is not able to produce a response"}',
-            "headers": {},
-            "statusCode": 421,
-            "isBase64Encoded": False,
-        }
-
-
 class TestResource:
     def setup_method(self):
         self.res = Resource(event)
@@ -83,7 +69,7 @@ class TestResource:
         assert self.res.request.user is None
 
     @patch.object(Resource, "_get_user")
-    def test___call__(self, get_user_mock):
+    def test___call__(self, get_user: MagicMock):
         class X(Resource):
             @add_route("/")
             def a(self):
@@ -98,7 +84,25 @@ class TestResource:
             "body": '{"message":"x"}',
             "isBase64Encoded": False,
         }
-        get_user_mock.assert_called_once_with({})
+        get_user.assert_called_once_with({})
+
+    def test_not_found_returned_when_path_not_defined(self):
+        response = Resource(event_wrong_uri)()
+        assert isinstance(response, Response)
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_request_id_added_when_frameworks_exception_raised(self):
+        class TestAPI(Resource):
+            @add_route("/")
+            def test_method(self):
+                raise NotFound
+
+        response = TestAPI(event)()
+
+        assert response.body == {
+            "message": NotFound.message,
+            "request_id": event["requestContext"]["requestId"],
+        }
 
     def test___repr__(self):
         self.res.urn = "/foo/id-12345/bar"
@@ -116,7 +120,7 @@ class TestResource:
     @patch.dict(environ, env_mock)
     @patch.object(User, "__init__", return_value=None)
     def test_user_loaded_when_cognito_authentication_configured_correctly(
-        self, load_cognito_user_mock, *args
+        self, load_user: MagicMock, *args
     ):
         class X(Resource):
             @add_route("/")
@@ -128,7 +132,7 @@ class TestResource:
         authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
 
         X({**event, "headers": {"authentication": authentication_token}})()
-        load_cognito_user_mock.assert_called_once_with(authentication_token)
+        load_user.assert_called_once_with(authentication_token)
 
     @patch.dict(environ, env_mock)
     def test_unauthorized_when_jwt_header_lacks_kid(self, *args):

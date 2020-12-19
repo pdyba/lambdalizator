@@ -9,7 +9,6 @@ from lbz.exceptions import (
     NotFound,
     PermissionDenied,
     UnsupportedMethod,
-    WrongURI,
     Unauthorized,
 )
 from lbz.response import Response
@@ -19,14 +18,7 @@ def test_LambdaFWException():
     exp = LambdaFWException("Nope")
     assert exp.message == "Nope"
     assert exp.status_code == 500
-
-    assert isinstance(exp.get_resp(), Response)
-    assert exp.to_dict() == {
-        "body": '{"message":"Nope"}',
-        "headers": {},
-        "statusCode": 500,
-        "isBase64Encoded": False,
-    }
+    assert isinstance(exp.get_response(request_id=""), Response)
 
 
 def test_AccessDenied():
@@ -69,12 +61,6 @@ def test_UnsupportedMethod():
     exp = UnsupportedMethod("GET")
     assert exp.message == "Unsupported method: GET"
     assert exp.status_code == 405
-
-
-def test_WrongURI():
-    exp = WrongURI()
-    assert exp.message == "Server is not able to produce a response"
-    assert exp.status_code == 421
 
 
 def test_Unauthorized():
