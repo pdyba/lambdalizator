@@ -67,3 +67,8 @@ Released 2020-12-18
 - Added "urn" attribute to Resource,
 - Deprecation of authorization and authentication flags in test utility,
 - "LambdaFWException" class reworked: added request ID.
+
+### Version 0.3.0
+Released 2020-12-18
+
+- Authz module reworked - it's no longer a singleton and it requires using only one decorator
