@@ -77,3 +77,4 @@ Released 2020-12-18
 Released 2020-12-19
 
 - Improvements for the dev server - allow handling of OPTIONS requests, return the right headers
+- Fix invoking endpoints without path parameters
