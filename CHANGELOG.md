@@ -72,3 +72,8 @@ Released 2020-12-18
 Released 2020-12-18
 
 - Authz module reworked - it's no longer a singleton and it requires using only one decorator
+
+### Version 0.3.1
+Released 2020-12-19
+
+- Improvements for the dev server - allow handling of OPTIONS requests, return the right headers

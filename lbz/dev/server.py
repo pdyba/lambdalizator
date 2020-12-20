@@ -55,21 +55,24 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
                         return org_route, params
         return None, None  # to be raised
 
-    def _send_json(self, code, obj):
+    def _send_json(self, code, obj, headers=None):
         # Make sure only one response is sent
         if self.done:
             return
 
         self.send_response(code, message=None)
-        self.send_header("Content-Type", "application/json;charset=UTF-8")
-        self.end_headers()
-        self.done = True
 
-        # Write the file
+        if headers:
+            for key, value in headers.items():
+                self.send_header(key, value)
+        self.end_headers()
+
+        self.done = True
         self.wfile.write(json.dumps(obj, indent=4, sort_keys=True).encode("utf-8"))
 
     def _error(self, code, message):
-        self._send_json(code, {"error": message})
+        content_type = "application/json;charset=UTF-8"
+        self._send_json(code, {"error": message}, headers={"Content-Type": content_type})
 
     def handle_request(self):
         try:
@@ -90,7 +93,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
             route, params = self._get_route_params(self.path)
             if route is None:
                 return self._error(666, "Path not Found")
-            response = self.cls(
+            resource = self.cls(
                 Event(
                     resource_path=route,
                     method=self.command,
@@ -100,19 +103,19 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
                     body=request_obj,
                 )
             )
-            response = response()
+            response = resource()
             code = response.status_code
             if isinstance(response, Response):
                 response = response.to_dict()
-                if isinstance(response, str):
-                    response = json.loads(response)
+                resp_headers = response.get('headers', {})
                 if body := response.get("body"):
                     response = json.loads(body)
             else:
                 logging.warning("Did not create a Response instance:")
                 logging.warning(f"CLS: {self.cls} REQUEST: {request_obj} QParms: {query_params}")
+                resp_headers = {}
 
-            self._send_json(code, response)
+            self._send_json(code, response, resp_headers)
         except Exception:
             logging.exception("Fail trying to send json")
         return self._error(500, "Server error")
@@ -130,6 +133,9 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
         self.handle_request()
 
     def do_DELETE(self):
+        self.handle_request()
+
+    def do_OPTIONS(self):
         self.handle_request()
 
 
