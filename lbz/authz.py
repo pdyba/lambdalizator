@@ -37,8 +37,8 @@ class Authorizer:
             f"permission_name='{self.permission}')"
         )
 
-    def _set_policy(self, auth_jwt: str, auth_scope: dict = None):
-        policy = auth_scope if auth_scope else decode_jwt(auth_jwt)
+    def _set_policy(self, auth_jwt: str, policy_override: dict = None):
+        policy = policy_override if policy_override else decode_jwt(auth_jwt)
         try:
             self.allow = policy["allow"]
             self.deny = policy["deny"]

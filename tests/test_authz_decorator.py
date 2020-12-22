@@ -44,6 +44,7 @@ class TestAuthorizationDecorator:
             @add_route("/")
             @authorization()
             def handler(self, restrictions):
+                assert restrictions == {'allow': '*', 'deny': None}
                 return Response("x")
 
             @staticmethod
