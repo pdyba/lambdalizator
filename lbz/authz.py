@@ -22,7 +22,7 @@ LIMITED_ALLOW = -1
 
 
 class Authorizer:
-    def __init__(self, auth_jwt: str, resource_name: str, permission_name: str):
+    def __init__(self, auth_jwt: str, resource_name: str, permission_name: str, auth_scope: dict = None):
         self.outcome = DENY
         self.allowed_resource = None
         self.denied_resource = None
@@ -30,7 +30,7 @@ class Authorizer:
         self.permission = permission_name
         self.allow = {}
         self.deny = {}
-        self._set_policy(auth_jwt)
+        self._set_policy(auth_jwt, auth_scope)
 
     def __repr__(self):
         return (
@@ -38,8 +38,11 @@ class Authorizer:
             f"permission_name='{self.permission}')"
         )
 
-    def _set_policy(self, auth_jwt: str):
-        policy = decode_jwt(auth_jwt)
+    def _set_policy(self, auth_jwt: str, auth_scope: dict = None):
+        if auth_scope:
+            policy = auth_scope
+        else:
+            policy = decode_jwt(auth_jwt)
         try:
             self.allow = policy["allow"]
             self.deny = policy["deny"]
@@ -138,7 +141,9 @@ def authorization(permission_name: str = None):
         @wraps(func)
         def wrapped(self, *args, **kwargs):
             authorization_header = self.request.headers.get("Authorization")
-            if not authorization_header:
+            if hasattr(self, "get_guest_authorization"):
+                authorization_header = Authorizer.sign_authz(self.get_guest_authorization())
+            elif not authorization_header:
                 raise Unauthorized("Authorization header missing or empty")
 
             authorizer = Authorizer(
