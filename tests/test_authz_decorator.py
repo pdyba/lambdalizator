@@ -39,6 +39,25 @@ class TestAuthorizationDecorator:
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     @patch.dict(environ, env_mock)
+    def test_no_auth_header_guest_in_place(self, *args):
+        class X(Resource):
+            @add_route("/")
+            @authorization()
+            def handler(self, restrictions):
+                return Response("x")
+
+            @staticmethod
+            def get_guest_authorization():
+                return {
+                    "allow": "*",
+                    "deny": {},
+                }
+
+        resp = X({**event, "headers": {}})()
+        assert resp.status_code == 200
+
+
+    @patch.dict(environ, env_mock)
     def test_different_permission_name(self, *args):
         class X(Resource):
             @add_route("/")
