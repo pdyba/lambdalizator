@@ -141,8 +141,9 @@ def authorization(permission_name: str = None):
         @wraps(func)
         def wrapped(self, *args, **kwargs):
             authorization_header = self.request.headers.get("Authorization")
+            authorization_scope = None
             if hasattr(self, "get_guest_authorization"):
-                authorization_header = Authorizer.sign_authz(self.get_guest_authorization())
+                authorization_scope = self.get_guest_authorization()
             elif not authorization_header:
                 raise Unauthorized("Authorization header missing or empty")
 
@@ -150,6 +151,7 @@ def authorization(permission_name: str = None):
                 auth_jwt=authorization_header,
                 resource_name=getattr(self, "_name") or self.__class__.__name__.lower(),
                 permission_name=permission_name or func.__name__,
+                auth_scope=authorization_scope,
             )
             authorizer.check_access()
             return func(self, *args, restrictions=authorizer.restrictions, **kwargs)
