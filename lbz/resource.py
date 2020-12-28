@@ -8,12 +8,7 @@ from typing import Union
 from multidict import CIMultiDict
 
 from lbz.authentication import User
-from lbz.exceptions import (
-    LambdaFWException,
-    NotFound,
-    Unauthorized,
-    UnsupportedMethod,
-)
+from lbz.exceptions import LambdaFWException, NotFound, Unauthorized, UnsupportedMethod
 from lbz.misc import get_logger
 from lbz.request import Request
 from lbz.response import Response

@@ -107,7 +107,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
             code = response.status_code
             if isinstance(response, Response):
                 response = response.to_dict()
-                resp_headers = response.get('headers', {})
+                resp_headers = response.get("headers", {})
                 if body := response.get("body"):
                     response = json.loads(body)
             else:

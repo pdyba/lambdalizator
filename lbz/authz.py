@@ -9,6 +9,7 @@ from jose import jwt
 
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from lbz.jwt_utils import decode_jwt
+from lbz.resource import Resource
 
 EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
 ALLOWED_ISS = environ.get("ALLOWED_ISS")
@@ -132,26 +133,31 @@ class Authorizer:
         )
 
 
+def check_permission(resource: Resource, permission_name: str) -> dict:
+    authorization_header = resource.request.headers.get("Authorization")
+    authorization_scope = None
+    if not authorization_header:
+        if hasattr(resource, "get_guest_authorization"):
+            authorization_scope = resource.get_guest_authorization()
+        else:
+            raise Unauthorized("Authorization header missing or empty")
+
+    authorizer = Authorizer(
+        auth_jwt=authorization_header,
+        resource_name=getattr(resource, "_name") or resource.__class__.__name__.lower(),
+        permission_name=permission_name,
+        policy_override=authorization_scope,
+    )
+    authorizer.check_access()
+    return authorizer.restrictions
+
+
 def authorization(permission_name: str = None):
     def decorator(func: Callable):
         @wraps(func)
-        def wrapped(self, *args, **kwargs):
-            authorization_header = self.request.headers.get("Authorization")
-            authorization_scope = None
-            if not authorization_header:
-                if hasattr(self, "get_guest_authorization"):
-                    authorization_scope = self.get_guest_authorization()
-                else:
-                    raise Unauthorized("Authorization header missing or empty")
-
-            authorizer = Authorizer(
-                auth_jwt=authorization_header,
-                resource_name=getattr(self, "_name") or self.__class__.__name__.lower(),
-                permission_name=permission_name or func.__name__,
-                policy_override=authorization_scope,
-            )
-            authorizer.check_access()
-            return func(self, *args, restrictions=authorizer.restrictions, **kwargs)
+        def wrapped(self: Resource, *args, **kwargs):
+            restrictions = check_permission(self, permission_name or func.__name__)
+            return func(self, *args, restrictions=restrictions, **kwargs)
 
         return wrapped
 
