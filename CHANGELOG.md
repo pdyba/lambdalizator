@@ -78,3 +78,8 @@ Released 2020-12-19
 
 - Improvements for the dev server - allow handling of OPTIONS requests, return the right headers
 - Fix invoking endpoints without path parameters
+
+### Version 0.3.3
+Released 2020-12-29
+
+- Add check_permission function
