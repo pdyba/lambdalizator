@@ -13,7 +13,6 @@ from lbz.jwt_utils import decode_jwt
 EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
 ALLOWED_ISS = environ.get("ALLOWED_ISS")
 
-
 RESTRICTED = ["*", "self"]
 ALL = "*"
 ALLOW = 1
@@ -22,7 +21,7 @@ LIMITED_ALLOW = -1
 
 
 class Authorizer:
-    def __init__(self, auth_jwt: str, resource_name: str, permission_name: str):
+    def __init__(self, auth_jwt: str, resource_name: str, permission_name: str, policy_override: dict = None):
         self.outcome = DENY
         self.allowed_resource = None
         self.denied_resource = None
@@ -30,7 +29,7 @@ class Authorizer:
         self.permission = permission_name
         self.allow = {}
         self.deny = {}
-        self._set_policy(auth_jwt)
+        self._set_policy(auth_jwt, policy_override)
 
     def __repr__(self):
         return (
@@ -38,8 +37,8 @@ class Authorizer:
             f"permission_name='{self.permission}')"
         )
 
-    def _set_policy(self, auth_jwt: str):
-        policy = decode_jwt(auth_jwt)
+    def _set_policy(self, auth_jwt: str, policy_override: dict = None):
+        policy = policy_override if policy_override else decode_jwt(auth_jwt)
         try:
             self.allow = policy["allow"]
             self.deny = policy["deny"]
@@ -105,7 +104,7 @@ class Authorizer:
         if not self.allow:
             raise PermissionDenied
         elif self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(
-            self.allow.get("*", self.allow.get(self.resource))
+                self.allow.get("*", self.allow.get(self.resource))
         ):
             return
         elif self.allow:
@@ -138,13 +137,18 @@ def authorization(permission_name: str = None):
         @wraps(func)
         def wrapped(self, *args, **kwargs):
             authorization_header = self.request.headers.get("Authorization")
+            authorization_scope = None
             if not authorization_header:
-                raise Unauthorized("Authorization header missing or empty")
+                if hasattr(self, "get_guest_authorization"):
+                    authorization_scope = self.get_guest_authorization()
+                else:
+                    raise Unauthorized("Authorization header missing or empty")
 
             authorizer = Authorizer(
                 auth_jwt=authorization_header,
                 resource_name=getattr(self, "_name") or self.__class__.__name__.lower(),
                 permission_name=permission_name or func.__name__,
+                policy_override=authorization_scope,
             )
             authorizer.check_access()
             return func(self, *args, restrictions=authorizer.restrictions, **kwargs)

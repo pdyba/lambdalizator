@@ -30,7 +30,7 @@ class Resource:
         self._load_configuration()
         self.urn = event["path"]  # TODO: Variables should match corresponding event fields
         self.path = event.get("requestContext", {}).get("resourcePath")
-        self.path_params = event.get("pathParameters") or {}
+        self.path_params = event.get("pathParameters") or {}  # DO NOT refactor
         self.method = event["requestContext"]["httpMethod"]
         headers = CIMultiDict(event.get("headers", {}))
         self.request = Request(
