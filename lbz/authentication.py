@@ -19,13 +19,12 @@ class User:
 
     def __init__(self, token: str):
         self._token = token
+        self.username: str = ""
         for k, v in self.get_user_details_from_auth_token().items():
             self.__setattr__(k, v)
 
     def __repr__(self):
-        if hasattr(self, "id"):
-            return f"User id={self.id}"
-        elif hasattr(self, "username"):
+        if hasattr(self, "username"):
             return f"User username={self.username}"
 
     def get_user_details_from_auth_token(self) -> dict:

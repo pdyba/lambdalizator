@@ -83,3 +83,9 @@ Released 2020-12-19
 Released 2020-12-29
 
 - Add check_permission function
+
+### Version 0.3.4
+Released 2021-01-11
+
+- Add Makefile
+- Add mandatory username field in "User" class
