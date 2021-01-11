@@ -22,7 +22,9 @@ LIMITED_ALLOW = -1
 
 
 class Authorizer:
-    def __init__(self, auth_jwt: str, resource_name: str, permission_name: str, policy_override: dict = None):
+    def __init__(
+        self, auth_jwt: str, resource_name: str, permission_name: str, policy_override: dict = None
+    ):
         self.outcome = DENY
         self.allowed_resource = None
         self.denied_resource = None
@@ -105,7 +107,7 @@ class Authorizer:
         if not self.allow:
             raise PermissionDenied
         elif self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(
-                self.allow.get("*", self.allow.get(self.resource))
+            self.allow.get("*", self.allow.get(self.resource))
         ):
             return
         elif self.allow:

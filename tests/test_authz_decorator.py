@@ -44,7 +44,7 @@ class TestAuthorizationDecorator:
             @add_route("/")
             @authorization()
             def handler(self, restrictions):
-                assert restrictions == {'allow': '*', 'deny': None}
+                assert restrictions == {"allow": "*", "deny": None}
                 return Response("x")
 
             @staticmethod
@@ -56,7 +56,6 @@ class TestAuthorizationDecorator:
 
         resp = X({**event, "headers": {}})()
         assert resp.status_code == 200
-
 
     @patch.dict(environ, env_mock)
     def test_different_permission_name(self, *args):
