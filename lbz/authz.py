@@ -9,6 +9,7 @@ from jose import jwt
 
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from lbz.jwt_utils import decode_jwt
+from lbz.misc import logger
 from lbz.resource import Resource
 
 EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
@@ -30,6 +31,7 @@ class Authorizer:
         self.denied_resource = None
         self.resource = resource_name
         self.permission = permission_name
+        self.refs = {}
         self.allow = {}
         self.deny = {}
         self._set_policy(auth_jwt, policy_override)
@@ -42,6 +44,7 @@ class Authorizer:
 
     def _set_policy(self, auth_jwt: str, policy_override: dict = None):
         policy = policy_override if policy_override else decode_jwt(auth_jwt)
+        self.refs = policy.get("refs", {})
         try:
             self.allow = policy["allow"]
             self.deny = policy["deny"]
@@ -103,6 +106,16 @@ class Authorizer:
             self.allowed_resource = ALL
             return True
 
+    def _get_effective_permissions(self, permissions: dict) -> dict:
+        if ref_name := permissions.get("ref"):
+            if ref_name not in self.refs:
+                logger.warning("Missing %s ref in the policy", ref_name)
+                self.outcome = DENY
+                raise PermissionDenied
+            return self.refs[ref_name]
+
+        return permissions
+
     def _check_allow_and_set_resources(self):
         if not self.allow:
             raise PermissionDenied
@@ -116,8 +129,9 @@ class Authorizer:
                     return
                 elif resource_to_check := d_domain.get(self.permission):
                     self.outcome = ALLOW
-                    self.allowed_resource = resource_to_check.get("allow")
-                    self.denied_resource = resource_to_check.get("deny")
+                    effective_permissions = self._get_effective_permissions(resource_to_check)
+                    self.allowed_resource = effective_permissions.get("allow")
+                    self.denied_resource = effective_permissions.get("deny")
 
     @property
     def restrictions(self) -> dict:

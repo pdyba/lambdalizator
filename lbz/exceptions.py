@@ -2,7 +2,10 @@
 # coding=utf-8
 from http import HTTPStatus
 
+from lbz.misc import get_logger
 from lbz.response import Response
+
+logger = get_logger(__name__)
 
 
 class LambdaFWException(Exception):
@@ -43,13 +46,15 @@ class InvalidResolutionError(LambdaFWException):
 
 
 class ServerError(LambdaFWException):
-    """
-    Server got itself in trouble
-
-    """
+    """Server got itself in trouble"""
 
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
+
+    def __init__(self, message: str = "", log_msg: str = None):
+        super().__init__(message)
+        if log_msg:
+            logger.error(log_msg)
 
 
 class NotFound(LambdaFWException):

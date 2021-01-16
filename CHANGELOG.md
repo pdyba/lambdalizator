@@ -89,3 +89,10 @@ Released 2021-01-11
 
 - Add Makefile
 - Add mandatory username field in "User" class
+
+### Version 0.3.5
+Released 2021-01-16
+
+- Add refs feature to the Authorizer
+- Add `log_msg` param to the ServerError class - it can be used to log an error message
+  that will not be returned to the user
