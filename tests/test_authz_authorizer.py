@@ -25,7 +25,7 @@ class TestAuthorizer:
 
     def _make_authorizer(self, token_payload: dict) -> Authorizer:
         jwt = Authorizer.sign_authz(token_payload, sample_private_key)
-        return Authorizer(jwt, "res", "permission_name")
+        return Authorizer(jwt, "test_resource", "permission_name")
 
     def test__init__(self):
         assert self.authz.allow == {ALL: ALL}
@@ -33,13 +33,13 @@ class TestAuthorizer:
         assert self.authz.outcome == DENY
         assert self.authz.allowed_resource is None
         assert self.authz.allowed_resource is None
-        assert self.authz.resource == "res"
+        assert self.authz.resource == "test_resource"
         assert self.authz.permission == "permission_name"
 
     def test__repr__(self):
         assert (
             repr(self.authz)
-            == "Authorizer(auth_jwt=<jwt>, resource_name='res', permission_name='permission_name')"
+            == "Authorizer(auth_jwt=<jwt>, resource_name='test_resource', permission_name='permission_name')"
         )
 
     def test__set_policy_w_scope(self):
@@ -64,7 +64,7 @@ class TestAuthorizer:
 
     def test_validate_one(self):
         authorizer = self._make_authorizer(
-            {**self.token_payload, "allow": {"res": {"permission_name": {"allow": ALL}}}}
+            {**self.token_payload, "allow": {"test_resource": {"permission_name": {"allow": ALL}}}}
         )
         authorizer.check_access()
         assert authorizer.outcome == ALLOW
@@ -85,14 +85,17 @@ class TestAuthorizer:
             self._make_authorizer(
                 {
                     **self.token_payload,
-                    "allow": {"res": {"permission_name": {"allow": ALL}}},
+                    "allow": {"test_resource": {"permission_name": {"allow": ALL}}},
                     "exp": expiration_negative,
                 }
             )
 
     def test_validate_one_scope(self):
         authorizer = self._make_authorizer(
-            {**self.token_payload, "allow": {"res": {"permission_name": {"allow": "self"}}}}
+            {
+                **self.token_payload,
+                "allow": {"test_resource": {"permission_name": {"allow": "self"}}},
+            }
         )
         authorizer.check_access()
         assert authorizer.outcome == ALLOW
@@ -100,11 +103,38 @@ class TestAuthorizer:
 
     def test_validate_fail_one_scope(self):
         authorizer = self._make_authorizer(
-            {**self.token_payload, "allow": {"res": {"permission_name": {"deny": "self"}}}}
+            {
+                **self.token_payload,
+                "allow": {"test_resource": {"permission_name": {"deny": "self"}}},
+            }
         )
         authorizer.check_access()
         assert authorizer.outcome == LIMITED_ALLOW
         assert authorizer.restrictions == {"allow": None, "deny": "self"}
+
+    def test_refs(self):
+        restrictions = {"allow": "*", "deny": "example"}
+        authorizer = self._make_authorizer(
+            {
+                **self.token_payload,
+                "refs": {"api-access": restrictions},
+                "allow": {"test_resource": {"permission_name": {"ref": "api-access"}}},
+            }
+        )
+        authorizer.check_access()
+        assert authorizer.outcome == LIMITED_ALLOW
+        assert authorizer.restrictions == restrictions
+
+    def test_missing_ref(self):
+        authorizer = self._make_authorizer(
+            {
+                **self.token_payload,
+                "allow": {"test_resource": {"permission_name": {"ref": "api-access"}}},
+            }
+        )
+        with pytest.raises(PermissionDenied):
+            authorizer.check_access()
+        assert authorizer.outcome == DENY
 
     def test_deny_if_all(self):
         with pytest.raises(PermissionDenied):
@@ -117,19 +147,19 @@ class TestAuthorizer:
         assert self.authz.outcome == DENY
 
     def test_check_deny_res(self):
-        self.authz.deny = {"res": ALL}
+        self.authz.deny = {"test_resource": ALL}
         with pytest.raises(PermissionDenied):
             self.authz._check_deny()
         assert self.authz.outcome == DENY
 
     def test_check_deny_one(self):
-        self.authz.deny = {"res": {"permission_name": ALL}}
+        self.authz.deny = {"test_resource": {"permission_name": ALL}}
         with pytest.raises(PermissionDenied):
             self.authz._check_deny()
         assert self.authz.outcome == DENY
 
     def test_check_deny_one_scope(self):
-        self.authz.deny = {"res": {"permission_name": "self"}}
+        self.authz.deny = {"test_resource": {"permission_name": "self"}}
         self.authz._check_deny()
         assert self.authz.denied_resource == "self"
 
@@ -149,18 +179,18 @@ class TestAuthorizer:
             assert self.authz.outcome == ALLOW
 
     def test_check_allow_one(self):
-        self.authz.allow = {"res": {"permission_name": {"allow": ALL}}}
+        self.authz.allow = {"test_resource": {"permission_name": {"allow": ALL}}}
         self.authz._check_allow_and_set_resources()
         assert self.authz.outcome == ALLOW
 
     def test_check_allow_one_scope(self):
-        self.authz.allow = {"res": {"permission_name": {"allow": "self"}}}
+        self.authz.allow = {"test_resource": {"permission_name": {"allow": "self"}}}
         self.authz._check_allow_and_set_resources()
         assert self.authz.outcome == ALLOW
         assert self.authz.allowed_resource == "self"
 
     def test_check_allow_fail_one_scope(self):
-        self.authz.allow = {"res": {"permission_name": {"deny": "self"}}}
+        self.authz.allow = {"test_resource": {"permission_name": {"deny": "self"}}}
         self.authz._check_allow_and_set_resources()
         assert self.authz.outcome == ALLOW
         assert self.authz.denied_resource == "self"
