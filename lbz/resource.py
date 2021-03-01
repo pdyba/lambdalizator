@@ -41,6 +41,8 @@ class Resource:
 
     def __call__(self) -> Response:
         try:
+            self.pre_request_hook()
+
             if self.path is None or self.path not in self._router:
                 logger.error("Couldn't find %s in current paths: %s", self.path, self._router)
                 raise NotFound
@@ -53,6 +55,8 @@ class Resource:
             if self.print_traceback and 500 <= e.status_code < 600:
                 e.message = traceback.format_exc()
             return e.get_response(self.request.context["requestId"])
+        finally:
+            self.post_request_hook()
 
     def __repr__(self):
         return f"<Resource {self.method} @ {self.urn} >"
@@ -69,3 +73,9 @@ class Resource:
             logger.error(f"Authentication method not supported, token: {authentication}")
             raise Unauthorized
         return None
+
+    def pre_request_hook(self):
+        pass
+
+    def post_request_hook(self):
+        pass
