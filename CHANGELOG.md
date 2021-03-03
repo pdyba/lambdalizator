@@ -96,3 +96,8 @@ Released 2021-01-16
 - Add refs feature to the Authorizer
 - Add `log_msg` param to the ServerError class - it can be used to log an error message
   that will not be returned to the user
+
+### Version 0.3.6
+Released 2021-03-01
+
+- Add pre_request_hooks and post_request_hooks to the Resource class

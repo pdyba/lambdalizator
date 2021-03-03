@@ -10,7 +10,7 @@ from multidict import CIMultiDict
 
 from lbz.authentication import User
 from lbz.dev.misc import Event
-from lbz.exceptions import NotFound
+from lbz.exceptions import NotFound, ServerError
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
@@ -161,3 +161,37 @@ class TestResource:
 
         resp = X({**event, "headers": {"authentication": "12345"}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_pre_request_hook(self, *args):
+        pre_request_called = False
+
+        class TestAPI(Resource):
+            @add_route("/")
+            def test_method(self):
+                return Response("OK")
+
+            def pre_request_hook(self):
+                nonlocal pre_request_called
+                pre_request_called = True
+
+        response = TestAPI(event)()
+
+        assert response.body == "OK"
+        assert pre_request_called
+
+    def test_post_request_hook(self, *args):
+        post_request_called = False
+
+        class TestAPI(Resource):
+            @add_route("/")
+            def test_method(self):
+                raise ServerError("test")
+
+            def post_request_hook(self):
+                nonlocal post_request_called
+                post_request_called = True
+
+        response = TestAPI(event)()
+
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert post_request_called
