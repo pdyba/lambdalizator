@@ -1,0 +1,55 @@
+name: Pull request checks
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  check_code_formatting:
+    name: Check code formatting
+    runs-on: ubuntu-latest
+    container: python:3.8-slim
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@master
+
+      - name: Install dependencies
+        run: pip install -r requirements_dev.txt
+
+      - name: Run Black
+        run: black -l 99 --check .
+
+  run_unit_tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    container: python:3.8-slim
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@master
+
+      - name: Install dependencies
+        run: pip install -r requirements_dev.txt
+
+      - name: Install make
+        run: |
+          apt-get update
+          apt-get install make
+
+      - name: Run tests
+        run: make test
+
+  check_version:
+    name: Check if version was updated
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@master
+
+      - name: Check version
+        run: |
+          PUBLISHED_VERSION=$(curl https://pypi.org/pypi/lbz/json | jq -r '.info.version')
+          REPO_VERSION=$(cat version)
+          if [ "$PUBLISHED_VERSION" == "$REPO_VERSION" ]; then
+            echo "Package version was not updated in the 'version' file"
+            exit 1
+          fi

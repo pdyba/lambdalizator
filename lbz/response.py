@@ -31,7 +31,11 @@ class Response:
         raise RuntimeError("Response body type not supported yet.")
 
     def to_dict(self):
-        body = json.dumps(self.body, separators=(",", ":"), default=str) if self.is_json else self.body
+        body = (
+            json.dumps(self.body, separators=(",", ":"), default=str)
+            if self.is_json
+            else self.body
+        )
         response = {
             "headers": self.headers,
             "statusCode": self.status_code,

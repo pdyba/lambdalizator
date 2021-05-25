@@ -79,7 +79,7 @@ class TestAuthorizer:
         assert authorizer.outcome == ALLOW
 
     def test_validate_one_with_expired(self):
-        expiration_negative = int((datetime.utcnow() + timedelta(seconds=1)).timestamp())
+        expiration_negative = int((datetime.utcnow() - timedelta(seconds=1)).timestamp())
 
         with pytest.raises(Unauthorized):
             self._make_authorizer(
