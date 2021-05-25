@@ -1,0 +1,24 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@master
+
+      - name: Build
+        run: make build
+
+      - name: Publish
+        run: make upload
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI }}

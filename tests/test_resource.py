@@ -3,7 +3,7 @@
 import json
 from http import HTTPStatus
 from os import environ
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, ANY
 
 from jose import jwt
 from multidict import CIMultiDict
@@ -195,3 +195,22 @@ class TestResource:
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert post_request_called
+
+    def test_500_returned_when_server_error_caught(self, *args):
+        class X(Resource):
+            @add_route("/")
+            def a(self):
+                raise RuntimeError("test")
+
+        resp = X(event)()
+        assert isinstance(resp, Response), resp
+        assert resp.to_dict() == {
+            "headers": {"Content-Type": "application/json"},
+            "statusCode": 500,
+            "body": ANY,
+            "isBase64Encoded": False,
+        }
+        assert json.loads(resp.to_dict()["body"]) == {
+            "message": "Server got itself in trouble",
+            "request_id": ANY,
+        }
