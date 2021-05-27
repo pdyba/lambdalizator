@@ -17,6 +17,9 @@ jobs:
       - name: Build
         run: make build
 
+      - name: Install twine
+        run: pip install twine
+
       - name: Publish
         run: make upload
         env:
