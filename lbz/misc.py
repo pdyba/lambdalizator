@@ -7,7 +7,6 @@ import logging
 import logging.handlers
 import traceback
 from collections.abc import MutableMapping
-from functools import wraps
 from os import environ
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
@@ -89,18 +88,3 @@ def get_logger(name: str):
 
 
 logger = get_logger(__name__)
-
-
-def error_catcher(function, default_return=False):
-    @wraps(function)
-    def wrapped(*args, **kwargs):
-        try:
-            return function(*args, **kwargs)
-        except Exception as error:
-            if len(args) > 0 and hasattr(args[0], "logger"):
-                args[0].logger.format_error(error)
-            else:
-                logger.format_error(error)
-            return default_return
-
-    return wrapped

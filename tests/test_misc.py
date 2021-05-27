@@ -2,7 +2,7 @@
 # coding=utf-8
 from collections.abc import MutableMapping
 
-from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger
+from lbz.misc import MultiDict, NestedDict, Singleton, get_logger
 
 
 def test_NestedDict():
@@ -52,27 +52,3 @@ def test_get_logger(caplog):
         a.format_error(err)
         assert "Traceback" in caplog.text
         assert "ZeroDivisionError" in caplog.text
-
-
-def test_error_catcher(caplog):
-    @error_catcher
-    def a():
-        return 2 / 0
-
-    a()
-    assert "Traceback" in caplog.text
-    assert "ZeroDivisionError" in caplog.text
-
-
-def test_error_catcher_class(caplog):
-    class A:
-        logger = get_logger("xxxxx")
-
-        @error_catcher
-        def a(self):
-            return 2 / 0
-
-    A().a()
-    assert "xxxxx" in caplog.text
-    assert "Traceback" in caplog.text
-    assert "ZeroDivisionError" in caplog.text
