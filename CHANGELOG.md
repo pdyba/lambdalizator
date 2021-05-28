@@ -114,3 +114,8 @@ Released 2021-05-27
 
 - Add `has_permission` helper function
 - Add common imports to the top level `__init__.py`
+
+### Version 0.3.9
+Released 2021-05-28
+
+- Remove common imports from the top level `__init.py`
