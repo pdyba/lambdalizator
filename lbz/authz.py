@@ -168,6 +168,14 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
     return authorizer.restrictions
 
 
+def has_permission(resource: Resource, permission_name: str) -> bool:
+    try:
+        check_permission(resource, permission_name)
+    except (Unauthorized, PermissionDenied):
+        return False
+    return True
+
+
 def authorization(permission_name: str = None):
     def decorator(func: Callable):
         @wraps(func)

@@ -108,3 +108,9 @@ Released 2021-05-25
 - Remove the `PRINT_TRACEBACK` setting - it was logging double stack traces
 - Add proper handling for server error - return proper error responses
 - Don't log errors in case of 4xx responses
+
+### Version 0.3.8
+Released 2021-05-27
+
+- Add `has_permission` helper function
+- Add common imports to the top level `__init__.py`

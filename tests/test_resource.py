@@ -2,7 +2,6 @@
 # coding=utf-8
 import json
 from http import HTTPStatus
-from os import environ
 from unittest.mock import patch, MagicMock, ANY
 
 from jose import jwt
@@ -18,6 +17,7 @@ from lbz.router import Router
 from lbz.router import add_route
 from tests.fixtures.cognito_auth import env_mock
 
+# TODO: Use fixtures yielded from conftest.py
 req = Request(
     headers=CIMultiDict({"Content-Type": "application/json"}),
     uri_params={},
@@ -113,10 +113,9 @@ class TestResource:
         resp = X({**event, "headers": {"authentication": "dummy"}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
-    @patch.dict(environ, env_mock)
     @patch.object(User, "__init__", return_value=None)
     def test_user_loaded_when_cognito_authentication_configured_correctly(
-        self, load_user: MagicMock, *args
+        self, load_user: MagicMock
     ):
         class X(Resource):
             @add_route("/")
@@ -130,8 +129,7 @@ class TestResource:
         X({**event, "headers": {"authentication": authentication_token}})()
         load_user.assert_called_once_with(authentication_token)
 
-    @patch.dict(environ, env_mock)
-    def test_unauthorized_when_jwt_header_lacks_kid(self, *args):
+    def test_unauthorized_when_jwt_header_lacks_kid(self):
         class X(Resource):
             @add_route("/")
             def a(self):
@@ -141,8 +139,7 @@ class TestResource:
         resp = X({**event, "headers": {"authentication": authentication_token}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
-    @patch.dict(environ, env_mock)
-    def test_unauthorized_when_no_matching_key_in_env_variable(self, *args):
+    def test_unauthorized_when_no_matching_key_in_env_variable(self):
         class X(Resource):
             @add_route("/")
             def a(self):
@@ -152,8 +149,7 @@ class TestResource:
         resp = X({**event, "headers": {"authentication": authentication_token}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
-    @patch.dict(environ, env_mock)
-    def test_unauthorized_when_jwt_header_malformed(self, *args):
+    def test_unauthorized_when_jwt_header_malformed(self):
         class X(Resource):
             @add_route("/")
             def a(self):
@@ -162,7 +158,7 @@ class TestResource:
         resp = X({**event, "headers": {"authentication": "12345"}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
-    def test_pre_request_hook(self, *args):
+    def test_pre_request_hook(self):
         pre_request_called = False
 
         class TestAPI(Resource):
@@ -179,7 +175,7 @@ class TestResource:
         assert response.body == "OK"
         assert pre_request_called
 
-    def test_post_request_hook(self, *args):
+    def test_post_request_hook(self):
         post_request_called = False
 
         class TestAPI(Resource):
@@ -196,7 +192,7 @@ class TestResource:
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert post_request_called
 
-    def test_500_returned_when_server_error_caught(self, *args):
+    def test_500_returned_when_server_error_caught(self):
         class X(Resource):
             @add_route("/")
             def a(self):
