@@ -78,7 +78,7 @@ class Resource:
         if authentication and self.auth_enabled:
             return User(authentication)
         elif authentication:
-            logger.error(f"Authentication method not supported, token: {authentication}")
+            logger.error("Authentication method not supported, token: %s", authentication)
             raise Unauthorized
         return None
 

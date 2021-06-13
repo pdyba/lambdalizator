@@ -72,12 +72,12 @@ class Request:
                 try:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError:
-                    logging.error(f"Invalid json payload: {self.raw_body}")
+                    logging.error("Invalid json payload: %s", self.raw_body)
                     raise BadRequestError
             return self._json_body
         else:
             logging.error(self)
-            logging.exception(f"Wrong headers: {self.headers}")
+            logging.exception("Wrong headers: %s", self.headers)
             raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
 
     def to_dict(self) -> dict:

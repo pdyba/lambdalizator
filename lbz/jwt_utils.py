@@ -26,7 +26,7 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
             if key["kid"] == kid_from_jwt_header:
                 return key
 
-        logger.error(f"Required key not found in configuration.")
+        logger.error("Required key not found in configuration.")
         raise Unauthorized
     except (JWTError, KeyError):
         raise Unauthorized
@@ -48,7 +48,7 @@ def decode_jwt(auth_jwt_token: str) -> dict:
         except JWTError:
             raise Unauthorized
         except Exception:
-            logger.error(f"Error during decoding, token={auth_jwt_token}")
+            logger.error("Error during decoding, token=%s", auth_jwt_token)
             raise ServerError
 
     raise Unauthorized

@@ -37,8 +37,8 @@ class User:
         return parsed_user
 
     def _validate_attributes(self, attributes: dict) -> None:
-        if len(attributes) > self._max_attributes:
+        if (total_attributes := len(attributes)) > self._max_attributes:
             logger.error(
-                f"Too many attributes, total={len(attributes)}, limit: {self._max_attributes}"
+                "Too many attributes, total=%d, limit=%d", total_attributes, self._max_attributes
             )
             raise RuntimeError
