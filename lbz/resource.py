@@ -57,12 +57,12 @@ class Resource:
             return getattr(self, self._router[self.path][self.method])(**self.path_params)
         except LambdaFWException as e:
             if 500 <= e.status_code < 600:
-                logger.format_error(e)
+                logger.exception(e)
             else:
                 logger.warning(repr(e))
             return e.get_response(self.request.context["requestId"])
         except Exception as e:
-            logger.format_error(e)
+            logger.exception(e)
             return ServerError().get_response(self.request.context["requestId"])
         finally:
             self.post_request_hook()

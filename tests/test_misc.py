@@ -49,7 +49,7 @@ def test_get_logger(caplog):
     try:
         raise ZeroDivisionError
     except ZeroDivisionError as err:
-        a.format_error(err)
+        a.exception(err)
         assert "Traceback" in caplog.text
         assert "ZeroDivisionError" in caplog.text
 
