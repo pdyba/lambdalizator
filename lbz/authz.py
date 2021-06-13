@@ -9,8 +9,10 @@ from jose import jwt
 
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from lbz.jwt_utils import decode_jwt
-from lbz.misc import logger
+from lbz.misc import get_logger
 from lbz.resource import Resource
+
+logger = get_logger(__name__)
 
 EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
 ALLOWED_ISS = environ.get("ALLOWED_ISS")

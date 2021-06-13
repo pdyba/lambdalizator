@@ -4,8 +4,10 @@ import os
 from jose import jwt
 from jose.exceptions import JWTError, JWTClaimsError, ExpiredSignatureError
 
-from lbz.exceptions import Unauthorized, ServerError
-from lbz.misc import logger
+from lbz.exceptions import Unauthorized
+from lbz.misc import get_logger
+
+logger = get_logger(__name__)
 
 PUBLIC_KEYS = []
 ALLOWED_AUDIENCES = []
@@ -26,7 +28,9 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
             if key["kid"] == kid_from_jwt_header:
                 return key
 
-        logger.error("Required key not found in configuration.")
+        logger.warning(
+            "The key with id=%s was not found in the environment variable.", kid_from_jwt_header
+        )
         raise Unauthorized
     except (JWTError, KeyError):
         raise Unauthorized
@@ -34,8 +38,8 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
 
 def decode_jwt(auth_jwt_token: str) -> dict:
     if not PUBLIC_KEYS:
-        logger.error("Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable")
-        raise Unauthorized
+        msg = "Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable"
+        raise RuntimeError(msg)
 
     jwk = get_matching_jwk(auth_jwt_token)
     for aud in ALLOWED_AUDIENCES or [None]:
@@ -47,8 +51,8 @@ def decode_jwt(auth_jwt_token: str) -> dict:
             raise Unauthorized(f"Your token has expired. Please refresh it.")
         except JWTError:
             raise Unauthorized
-        except Exception:
-            logger.error("Error during decoding, token=%s", auth_jwt_token)
-            raise ServerError
+        except Exception as ex:
+            msg = f"An error occurred during decoding the token.\nToken body:\n{auth_jwt_token}"
+            raise RuntimeError(msg) from ex
 
     raise Unauthorized

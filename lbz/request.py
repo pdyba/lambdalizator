@@ -2,14 +2,15 @@
 # coding=utf-8
 import base64
 import json
-import logging
 from typing import Optional, Union
 
 from multidict import CIMultiDict
 
 from lbz.authentication import User
 from lbz.exceptions import BadRequestError
-from lbz.misc import MultiDict
+from lbz.misc import MultiDict, get_logger
+
+logger = get_logger(__name__)
 
 
 class Request:
@@ -72,12 +73,11 @@ class Request:
                 try:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError:
-                    logging.error("Invalid json payload: %s", self.raw_body)
-                    raise BadRequestError
+                    msg = f"The provided payload is invalid.\nPayload body:\n{self.raw_body}"
+                    raise BadRequestError(msg)
             return self._json_body
         else:
-            logging.error(self)
-            logging.exception("Wrong headers: %s", self.headers)
+            logger.warning("Wrong headers: %s", self.headers)
             raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
 
     def to_dict(self) -> dict:
