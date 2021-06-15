@@ -1,9 +1,6 @@
 import os
 
 from lbz.jwt_utils import decode_jwt
-from lbz.misc import get_logger
-
-logger = get_logger(__file__)
 
 STANDARD_CLAIMS = ("sub", "aud", "auth_time", "iss", "exp", "iat", "token_use")
 
@@ -37,8 +34,6 @@ class User:
         return parsed_user
 
     def _validate_attributes(self, attributes: dict) -> None:
-        if len(attributes) > self._max_attributes:
-            logger.error(
-                f"Too many attributes, total={len(attributes)}, limit: {self._max_attributes}"
-            )
-            raise RuntimeError
+        if (total_attributes := len(attributes)) > self._max_attributes:
+            msg = f"Too many attributes, total={total_attributes}, limit={self._max_attributes}"
+            raise RuntimeError(msg)

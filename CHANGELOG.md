@@ -119,3 +119,8 @@ Released 2021-05-27
 Released 2021-05-28
 
 - Remove common imports from the top level `__init.py`
+
+### Version 0.3.10
+Released 2021-06-13
+
+- Improve the messages that are logged in the entire library
