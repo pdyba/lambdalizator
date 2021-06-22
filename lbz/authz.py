@@ -9,8 +9,10 @@ from jose import jwt
 
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from lbz.jwt_utils import decode_jwt
-from lbz.misc import logger
+from lbz.misc import get_logger
 from lbz.resource import Resource
+
+logger = get_logger(__name__)
 
 EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
 ALLOWED_ISS = environ.get("ALLOWED_ISS")
@@ -166,6 +168,14 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
     )
     authorizer.check_access()
     return authorizer.restrictions
+
+
+def has_permission(resource: Resource, permission_name: str) -> bool:
+    try:
+        check_permission(resource, permission_name)
+    except (Unauthorized, PermissionDenied):
+        return False
+    return True
 
 
 def authorization(permission_name: str = None):

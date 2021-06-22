@@ -30,7 +30,6 @@ Lambdalizator can be configured using the following environment variables:
 - `ALLOWED_ISS` - allowed issuer of JWT - Security feature. If not set, issuer will not be checked.
 - `AUTH_REMOVE_PREFIXES` - if enabled, all fields starting with a prefix (like `cognito:`) in the
   auth token will have the prefix removed. Defaults to False (set as "0" or "1").
-- `PRINT_TRACEBACK` - more verbose errors. Defaults to False (set as "0" or "1").
 - `LOGGING_LEVEL` - log level used in the application. Defaults to INFO.
 - `EXPIRATION_KEY` - for defining the expiration key used in authorization default "exp" according to JWT standard.
 

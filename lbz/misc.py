@@ -5,7 +5,6 @@ Misc Helpers of Lambda Framework.
 """
 import logging
 import logging.handlers
-import traceback
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
@@ -80,11 +79,6 @@ def get_logger(name: str):
     """Shortcut for creating logger instance."""
     logger_obj = logging.getLogger(name)
     logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
-
-    def format_error(error):
-        logger_obj.error("\n{}\nTraceback: {}".format(error, traceback.format_exc()))
-
-    logger_obj.format_error = format_error
     return logger_obj
 
 
@@ -98,9 +92,9 @@ def error_catcher(function, default_return=False):
             return function(*args, **kwargs)
         except Exception as error:
             if len(args) > 0 and hasattr(args[0], "logger"):
-                args[0].logger.format_error(error)
+                args[0].logger.exception(error)
             else:
-                logger.format_error(error)
+                logger.exception(error)
             return default_return
 
     return wrapped

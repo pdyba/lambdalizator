@@ -16,6 +16,9 @@ class LambdaFWException(Exception):
         if message:
             self.message = message
 
+    def __str__(self) -> str:
+        return f"[{self.status_code}] {self.message}"
+
     def get_response(self, request_id: str) -> Response:
         return Response(
             {"message": self.message, "request_id": request_id},

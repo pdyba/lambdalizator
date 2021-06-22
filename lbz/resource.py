@@ -1,14 +1,19 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
 """Resource Handler."""
-import traceback
 from os import environ as env
 from typing import Union
 
 from multidict import CIMultiDict
 
 from lbz.authentication import User
-from lbz.exceptions import LambdaFWException, NotFound, Unauthorized, UnsupportedMethod
+from lbz.exceptions import (
+    LambdaFWException,
+    NotFound,
+    Unauthorized,
+    UnsupportedMethod,
+    ServerError,
+)
 from lbz.misc import get_logger
 from lbz.request import Request
 from lbz.response import Response
@@ -44,17 +49,21 @@ class Resource:
             self.pre_request_hook()
 
             if self.path is None or self.path not in self._router:
-                logger.error("Couldn't find %s in current paths: %s", self.path, self._router)
+                logger.warning("Couldn't find %s in current paths: %s", self.path, self._router)
                 raise NotFound
             if self.method not in self._router[self.path]:
                 raise UnsupportedMethod(method=self.method)
             self.request.user = self._get_user(self.request.headers)
             return getattr(self, self._router[self.path][self.method])(**self.path_params)
         except LambdaFWException as e:
-            logger.format_error(e)
-            if self.print_traceback and 500 <= e.status_code < 600:
-                e.message = traceback.format_exc()
+            if 500 <= e.status_code < 600:
+                logger.exception(e)
+            else:
+                logger.warning(e)
             return e.get_response(self.request.context["requestId"])
+        except Exception as e:
+            logger.exception(e)
+            return ServerError().get_response(self.request.context["requestId"])
         finally:
             self.post_request_hook()
 
@@ -62,7 +71,6 @@ class Resource:
         return f"<Resource {self.method} @ {self.urn} >"
 
     def _load_configuration(self) -> None:
-        self.print_traceback = bool(int(env.get("PRINT_TRACEBACK", "0")))
         self.auth_enabled = env.get("ALLOWED_PUBLIC_KEYS") or env.get("ALLOWED_AUDIENCES")
 
     def _get_user(self, headers: CIMultiDict) -> Union[None, User]:
@@ -70,8 +78,7 @@ class Resource:
         if authentication and self.auth_enabled:
             return User(authentication)
         elif authentication:
-            logger.error(f"Authentication method not supported, token: {authentication}")
-            raise Unauthorized
+            raise Unauthorized("Authentication method not supported")
         return None
 
     def pre_request_hook(self):
