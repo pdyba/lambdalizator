@@ -98,3 +98,7 @@ def error_catcher(function, default_return=False):
             return default_return
 
     return wrapped
+
+
+def copy_without_keys(data: dict, *keys) -> dict:
+    return {key: value for key, value in data.items() if key not in keys}

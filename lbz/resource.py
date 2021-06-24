@@ -1,8 +1,11 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
 """Resource Handler."""
+from copy import deepcopy
+from http import HTTPStatus
 from os import environ as env
-from typing import Union
+from typing import Union, List
+from urllib.parse import urlencode
 
 from multidict import CIMultiDict
 
@@ -14,10 +17,12 @@ from lbz.exceptions import (
     UnsupportedMethod,
     ServerError,
 )
-from lbz.misc import get_logger
+from lbz.misc import get_logger, copy_without_keys
 from lbz.request import Request
 from lbz.response import Response
 from lbz.router import Router
+
+ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
 
 logger = get_logger(__name__)
 
@@ -86,3 +91,86 @@ class Resource:
 
     def post_request_hook(self):
         pass
+
+
+class CORSResource(Resource):
+    _cors_headers = [
+        "Content-Type",
+        "X-Amz-Date",
+        "Authentication",
+        "Authorization",
+        "X-Api-Key",
+        "X-Amz-Security-Token",
+    ]
+
+    def __init__(self, event: dict, methods: List[str], origins: List[str] = None):
+        super().__init__(event)
+
+        self._allowed_origins = origins if origins else env.get("CORS_ORIGIN", "").split(",")
+        self._check_for_wildcard()
+        self._resp_headers = {
+            ALLOW_ORIGIN_HEADER: self._allowed_origins[0],
+            "Access-Control-Allow-Headers": ", ".join(self._cors_headers),
+            "Access-Control-Allow-Methods": ", ".join([*methods, "OPTIONS"]),
+        }
+
+    def __call__(self):
+        if self.method == "OPTIONS":
+            return Response("", headers=self.resp_headers(), status_code=HTTPStatus.NO_CONTENT)
+
+        resp = super().__call__()
+        if resp.status_code >= 400 and ALLOW_ORIGIN_HEADER not in resp.headers:
+            resp.headers.update(self.resp_headers())
+        return resp
+
+    def _check_for_wildcard(self):
+        org = self.request.headers.get("Origin")
+        for aorg in self._allowed_origins:
+            if org == aorg:
+                self._allowed_origins = [org]
+                break
+            if "*" in aorg:
+                serv, domain = aorg.split("*")
+                if org.startswith(serv) and org.endswith(domain):
+                    self._allowed_origins = [org]
+                    break
+
+    def resp_headers(self, content_type: str = "") -> dict:
+        headers = (
+            {**self._resp_headers, "Content-Type": content_type}
+            if content_type
+            else deepcopy(self._resp_headers)
+        )
+
+        if (origin := self.request.headers.get("Origin")) in self._allowed_origins:
+            headers[ALLOW_ORIGIN_HEADER] = origin
+
+        return headers
+
+    @property
+    def resp_headers_json(self) -> dict:
+        return self.resp_headers(content_type="application/json")
+
+
+class PaginatedCORSResource(CORSResource):
+    def get_pagination(self, total_items: int, limit: int, offset: int) -> dict:
+        base_link = self._pagination_uri
+        links = {
+            "current": base_link.format(offset=offset, limit=limit),
+            "last": base_link.format(offset=max(total_items - limit, 0), limit=limit),
+        }
+        if previous_offset := max(offset - limit, 0):
+            links["prev"] = base_link.format(offset=previous_offset, limit=limit)
+        next_offset = offset + limit if offset + limit < total_items else None
+        if next_offset:
+            links["next"] = base_link.format(offset=next_offset, limit=limit)
+        return {
+            "count": total_items,
+            "links": links,
+        }
+
+    @property
+    def _pagination_uri(self) -> str:
+        if qp := copy_without_keys(self.request.query_params, "offset", "limit"):
+            return f"{self.urn}?{urlencode(qp)}&offset={{offset}}&limit={{limit}}"
+        return f"{self.urn}?offset={{offset}}&limit={{limit}}"

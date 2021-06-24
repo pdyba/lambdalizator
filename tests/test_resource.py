@@ -1,7 +1,11 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
 import json
+from collections import defaultdict
 from http import HTTPStatus
+from os import environ
+from types import SimpleNamespace
+from typing import List
 from unittest.mock import patch, MagicMock, ANY
 
 from jose import jwt
@@ -11,7 +15,7 @@ from lbz.authentication import User
 from lbz.dev.misc import Event
 from lbz.exceptions import NotFound, ServerError
 from lbz.request import Request
-from lbz.resource import Resource
+from lbz.resource import Resource, CORSResource, PaginatedCORSResource
 from lbz.response import Response
 from lbz.router import Router
 from lbz.router import add_route
@@ -210,3 +214,122 @@ class TestResource:
             "message": "Server got itself in trouble",
             "request_id": ANY,
         }
+
+
+origin_localhost = "http://localhost:3000"
+origin_demo = "https://api.example.com"
+
+environ["CORS_ORIGIN"] = f"{origin_localhost},{origin_demo}"
+
+
+class TestCORSResource:
+    def make_cors_handler(self, origins: List[str] = None, req_origin: str = None) -> CORSResource:
+        event = defaultdict(MagicMock())
+        event["headers"] = {"origin": req_origin} if req_origin is not None else {}
+        cors_handler = CORSResource(event, ["GET", "POST"], origins=origins)
+        return cors_handler
+
+    def test_cors_origin_headers_from_env_are_correct_1(self):
+        assert (
+            self.make_cors_handler().resp_headers_json["Access-Control-Allow-Origin"]
+            == origin_localhost
+        )
+
+    def test_cors_origin_headers_from_env_are_correct_2(self):
+        assert (
+            self.make_cors_handler(req_origin=origin_demo).resp_headers_json[
+                "Access-Control-Allow-Origin"
+            ]
+            == origin_demo
+        )
+
+    def test_cors_origin_headers_from_env_are_correct_3(self):
+        assert (
+            self.make_cors_handler(req_origin="invalid_origin").resp_headers_json[
+                "Access-Control-Allow-Origin"
+            ]
+            == origin_localhost
+        )
+
+    def test_cors_origin_headers_from_param_are_correct(self):
+        origin_headers = [origin_localhost, origin_demo]
+        assert (
+            self.make_cors_handler(
+                origins=origin_headers, req_origin=origin_demo
+            ).resp_headers_json["Access-Control-Allow-Origin"]
+            == origin_demo
+        )
+
+    def test_cors_origin_headers_from_wildcard(self):
+        assert (
+            self.make_cors_handler(
+                origins=["https://*.lb.com"], req_origin="https://dev.test.lb.com"
+            ).resp_headers_json["Access-Control-Allow-Origin"]
+            == "https://dev.test.lb.com"
+        )
+
+    def test_all_headers(self):
+        content_type = "image/jpeg"
+        assert self.make_cors_handler().resp_headers(content_type) == {
+            "Access-Control-Allow-Headers": "Content-Type, X-Amz-Date, Authentication, Authorization, X-Api-Key, X-Amz-Security-Token",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Origin": origin_localhost,
+            "Content-Type": content_type,
+        }
+
+    def test_resp_headers_json(self):
+        assert self.make_cors_handler().resp_headers_json["Content-Type"] == "application/json"
+
+    def test_resp_headers_no_content_type_by_default(self):
+        assert self.make_cors_handler().resp_headers().get("Content-Type") == None
+
+    def test_options_request(self):
+        inst = self.make_cors_handler(req_origin=origin_demo)
+        inst.method = "OPTIONS"
+        assert inst().headers == {
+            "Access-Control-Allow-Headers": ANY,
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Origin": origin_demo,
+        }
+
+
+class TestPagination:
+    @patch.object(PaginatedCORSResource, "__init__", return_value=None)
+    def setup_method(self, test_method, init_mock) -> None:
+        self.resource = PaginatedCORSResource()
+        self.resource.path = "/test/path"
+        self.resource.urn = "/test/path"
+        self.resource.request = SimpleNamespace(
+            query_params={
+                "test": "param",
+                "another": "example",
+            }
+        )
+
+    def test_get_pagination(self):
+        expected_prefix = "/test/path?test=param&another=example"
+        assert self.resource.get_pagination(total_items=100, offset=20, limit=10) == {
+            "count": 100,
+            "links": {
+                "current": f"{expected_prefix}&offset=20&limit=10",
+                "last": f"{expected_prefix}&offset=90&limit=10",
+                "next": f"{expected_prefix}&offset=30&limit=10",
+                "prev": f"{expected_prefix}&offset=10&limit=10",
+            },
+        }
+
+    def test_no_prev_link_when_offset_minus_limit_lt_zero(self):
+        links = self.resource.get_pagination(total_items=100, offset=10, limit=20)["links"]
+        assert "prev" not in links
+
+    def test_no_next_returned_when_offset_plus_limit_gt_total_items(self):
+        links = self.resource.get_pagination(total_items=25, offset=20, limit=10)["links"]
+        assert "next" not in links
+
+    def test_pagination_uri_with_existing_pagination_query_params(self):
+        self.resource.request.query_params = {"offset": "3", "limit": "42"}
+        assert self.resource._pagination_uri == "/test/path?offset={offset}&limit={limit}"
+
+    def test_pagination_uri_without_query_params(self):
+        self.resource.request.query_params = {}
+        assert self.resource._pagination_uri == "/test/path?offset={offset}&limit={limit}"
