@@ -106,8 +106,10 @@ class CORSResource(Resource):
     def __init__(self, event: dict, methods: List[str], origins: List[str] = None):
         super().__init__(event)
 
-        self._allowed_origins = origins if origins else env.get("CORS_ORIGIN", "").split(",")
-        self._check_for_wildcard()
+        self._allowed_origins = self._get_allowed_origins(
+            origins if origins else env.get("CORS_ORIGIN", "").split(",")
+        )
+
         self._resp_headers = {
             ALLOW_ORIGIN_HEADER: self._allowed_origins[0],
             "Access-Control-Allow-Headers": ", ".join(self._cors_headers),
@@ -123,17 +125,16 @@ class CORSResource(Resource):
             resp.headers.update(self.resp_headers())
         return resp
 
-    def _check_for_wildcard(self):
-        org = self.request.headers.get("Origin")
-        for aorg in self._allowed_origins:
-            if org == aorg:
-                self._allowed_origins = [org]
-                break
-            if "*" in aorg:
-                serv, domain = aorg.split("*")
-                if org.startswith(serv) and org.endswith(domain):
-                    self._allowed_origins = [org]
-                    break
+    def _get_allowed_origins(self, origins):
+        if orig := self.request.headers.get("Origin"):
+            for aorg in origins:
+                if orig == aorg:
+                    return [orig]
+                if "*" in aorg:
+                    serv, domain = aorg.split("*")
+                    if orig.startswith(serv) and orig.endswith(domain):
+                        return [orig]
+        return origins
 
     def resp_headers(self, content_type: str = "") -> dict:
         headers = (
@@ -141,10 +142,6 @@ class CORSResource(Resource):
             if content_type
             else deepcopy(self._resp_headers)
         )
-
-        if (origin := self.request.headers.get("Origin")) in self._allowed_origins:
-            headers[ALLOW_ORIGIN_HEADER] = origin
-
         return headers
 
     @property

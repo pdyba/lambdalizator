@@ -15,7 +15,7 @@ from lbz.authentication import User
 from lbz.dev.misc import Event
 from lbz.exceptions import NotFound, ServerError
 from lbz.request import Request
-from lbz.resource import Resource, CORSResource, PaginatedCORSResource
+from lbz.resource import Resource, CORSResource, PaginatedCORSResource, ALLOW_ORIGIN_HEADER
 from lbz.response import Response
 from lbz.router import Router
 from lbz.router import add_route
@@ -216,10 +216,10 @@ class TestResource:
         }
 
 
-origin_localhost = "http://localhost:3000"
-origin_demo = "https://api.example.com"
+ORIGIN_LOCALHOST = "http://localhost:3000"
+ORIGIN_EXAMPLE = "https://api.example.com"
 
-environ["CORS_ORIGIN"] = f"{origin_localhost},{origin_demo}"
+environ["CORS_ORIGIN"] = f"{ORIGIN_LOCALHOST},{ORIGIN_EXAMPLE}"
 
 
 class TestCORSResource:
@@ -230,42 +230,45 @@ class TestCORSResource:
         return cors_handler
 
     def test_cors_origin_headers_from_env_are_correct_1(self):
-        assert (
-            self.make_cors_handler().resp_headers_json["Access-Control-Allow-Origin"]
-            == origin_localhost
-        )
+        assert self.make_cors_handler().resp_headers_json[ALLOW_ORIGIN_HEADER] == ORIGIN_LOCALHOST
 
     def test_cors_origin_headers_from_env_are_correct_2(self):
         assert (
-            self.make_cors_handler(req_origin=origin_demo).resp_headers_json[
-                "Access-Control-Allow-Origin"
+            self.make_cors_handler(req_origin=ORIGIN_EXAMPLE).resp_headers_json[
+                ALLOW_ORIGIN_HEADER
             ]
-            == origin_demo
+            == ORIGIN_EXAMPLE
         )
 
     def test_cors_origin_headers_from_env_are_correct_3(self):
         assert (
             self.make_cors_handler(req_origin="invalid_origin").resp_headers_json[
-                "Access-Control-Allow-Origin"
+                ALLOW_ORIGIN_HEADER
             ]
-            == origin_localhost
+            == ORIGIN_LOCALHOST
         )
 
     def test_cors_origin_headers_from_param_are_correct(self):
-        origin_headers = [origin_localhost, origin_demo]
+        origin_headers = [ORIGIN_LOCALHOST, ORIGIN_EXAMPLE]
         assert (
             self.make_cors_handler(
-                origins=origin_headers, req_origin=origin_demo
-            ).resp_headers_json["Access-Control-Allow-Origin"]
-            == origin_demo
+                origins=origin_headers, req_origin=ORIGIN_EXAMPLE
+            ).resp_headers_json[ALLOW_ORIGIN_HEADER]
+            == ORIGIN_EXAMPLE
         )
 
     def test_cors_origin_headers_from_wildcard(self):
         assert (
             self.make_cors_handler(
                 origins=["https://*.lb.com"], req_origin="https://dev.test.lb.com"
-            ).resp_headers_json["Access-Control-Allow-Origin"]
+            ).resp_headers_json[ALLOW_ORIGIN_HEADER]
             == "https://dev.test.lb.com"
+        )
+
+    def test_cors_origin_headers_from_wildcard_lambda(self):
+        assert (
+            self.make_cors_handler(req_origin=None).resp_headers_json[ALLOW_ORIGIN_HEADER]
+            == "http://localhost:3000"
         )
 
     def test_all_headers(self):
@@ -273,7 +276,7 @@ class TestCORSResource:
         assert self.make_cors_handler().resp_headers(content_type) == {
             "Access-Control-Allow-Headers": "Content-Type, X-Amz-Date, Authentication, Authorization, X-Api-Key, X-Amz-Security-Token",
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Origin": origin_localhost,
+            ALLOW_ORIGIN_HEADER: ORIGIN_LOCALHOST,
             "Content-Type": content_type,
         }
 
@@ -284,12 +287,12 @@ class TestCORSResource:
         assert self.make_cors_handler().resp_headers().get("Content-Type") == None
 
     def test_options_request(self):
-        inst = self.make_cors_handler(req_origin=origin_demo)
+        inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE)
         inst.method = "OPTIONS"
         assert inst().headers == {
-            "Access-Control-Allow-Headers": ANY,
+            "Access-Control-Allow-Headers": ", ".join(CORSResource._cors_headers),
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Origin": origin_demo,
+            ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
         }
 
 

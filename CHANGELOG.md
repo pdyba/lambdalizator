@@ -124,3 +124,9 @@ Released 2021-05-28
 Released 2021-06-13
 
 - Improve the messages that are logged in the entire library
+
+### Version 0.3.11
+Released 2021-06-30
+
+- Adds CORS-enabled Rosource class
+- Adds Paginated Resource Helper class
