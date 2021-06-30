@@ -272,12 +272,11 @@ class TestCORSResource:
         )
 
     def test_cors_origin_headers_from_wildcard_star(self):
+        assert self.make_cors_handler(origins=["*"]).resp_headers_json[ALLOW_ORIGIN_HEADER] == "*"
         assert (
-            self.make_cors_handler(origins=["*"]).resp_headers_json[ALLOW_ORIGIN_HEADER]
-            == "*"
-        )
-        assert (
-            self.make_cors_handler(origins=["*"], req_origin="http://localhost:3000").resp_headers_json[ALLOW_ORIGIN_HEADER]
+            self.make_cors_handler(
+                origins=["*"], req_origin="http://localhost:3000"
+            ).resp_headers_json[ALLOW_ORIGIN_HEADER]
             == "*"
         )
 

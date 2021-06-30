@@ -126,7 +126,7 @@ class CORSResource(Resource):
         return resp
 
     def _get_allowed_origins(self, origins):
-        if '*' in origins:
+        if "*" in origins:
             return ["*"]
         if request_origin := self.request.headers.get("Origin"):
             for allowed_origin in origins:
