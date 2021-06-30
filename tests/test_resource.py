@@ -265,10 +265,20 @@ class TestCORSResource:
             == "https://dev.test.lb.com"
         )
 
-    def test_cors_origin_headers_from_wildcard_lambda(self):
+    def test_cors_origin_headers_from_wildcard_no_orgin(self):
         assert (
             self.make_cors_handler(req_origin=None).resp_headers_json[ALLOW_ORIGIN_HEADER]
             == "http://localhost:3000"
+        )
+
+    def test_cors_origin_headers_from_wildcard_star(self):
+        assert (
+            self.make_cors_handler(origins=["*"]).resp_headers_json[ALLOW_ORIGIN_HEADER]
+            == "*"
+        )
+        assert (
+            self.make_cors_handler(origins=["*"], req_origin="http://localhost:3000").resp_headers_json[ALLOW_ORIGIN_HEADER]
+            == "*"
         )
 
     def test_all_headers(self):

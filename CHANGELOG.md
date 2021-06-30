@@ -128,5 +128,8 @@ Released 2021-06-13
 ### Version 0.3.11
 Released 2021-06-30
 
-- Adds CORS-enabled Rosource class
-- Adds Paginated Resource Helper class
+- Add CORS-enabled Resource class supporting:
+  - \* 
+  - domain.com
+  - \*.domain.com
+- Add Paginated Resource Helper class

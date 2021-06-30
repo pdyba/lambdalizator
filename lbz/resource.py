@@ -126,14 +126,16 @@ class CORSResource(Resource):
         return resp
 
     def _get_allowed_origins(self, origins):
-        if orig := self.request.headers.get("Origin"):
-            for aorg in origins:
-                if orig == aorg:
-                    return [orig]
-                if "*" in aorg:
-                    serv, domain = aorg.split("*")
-                    if orig.startswith(serv) and orig.endswith(domain):
-                        return [orig]
+        if '*' in origins:
+            return ["*"]
+        if request_origin := self.request.headers.get("Origin"):
+            for allowed_origin in origins:
+                if request_origin == allowed_origin:
+                    return [request_origin]
+                if "*" in allowed_origin:
+                    serv, domain = allowed_origin.split("*")
+                    if request_origin.startswith(serv) and request_origin.endswith(domain):
+                        return [request_origin]
         return origins
 
     def resp_headers(self, content_type: str = "") -> dict:
