@@ -219,10 +219,14 @@ class TestResource:
 ORIGIN_LOCALHOST = "http://localhost:3000"
 ORIGIN_EXAMPLE = "https://api.example.com"
 
-environ["CORS_ORIGIN"] = f"{ORIGIN_LOCALHOST},{ORIGIN_EXAMPLE}"
-
 
 class TestCORSResource:
+    def setup_method(self):
+        environ["CORS_ORIGIN"] = f"{ORIGIN_LOCALHOST},{ORIGIN_EXAMPLE}"
+
+    def teardown_method(self):
+        del environ["CORS_ORIGIN"]
+
     def make_cors_handler(self, origins: List[str] = None, req_origin: str = None) -> CORSResource:
         event = defaultdict(MagicMock())
         event["headers"] = {"origin": req_origin} if req_origin is not None else {}
