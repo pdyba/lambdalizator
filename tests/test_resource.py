@@ -119,7 +119,7 @@ class TestResource:
 
     @patch.object(User, "__init__", return_value=None)
     def test_user_loaded_when_cognito_authentication_configured_correctly(
-        self, load_user: MagicMock
+            self, load_user: MagicMock
     ):
         class X(Resource):
             @add_route("/")
@@ -233,52 +233,31 @@ class TestCORSResource:
         assert self.make_cors_handler().resp_headers_json[ALLOW_ORIGIN_HEADER] == ORIGIN_LOCALHOST
 
     def test_cors_origin_headers_from_env_are_correct_2(self):
-        assert (
-            self.make_cors_handler(req_origin=ORIGIN_EXAMPLE).resp_headers_json[
-                ALLOW_ORIGIN_HEADER
-            ]
-            == ORIGIN_EXAMPLE
-        )
+        headers = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE).resp_headers_json[ALLOW_ORIGIN_HEADER]
+        assert headers == ORIGIN_EXAMPLE
+
 
     def test_cors_origin_headers_from_env_are_correct_3(self):
-        assert (
-            self.make_cors_handler(req_origin="invalid_origin").resp_headers_json[
-                ALLOW_ORIGIN_HEADER
-            ]
-            == ORIGIN_LOCALHOST
-        )
+        headers = self.make_cors_handler(req_origin="invalid_origin").resp_headers_json[ALLOW_ORIGIN_HEADER]
+        assert headers == ORIGIN_LOCALHOST
 
     def test_cors_origin_headers_from_param_are_correct(self):
         origin_headers = [ORIGIN_LOCALHOST, ORIGIN_EXAMPLE]
-        assert (
-            self.make_cors_handler(
-                origins=origin_headers, req_origin=ORIGIN_EXAMPLE
-            ).resp_headers_json[ALLOW_ORIGIN_HEADER]
-            == ORIGIN_EXAMPLE
-        )
+        cors_handler = self.make_cors_handler(origins=origin_headers, req_origin=ORIGIN_EXAMPLE)
+        assert cors_handler.resp_headers_json[ALLOW_ORIGIN_HEADER] == ORIGIN_EXAMPLE
 
     def test_cors_origin_headers_from_wildcard(self):
-        assert (
-            self.make_cors_handler(
-                origins=["https://*.lb.com"], req_origin="https://dev.test.lb.com"
-            ).resp_headers_json[ALLOW_ORIGIN_HEADER]
-            == "https://dev.test.lb.com"
-        )
+        cors_handler = self.make_cors_handler(origins=["https://*.lb.com"], req_origin="https://dev.test.lb.com")
+        assert cors_handler.resp_headers_json[ALLOW_ORIGIN_HEADER] == "https://dev.test.lb.com"
 
     def test_cors_origin_headers_from_wildcard_no_orgin(self):
-        assert (
-            self.make_cors_handler(req_origin=None).resp_headers_json[ALLOW_ORIGIN_HEADER]
-            == "http://localhost:3000"
-        )
+        cors_handler = self.make_cors_handler(req_origin=None).resp_headers_json[ALLOW_ORIGIN_HEADER]
+        assert cors_handler == "http://localhost:3000"
 
     def test_cors_origin_headers_from_wildcard_star(self):
         assert self.make_cors_handler(origins=["*"]).resp_headers_json[ALLOW_ORIGIN_HEADER] == "*"
-        assert (
-            self.make_cors_handler(
-                origins=["*"], req_origin="http://localhost:3000"
-            ).resp_headers_json[ALLOW_ORIGIN_HEADER]
-            == "*"
-        )
+        cors_handler = self.make_cors_handler(origins=["*"], req_origin="http://localhost:3000")
+        assert cors_handler.resp_headers_json[ALLOW_ORIGIN_HEADER] == "*"
 
     def test_all_headers(self):
         content_type = "image/jpeg"

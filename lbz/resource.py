@@ -106,17 +106,15 @@ class CORSResource(Resource):
     def __init__(self, event: dict, methods: List[str], origins: List[str] = None):
         super().__init__(event)
 
-        self._allowed_origins = self._get_allowed_origins(
-            origins if origins else env.get("CORS_ORIGIN", "").split(",")
-        )
-
         self._resp_headers = {
-            ALLOW_ORIGIN_HEADER: self._allowed_origins[0],
+            ALLOW_ORIGIN_HEADER: self._get_allowed_origins(
+                origins or env.get("CORS_ORIGIN", "").split(",")
+            ),
             "Access-Control-Allow-Headers": ", ".join(self._cors_headers),
             "Access-Control-Allow-Methods": ", ".join([*methods, "OPTIONS"]),
         }
 
-    def __call__(self):
+    def __call__(self) -> Response:
         if self.method == "OPTIONS":
             return Response("", headers=self.resp_headers(), status_code=HTTPStatus.NO_CONTENT)
 
@@ -125,18 +123,18 @@ class CORSResource(Resource):
             resp.headers.update(self.resp_headers())
         return resp
 
-    def _get_allowed_origins(self, origins):
+    def _get_allowed_origins(self, origins: list) -> str:
         if "*" in origins:
-            return ["*"]
+            return "*"
         if request_origin := self.request.headers.get("Origin"):
             for allowed_origin in origins:
                 if request_origin == allowed_origin:
-                    return [request_origin]
+                    return request_origin
                 if "*" in allowed_origin:
-                    serv, domain = allowed_origin.split("*")
-                    if request_origin.startswith(serv) and request_origin.endswith(domain):
-                        return [request_origin]
-        return origins
+                    service, domain = allowed_origin.split("*")
+                    if request_origin.startswith(service) and request_origin.endswith(domain):
+                        return request_origin
+        return origins[0]
 
     def resp_headers(self, content_type: str = "") -> dict:
         headers = (

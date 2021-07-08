@@ -129,7 +129,7 @@ Released 2021-06-13
 Released 2021-06-30
 
 - Add CORS-enabled Resource class supporting:
-  - \* 
-  - domain.com
-  - \*.domain.com
+  - `*` 
+  - `domain.com`
+  - `*.domain.com`
 - Add Paginated Resource Helper class
