@@ -1,9 +1,12 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
+"""
+Authorization related module.
+"""
 import warnings
 from functools import wraps
 from os import environ
-from typing import Callable
+from typing import Callable, Union
 
 from jose import jwt
 
@@ -25,9 +28,13 @@ LIMITED_ALLOW = -1
 
 
 class Authorizer:
+    """
+    Authorizer class responsible for Authorization.
+    """
+
     def __init__(
         self, auth_jwt: str, resource_name: str, permission_name: str, policy_override: dict = None
-    ):
+    ):  # pylint disable=R0902
         self.outcome = DENY
         self.allowed_resource = None
         self.denied_resource = None
@@ -51,7 +58,9 @@ class Authorizer:
             self.allow = policy["allow"]
             self.deny = policy["deny"]
         except KeyError:
-            raise PermissionDenied("Invalid policy in the authorization token")
+            raise PermissionDenied(  # pylint: disable=W0707
+                "Invalid policy in the authorization token"
+            )
 
         if EXPIRATION_KEY not in policy:
             warnings.warn(
@@ -71,6 +80,9 @@ class Authorizer:
             raise PermissionDenied(f"{issuer} is not an allowed token issuer")
 
     def check_access(self):
+        """
+        Main authorization checking logic.
+        """
         self.outcome = DENY
 
         if self.deny:
@@ -98,15 +110,16 @@ class Authorizer:
     def _check_resource(self, resource):
         self._deny_if_all(resource)
         if isinstance(resource, dict):
-            for k, v in resource.items():
-                self._deny_if_all(k)
-                self._deny_if_all(v)
+            for key, value in resource.items():
+                self._deny_if_all(key)
+                self._deny_if_all(value)
 
-    def _allow_if_allow_all(self, permission):
+    def _allow_if_allow_all(self, permission: Union[str, dict]) -> bool:
         if permission == ALL:
             self.outcome = ALLOW
             self.allowed_resource = ALL
             return True
+        return False
 
     def _get_effective_permissions(self, permissions: dict) -> dict:
         if ref_name := permissions.get("ref"):
@@ -121,26 +134,31 @@ class Authorizer:
     def _check_allow_and_set_resources(self):
         if not self.allow:
             raise PermissionDenied
-        elif self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(
+        if self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(
             self.allow.get("*", self.allow.get(self.resource))
         ):
             return
-        elif self.allow:
-            if d_domain := self.allow.get(self.resource):
-                if self._allow_if_allow_all(d_domain):
-                    return
-                elif resource_to_check := d_domain.get(self.permission):
-                    self.outcome = ALLOW
-                    effective_permissions = self._get_effective_permissions(resource_to_check)
-                    self.allowed_resource = effective_permissions.get("allow")
-                    self.denied_resource = effective_permissions.get("deny")
+        if d_domain := self.allow.get(self.resource):
+            if self._allow_if_allow_all(d_domain):
+                return
+            if resource_to_check := d_domain.get(self.permission):
+                self.outcome = ALLOW
+                effective_permissions = self._get_effective_permissions(resource_to_check)
+                self.allowed_resource = effective_permissions.get("allow")
+                self.denied_resource = effective_permissions.get("deny")
 
     @property
     def restrictions(self) -> dict:
+        """
+        Provides restrictions in standardised format.
+        """
         return {"allow": self.allowed_resource, "deny": self.denied_resource}
 
     @staticmethod
     def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
+        """
+        Signs authorization in JWT format.
+        """
         if not isinstance(private_key_jwk, dict):
             raise ValueError("private_key_jwk must be a jwk dict")
         if "kid" not in private_key_jwk:
@@ -152,6 +170,10 @@ class Authorizer:
 
 
 def check_permission(resource: Resource, permission_name: str) -> dict:
+    """
+    Check if requester has sufficient permissions to do something on specific resource.
+    Raises if not.
+    """
     authorization_header = resource.request.headers.get("Authorization")
     authorization_scope = None
     if not authorization_header:
@@ -171,6 +193,10 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
 
 
 def has_permission(resource: Resource, permission_name: str) -> bool:
+    """
+    Safe Check if requester has sufficient permissions to do something on specific resource.
+    Does not raise.
+    """
     try:
         check_permission(resource, permission_name)
     except (Unauthorized, PermissionDenied):
@@ -179,6 +205,10 @@ def has_permission(resource: Resource, permission_name: str) -> bool:
 
 
 def authorization(permission_name: str = None):
+    """
+    Wrapper for easy adding authorization requirement.
+    """
+
     def decorator(func: Callable):
         @wraps(func)
         def wrapped(self: Resource, *args, **kwargs):

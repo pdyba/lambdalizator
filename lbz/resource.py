@@ -28,6 +28,10 @@ logger = get_logger(__name__)
 
 
 class Resource:
+    """
+    Resource class.
+    """
+
     _name = ""
     _router = Router()
 
@@ -60,14 +64,14 @@ class Resource:
                 raise UnsupportedMethod(method=self.method)
             self.request.user = self._get_user(self.request.headers)
             return getattr(self, self._router[self.path][self.method])(**self.path_params)
-        except LambdaFWException as e:
-            if 500 <= e.status_code < 600:
-                logger.exception(e)
+        except LambdaFWException as err:
+            if 500 <= err.status_code < 600:
+                logger.exception(err)
             else:
-                logger.warning(e)
-            return e.get_response(self.request.context["requestId"])
-        except Exception as e:
-            logger.exception(e)
+                logger.warning(err)
+            return err.get_response(self.request.context["requestId"])
+        except Exception as err:  # pylint: disable=W0703
+            logger.exception(err)
             return ServerError().get_response(self.request.context["requestId"])
         finally:
             self.post_request_hook()
@@ -82,18 +86,26 @@ class Resource:
         authentication = headers.get("Authentication")
         if authentication and self.auth_enabled:
             return User(authentication)
-        elif authentication:
+        if authentication:
             raise Unauthorized("Authentication method not supported")
         return None
 
     def pre_request_hook(self):
-        pass
+        """
+        Place to configure pre request hooks.
+        """
 
     def post_request_hook(self):
-        pass
+        """
+        Place to configure post request hooks.
+        """
 
 
 class CORSResource(Resource):
+    """
+    CORS capable resource.
+    """
+
     _cors_headers = [
         "Content-Type",
         "X-Amz-Date",
@@ -124,6 +136,9 @@ class CORSResource(Resource):
         return resp
 
     def _get_allowed_origins(self, origins: list) -> str:
+        """
+        Checks requests origins against allowed origins.
+        """
         if "*" in origins:
             return "*"
         if request_origin := self.request.headers.get("Origin"):
@@ -137,20 +152,32 @@ class CORSResource(Resource):
         return origins[0]
 
     def resp_headers(self, content_type: str = "") -> dict:
-        headers = (
+        """
+        Properly formatted headers.
+        """
+        return (
             {**self._resp_headers, "Content-Type": content_type}
             if content_type
             else deepcopy(self._resp_headers)
         )
-        return headers
 
     @property
     def resp_headers_json(self) -> dict:
+        """
+        Properly formatted json headers.
+        """
         return self.resp_headers(content_type="application/json")
 
 
 class PaginatedCORSResource(CORSResource):
+    """
+    Resource for standardised pagination.
+    """
+
     def get_pagination(self, total_items: int, limit: int, offset: int) -> dict:
+        """
+        Responsible for paginating the requests.
+        """
         base_link = self._pagination_uri
         links = {
             "current": base_link.format(offset=offset, limit=limit),
@@ -168,6 +195,6 @@ class PaginatedCORSResource(CORSResource):
 
     @property
     def _pagination_uri(self) -> str:
-        if qp := copy_without_keys(self.request.query_params, "offset", "limit"):
-            return f"{self.urn}?{urlencode(qp)}&offset={{offset}}&limit={{limit}}"
+        if query_params := copy_without_keys(self.request.query_params, "offset", "limit"):
+            return f"{self.urn}?{urlencode(query_params)}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"

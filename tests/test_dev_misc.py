@@ -2,7 +2,7 @@
 # coding=utf-8
 from hashlib import sha1
 
-from lbz.dev.misc import event
+from lbz.dev.misc import EVENT
 
 
 def hash_string(string):
@@ -14,4 +14,4 @@ def test_Event():
 
 
 def test_event():
-    assert hash_string(event) == "fe0ffbaaf59a43ccf384a99076675b1fcefcd9b2"
+    assert hash_string(EVENT) == "fe0ffbaaf59a43ccf384a99076675b1fcefcd9b2"

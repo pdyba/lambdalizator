@@ -1,5 +1,8 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
+"""
+Set of HTTP Exceptions that are json compatabile.
+"""
 from http import HTTPStatus
 
 from lbz.misc import get_logger
@@ -9,10 +12,14 @@ logger = get_logger(__name__)
 
 
 class LambdaFWException(Exception):
+    """
+    Standarised for AWS Lambda exception class.
+    """
+
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
 
-    def __init__(self, message: str = ""):
+    def __init__(self, message: str = ""):  # pylint: disable=super-init-not-called
         if message:
             self.message = message
 
@@ -20,6 +27,9 @@ class LambdaFWException(Exception):
         return f"[{self.status_code}] {self.message}"
 
     def get_response(self, request_id: str) -> Response:
+        """
+        Creates a proper standarised Response for Errors.
+        """
         return Response(
             {"message": self.message, "request_id": request_id},
             status_code=self.status_code,
@@ -79,7 +89,7 @@ class UnsupportedMethod(LambdaFWException):
 
     status_code = HTTPStatus.METHOD_NOT_ALLOWED.value
 
-    def __init__(self, method):
+    def __init__(self, method):  # pylint: disable=super-init-not-called
         self.message = "Unsupported method: %s" % method
 
 
@@ -98,4 +108,6 @@ class NotAcceptable(LambdaFWException):
 
 
 class SecurityRiskWarning(Warning):
-    pass
+    """
+    Security Risk Warning
+    """

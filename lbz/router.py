@@ -1,21 +1,24 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
 """
-Router.
+Router module.
 """
 import json
-
 from functools import wraps
 
 from lbz.misc import NestedDict, Singleton
 
 
 class Router(metaclass=Singleton):
+    """
+    Router Class.
+    """
+
     def __init__(self):
         self._routes = NestedDict()
 
-    def __getitem__(self, y):
-        return self._routes[y]
+    def __getitem__(self, route):
+        return self._routes[route]
 
     def __str__(self):
         return json.dumps(self._routes, indent=4)
@@ -33,10 +36,17 @@ class Router(metaclass=Singleton):
         return self._routes.__iter__()
 
     def add_route(self, routes, method, handler):
+        """
+        Registers handler to route and method.
+        """
         self._routes[routes][method] = handler
 
 
 def add_route(route, method="GET"):
+    """
+    Flask-like wrapper for adding routes.
+    """
+
     def wrapper(func):
         router = Router()
         router.add_route(route, method, func.__name__)

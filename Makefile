@@ -13,3 +13,6 @@ upload:
 
 requirements-dev:
 	pip install -r requirements_dev.txt
+
+lint:
+	pylint lbz  --rcfile=.pylintrc

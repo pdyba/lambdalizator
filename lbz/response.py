@@ -1,5 +1,8 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
+"""
+Standardised response module.
+"""
 import json
 from typing import Union
 
@@ -24,13 +27,19 @@ class Response:
         self.is_base64 = base64_encoded
 
     def get_content_header(self) -> dict:
+        """
+        Adds necessary headers based on content type
+        """
         if self.is_json:
             return {"Content-Type": "application/json"}
-        elif isinstance(self.body, str):
+        if isinstance(self.body, str):
             return {"Content-Type": "text/plain"}
         raise RuntimeError("Response body type not supported yet.")
 
     def to_dict(self):
+        """
+        Dumps response to AWS Lambda compatible response format.
+        """
         body = (
             json.dumps(self.body, separators=(",", ":"), default=str)
             if self.is_json

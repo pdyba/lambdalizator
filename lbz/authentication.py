@@ -1,3 +1,8 @@
+#!/usr/local/bin/python3.8
+# coding=utf-8
+"""
+JWT based Authentication module.
+"""
 import os
 
 from lbz.jwt_utils import decode_jwt
@@ -8,29 +13,40 @@ REMOVE_PREFIXES = os.environ.get("AUTH_REMOVE_PREFIXES") == "1"
 
 
 def remove_prefix(text: str):
+    """
+    Removes prefix of a text based on :
+    """
     return text[text.index(":") + 1 :] if ":" in text else text
 
 
 class User:
+    """
+    User class
+    """
+
     _max_attributes = 1000
 
     def __init__(self, token: str):
         self._token = token
         self.username: str = ""
-        for k, v in self.get_user_details_from_auth_token().items():
-            self.__setattr__(k, v)
+        for key, value in self.get_user_details_from_auth_token().items():
+            self.__setattr__(key, value)
 
     def __repr__(self):
         if hasattr(self, "username"):
             return f"User username={self.username}"
+        return "User"
 
     def get_user_details_from_auth_token(self) -> dict:
+        """
+        Parses auth token for user details.
+        """
         parsed_user = {}
         attributes = decode_jwt(self._token)
         self._validate_attributes(attributes)
-        for k, v in attributes.items():
-            if k not in STANDARD_CLAIMS:
-                parsed_user[remove_prefix(k) if REMOVE_PREFIXES else k] = v
+        for key, value in attributes.items():
+            if key not in STANDARD_CLAIMS:
+                parsed_user[remove_prefix(key) if REMOVE_PREFIXES else key] = value
         return parsed_user
 
     def _validate_attributes(self, attributes: dict) -> None:
