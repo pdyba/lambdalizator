@@ -20,7 +20,7 @@ jobs:
         run: black -l 99 --check .
 
       - name: Run Linters
-        run: make lint
+        run: pylint setup.py lbz
 
   run_unit_tests:
     name: Run unit tests
