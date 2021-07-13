@@ -1,15 +1,13 @@
 from lbz.router import add_route
 from lbz.response import Response
 from lbz.resource import Resource
-from lbz.authz import add_authz, authorize, set_authz
+from lbz.authz import authorization
 
 
-@set_authz
 class HelloWorld(Resource):
     _name = "helloworld"
 
-    @authorize
-    @add_authz()
+    @authorization
     @add_route("/", method="GET")
     def list(self, restrictions=None):
         return Response({"message": f"Hello, {self.request.user.username} !"})
