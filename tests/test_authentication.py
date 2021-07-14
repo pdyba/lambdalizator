@@ -1,3 +1,6 @@
+#!/usr/local/bin/python3.8
+# coding=utf-8
+# pylint: disable=no-self-use, protected-access, too-few-public-methods
 import time
 from unittest.mock import patch
 from uuid import uuid4
@@ -12,6 +15,7 @@ from tests.utils import encode_token
 allowed_audiences = [str(uuid4()), str(uuid4())]
 
 
+# pylint: disable = attribute-defined-outside-init
 @patch("lbz.jwt_utils.PUBLIC_KEYS", [sample_public_key])
 @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences)
 class TestAuthentication:
@@ -52,17 +56,18 @@ class TestAuthentication:
 
     def test_decoding_user_raises_unauthorized_when_invalid_public_key(self):
         with pytest.raises(Unauthorized), patch(
-            "lbz.jwt_utils.PUBLIC_KEYS", [{**sample_public_key.copy(), "n": str(uuid4())}]
+            "lbz.jwt_utils.PUBLIC_KEYS",
+            [{**sample_public_key.copy(), "n": str(uuid4())}],
         ):
             User(self.id_token)
 
     def test_loading_user_parses_user_attributes(self):
         parsed = self.cognito_user.copy()
         del parsed["aud"]
-        for k, v in parsed.items():
+        for key, value in parsed.items():
             assert (
-                self.sample_user.__getattribute__(k.replace("cognito:", "").replace("custom:", ""))
-                == v
+                self.sample_user.__getattribute__(key.replace("cognito:", "").replace("custom:", ""))
+                == value
             )
 
     def test_loading_user_does_not_parse_standard_claims(self):
@@ -85,8 +90,8 @@ class TestAuthentication:
             }
         )
         user = User(id_token)
-        for k in standard_claims.keys():
-            assert not hasattr(user, k)
+        for key in standard_claims:
+            assert not hasattr(user, key)
 
     def test_user_raises_when_more_attributes_than_1000(self):
         with pytest.raises(RuntimeError):
@@ -94,6 +99,6 @@ class TestAuthentication:
             User(encode_token(cognito_user))
 
     def test_nth_cognito_client_validated_as_audience(self):
-        allowed_audiences = [str(uuid4()) for _ in range(10)]
-        with patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences):
-            assert User(encode_token({"aud": allowed_audiences[9]}))
+        test_allowed_audiences = [str(uuid4()) for _ in range(10)]
+        with patch("lbz.jwt_utils.ALLOWED_AUDIENCES", test_allowed_audiences):
+            assert User(encode_token({"aud": test_allowed_audiences[9]}))

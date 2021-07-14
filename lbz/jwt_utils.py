@@ -40,8 +40,8 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
             "The key with id=%s was not found in the environment variable.", kid_from_jwt_header
         )
         raise Unauthorized
-    except (JWTError, KeyError):
-        raise Unauthorized  # pylint: disable=W0707
+    except (JWTError, KeyError) as error:
+        raise Unauthorized from error
 
 
 def decode_jwt(auth_jwt_token: str) -> dict:
@@ -59,12 +59,12 @@ def decode_jwt(auth_jwt_token: str) -> dict:
             return jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
         except JWTClaimsError:
             pass
-        except ExpiredSignatureError:
-            raise Unauthorized(  # pylint: disable=W0707
+        except ExpiredSignatureError as error:
+            raise Unauthorized(
                 "Your token has expired. Please refresh it."
-            )
-        except JWTError:
-            raise Unauthorized  # pylint: disable=W0707
+            ) from error
+        except JWTError as error:
+            raise Unauthorized from error
         except Exception as ex:
             msg = f"An error occurred during decoding the token.\nToken body:\n{auth_jwt_token}"
             raise RuntimeError(msg) from ex

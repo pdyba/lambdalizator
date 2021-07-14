@@ -1,5 +1,5 @@
 # coding=utf-8
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument,no-self-use, no-name-in-module, import-error
 """
 Simple Dev Server
 """

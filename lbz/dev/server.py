@@ -116,7 +116,10 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
             else:
                 logging.warning("Did not create a Response instance:")
                 logging.warning(
-                    "CLS: %s REQUEST: %s QParms: %s", self.cls, request_obj, query_params
+                    "CLS: %s REQUEST: %s QParms: %s",
+                    self.cls,
+                    request_obj,
+                    query_params,
                 )
                 resp_headers = {}
 
@@ -166,6 +169,6 @@ class MyDevServer:  # pylint: disable=R0903
         """
         Start the server.
         """
-        print(f"serving on http://{self.server_address[0]}:{self.server_address[1]}")
+        print(f"serving on http://{self.address}:{self.port}")
         httpd = HTTPServer(self.server_address, self.my_handler)
         httpd.serve_forever()

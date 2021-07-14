@@ -70,6 +70,13 @@ class ServerError(LambdaFWException):
             logger.error(log_msg)
 
 
+class RequestTimeout(LambdaFWException):
+    """Request timed out -- Request timed out; try again later"""
+
+    message = HTTPStatus.REQUEST_TIMEOUT.description
+    status_code = HTTPStatus.REQUEST_TIMEOUT.value
+
+
 class NotFound(LambdaFWException):
     """Nothing matches the given URI"""
 

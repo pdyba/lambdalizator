@@ -1,5 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
+# pylint: disable=no-self-use, protected-access
 from base64 import b64encode
 
 from lbz.response import Response
@@ -14,12 +15,12 @@ class TestResponseInit:
         assert not resp.is_base64
 
     def test___init__2(self):
-        self.resp = Response({"message": "xxx"}, headers={"xx": "xx"}, status_code=666)
-        assert isinstance(self.resp.body, dict)
-        assert self.resp.body == {"message": "xxx"}
-        assert self.resp.headers == {"xx": "xx"}
-        assert self.resp.status_code == 666
-        assert not self.resp.is_base64
+        resp = Response({"message": "xxx"}, headers={"xx": "xx"}, status_code=666)
+        assert isinstance(resp.body, dict)
+        assert resp.body == {"message": "xxx"}
+        assert resp.headers == {"xx": "xx"}
+        assert resp.status_code == 666
+        assert not resp.is_base64
 
 
 class TestResponse:

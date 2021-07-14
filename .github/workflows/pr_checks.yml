@@ -16,11 +16,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements_dev.txt
 
+      - name: Install make
+        run: |
+          apt-get update
+          apt-get install make
+
       - name: Run Black
-        run: black -l 99 --check .
+        run: make black
 
       - name: Run Linters
-        run: pylint setup.py lbz
+        run: make lint
 
   run_unit_tests:
     name: Run unit tests

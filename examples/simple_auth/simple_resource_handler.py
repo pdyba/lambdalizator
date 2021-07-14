@@ -1,4 +1,5 @@
 # coding=utf-8
+#pylint: disable=unused-argument,broad-except
 """
 Simple Lambda Handler
 """

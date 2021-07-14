@@ -1,30 +1,31 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
+# pylint: disable=no-self-use, protected-access, too-few-public-methods
 from collections.abc import MutableMapping
 
 from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger
 
 
-def test_NestedDict():
-    a = NestedDict()
-    a["a"]["b"]["c"]["d"]["e"] = "z"
-    assert a == {"a": {"b": {"c": {"d": {"e": "z"}}}}}
+def test_nested_dict():
+    nest = NestedDict()
+    nest["a"]["b"]["c"]["d"]["e"] = "z"
+    assert nest == {"a": {"b": {"c": {"d": {"e": "z"}}}}}
 
 
-def test_Singleton():
-    class A(metaclass=Singleton):
+def test_singleton():
+    class AClass(metaclass=Singleton):
         pass
 
-    a = A()
-    b = A()
-    c = A()
-    assert a == b == c
-    assert Singleton._instances[A] == a
-    a._del()
-    assert Singleton._instances.get(A) is None
+    a_inst = AClass()
+    b_inst = AClass()
+    c_inst = AClass()
+    assert a_inst == b_inst == c_inst
+    assert Singleton._instances[AClass] == a_inst
+    a_inst._del()
+    assert Singleton._instances.get(AClass) is None
 
 
-def test_MultiDict():
+def test_multi_dict():
     assert issubclass(MultiDict, MutableMapping)
     multi_dict = MultiDict({"a": ["a", "b", "c"]})
     assert multi_dict["a"] == "c"
@@ -43,36 +44,36 @@ def test_MultiDict():
 
 
 def test_get_logger(caplog):
-    a = get_logger("a")
-    b = get_logger("b")
-    assert a != b
+    a_loger = get_logger("a")
+    b_loger = get_logger("b")
+    assert a_loger != b_loger
     try:
         raise ZeroDivisionError
     except ZeroDivisionError as err:
-        a.exception(err)
+        a_loger.exception(err)
         assert "Traceback" in caplog.text
         assert "ZeroDivisionError" in caplog.text
 
 
 def test_error_catcher(caplog):
     @error_catcher
-    def a():
+    def zero_division():
         return 2 / 0
 
-    a()
+    zero_division()
     assert "Traceback" in caplog.text
     assert "ZeroDivisionError" in caplog.text
 
 
 def test_error_catcher_class(caplog):
-    class A:
+    class AClass:
         logger = get_logger("xxxxx")
 
         @error_catcher
-        def a(self):
+        def zero_division(self):
             return 2 / 0
 
-    A().a()
+    AClass().zero_division()
     assert "xxxxx" in caplog.text
     assert "Traceback" in caplog.text
     assert "ZeroDivisionError" in caplog.text

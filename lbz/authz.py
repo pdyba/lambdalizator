@@ -57,10 +57,10 @@ class Authorizer:
         try:
             self.allow = policy["allow"]
             self.deny = policy["deny"]
-        except KeyError:
-            raise PermissionDenied(  # pylint: disable=W0707
+        except KeyError as error:
+            raise PermissionDenied(
                 "Invalid policy in the authorization token"
-            )
+            ) from error
 
         if EXPIRATION_KEY not in policy:
             warnings.warn(

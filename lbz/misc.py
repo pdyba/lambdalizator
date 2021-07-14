@@ -58,8 +58,8 @@ class MultiDict(MutableMapping):  # pylint: disable=too-many-ancestors, C0116
     def __getitem__(self, k):
         try:
             return self._dict[k][-1]
-        except IndexError:
-            raise KeyError(k)  # pylint: disable=W0707
+        except IndexError as error:
+            raise KeyError(k) from error
 
     def __setitem__(self, k, v):
         self._dict[k] = [v]

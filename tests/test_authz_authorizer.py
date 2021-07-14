@@ -1,5 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
+# pylint: disable=no-self-use, protected-access, too-few-public-methods
 from datetime import datetime, timedelta
 
 import pytest
@@ -8,7 +9,7 @@ from lbz.authz import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from tests import sample_private_key
 
-
+# pylint: disable=too-many-public-methods, attribute-defined-outside-init
 class TestAuthorizer:
     def setup_method(self):
         self.iat = int(datetime.utcnow().timestamp())
@@ -64,7 +65,10 @@ class TestAuthorizer:
 
     def test_validate_one(self):
         authorizer = self._make_authorizer(
-            {**self.token_payload, "allow": {"test_resource": {"permission_name": {"allow": ALL}}}}
+            {
+                **self.token_payload,
+                "allow": {"test_resource": {"permission_name": {"allow": ALL}}},
+            }
         )
         authorizer.check_access()
         assert authorizer.outcome == ALLOW

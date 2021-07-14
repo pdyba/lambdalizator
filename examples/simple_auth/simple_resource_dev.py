@@ -1,4 +1,5 @@
 # coding=utf-8
+# pylint: disable=no-self-use, no-name-in-module, import-error
 """
 Simple Dev Server
 """

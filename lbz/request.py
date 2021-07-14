@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint disable=R0902,W0707
+# pylint disable=R0902
 """
 Request standardisation.
 """
@@ -17,7 +17,7 @@ from lbz.misc import MultiDict, get_logger
 logger = get_logger(__name__)
 
 
-class Request:  # pylint disable=C0116,R0913,W0707,C0116
+class Request:  # pylint disable=C0116,R0913,C0116
     """Represents request from API gateway."""
 
     _json_body = None
