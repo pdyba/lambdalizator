@@ -1,5 +1,5 @@
 # coding=utf-8
-# pylint: disable=unused-argument, broad-except
+# pylint: disable=unused-argument, broad-except, no-member
 """
 Simple Lambda Handler
 """

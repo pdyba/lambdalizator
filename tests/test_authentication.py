@@ -66,7 +66,9 @@ class TestAuthentication:
         del parsed["aud"]
         for key, value in parsed.items():
             assert (
-                self.sample_user.__getattribute__(key.replace("cognito:", "").replace("custom:", ""))
+                self.sample_user.__getattribute__(
+                    key.replace("cognito:", "").replace("custom:", "")
+                )
                 == value
             )
 

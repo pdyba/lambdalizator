@@ -38,7 +38,7 @@ class TestRequestInit:
         assert req.user is None
 
 
-class TestRequest: # pylint: disable=attribute-defined-outside-init
+class TestRequest:  # pylint: disable=attribute-defined-outside-init
     def setup_method(self):
         self.cognito_user = {
             "cognito:username": str(uuid4()),
@@ -125,7 +125,9 @@ class TestRequest: # pylint: disable=attribute-defined-outside-init
 
     def test_headers_are_case_insensitive(self):
         assert (
-                self.resp.headers["content-type"] == self.resp.headers["CoNtEnT-TyPe"] == "application/json"
+            self.resp.headers["content-type"]
+            == self.resp.headers["CoNtEnT-TyPe"]
+            == "application/json"
         )
 
     def test_to_dict(self):

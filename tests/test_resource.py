@@ -125,7 +125,7 @@ class TestResource:  # pylint: disable=attribute-defined-outside-init
 
     @patch.object(User, "__init__", return_value=None)
     def test_user_loaded_when_cognito_authentication_configured_correctly(
-            self, load_user: MagicMock
+        self, load_user: MagicMock
     ):
         class XResource(Resource):
             @add_route("/")

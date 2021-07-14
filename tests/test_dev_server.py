@@ -40,7 +40,9 @@ def test_my_lambda_dev_handler():
         msocket.rfile.close = lambda: 0
         my_class = MyClass()
         handler = MyLambdaDevHandlerHelloWorld(msocket, ("127.0.0.1", 8888), BaseServer)
-        my_class.tcp_socket.connect.assert_called_with("0.0.0.0", "8888")  # pylint: disable=no-member
+        my_class.tcp_socket.connect.assert_called_with(  # pylint: disable=no-member
+            "0.0.0.0", "8888"
+        )
     path, params = handler._get_route_params("/")
     assert path == "/"
     assert params is None
@@ -52,7 +54,7 @@ def test_my_lambda_dev_handler():
 
 def test_my_dev_server():
     dev_serv = MyDevServer()
-    assert dev_serv.server_address == ('localhost', 8000)
+    assert dev_serv.server_address == ("localhost", 8000)
     assert dev_serv.port == 8000
     assert dev_serv.address == "localhost"
     assert issubclass(dev_serv.my_handler, MyLambdaDevHandler)
