@@ -1,6 +1,9 @@
 black:
 	black . --line-length 99
 
+black-check:
+	black . --line-length 99 --check
+
 test:
 	coverage run --include 'tests/*' -m pytest "tests"
 	coverage report --skip-covered

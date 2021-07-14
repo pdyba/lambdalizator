@@ -21,8 +21,8 @@ jobs:
           apt-get update
           apt-get install make
 
-      - name: Run Black
-        run: make black
+      - name: Run Black Check
+        run: make black-check
 
       - name: Run Linters
         run: make lint
