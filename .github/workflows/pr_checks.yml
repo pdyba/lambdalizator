@@ -6,7 +6,7 @@ on:
 
 jobs:
   check_code_formatting:
-    name: Check code formatting
+    name: Check code quality (formatting and linters)
     runs-on: ubuntu-latest
     container: python:3.8-slim
     steps:
@@ -24,7 +24,7 @@ jobs:
       - name: Run Black Check
         run: make black-check
 
-      - name: Check code quality (formatting and linters)
+      - name: Run Linters
         run: make lint
 
   run_unit_tests:

@@ -18,4 +18,5 @@ requirements-dev:
 	pip install -r requirements_dev.txt
 
 lint:
-	pylint setup.py lbz examples tests
+	pylint setup.py lbz
+	pylint examples tests
