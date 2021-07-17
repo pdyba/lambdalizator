@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access
 from collections.abc import MutableMapping
 
 from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger
@@ -12,6 +11,7 @@ def test_nested_dict():
     assert nest == {"a": {"b": {"c": {"d": {"e": "z"}}}}}
 
 
+# pylint: disable=protected-access
 def test_singleton():
     class AClass(metaclass=Singleton):
         pass

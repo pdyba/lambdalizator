@@ -1,10 +1,10 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access
-from lbz.router import add_route
-from lbz.router import Router
-from lbz.misc import NestedDict
 import json
+
+from lbz.misc import NestedDict
+from lbz.router import Router
+from lbz.router import add_route
 
 
 # pylint: disable= attribute-defined-outside-init
@@ -14,11 +14,11 @@ class TestRouter:
         self.router.add_route("/", "GET", "x")
 
     def teardown_method(self, _test_method):
-        self.router._del()
+        self.router._del()  # pylint: disable=protected-access
         self.router = None
 
     def test___init__(self):
-        assert isinstance(self.router._routes, NestedDict)
+        assert isinstance(self.router._routes, NestedDict)  # pylint: disable=protected-access
 
     def test___getitem__(self):
         assert self.router["/"] == {"GET": "x"}

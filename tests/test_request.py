@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access
 from uuid import uuid4
 
 import pytest
@@ -14,6 +13,7 @@ from tests.utils import encode_token
 
 
 class TestRequestInit:
+    # pylint: disable=protected-access
     def test__init__(self):
         req = Request(
             headers=CIMultiDict(),
@@ -72,40 +72,40 @@ class TestRequest:  # pylint: disable=attribute-defined-outside-init
 
     def test__decode_base64_bytes(self):
         encoded = b"asdasdsd"
-        output = Request._decode_base64(encoded)
+        output = Request._decode_base64(encoded)  # pylint: disable=protected-access
         assert output == b"j\xc7Z\xb1\xdb\x1d"
 
     def test__decode_base64_str(self):
         encoded = "asdasdsd"
-        output = Request._decode_base64(encoded)
+        output = Request._decode_base64(encoded)  # pylint: disable=protected-access
         assert output == b"j\xc7Z\xb1\xdb\x1d"
 
     def test_raw_body_base64(self):
-        self.resp._body = b"asdasdsd"
-        self.resp._is_base64_encoded = True
+        self.resp._body = b"asdasdsd"  # pylint: disable=protected-access
+        self.resp._is_base64_encoded = True  # pylint: disable=protected-access
         assert self.resp.raw_body == b"j\xc7Z\xb1\xdb\x1d"
 
     def test_raw_body_bytes(self):
-        self.resp._body = b"asdasdsd"
+        self.resp._body = b"asdasdsd"  # pylint: disable=protected-access
         assert self.resp.raw_body == b"asdasdsd"
 
     def test_raw_body_str(self):
-        self.resp._body = "abcx"
+        self.resp._body = "abcx"  # pylint: disable=protected-access
         assert self.resp.raw_body == b"abcx"
 
     def test_json_body_dict(self):
-        self.resp._body = {"x": "abcx"}
+        self.resp._body = {"x": "abcx"}  # pylint: disable=protected-access
         assert self.resp.json_body == {"x": "abcx"}
 
     def test_json_body_json(self):
-        self.resp._json_body = None
-        self.resp._body = '{"x": "abcx"}'
+        self.resp._json_body = None  # pylint: disable=protected-access
+        self.resp._body = '{"x": "abcx"}'  # pylint: disable=protected-access
         assert self.resp.json_body == {"x": "abcx"}
-        assert self.resp._json_body == {"x": "abcx"}
+        assert self.resp._json_body == {"x": "abcx"}  # pylint: disable=protected-access
 
     def test_json_body_bad_json(self):
-        self.resp._json_body = None
-        self.resp._body = '{"x": abcx}'
+        self.resp._json_body = None  # pylint: disable=protected-access
+        self.resp._body = '{"x": abcx}'  # pylint: disable=protected-access
         with pytest.raises(BadRequestError):
             self.resp.json_body  # pylint: disable=pointless-statement
 

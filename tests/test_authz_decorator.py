@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access
 from http import HTTPStatus
 from os import environ
 from unittest.mock import patch

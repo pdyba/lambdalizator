@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access
 import json
 from collections import defaultdict
 from http import HTTPStatus
@@ -71,8 +70,8 @@ class TestResource:  # pylint: disable=attribute-defined-outside-init
         assert self.res.method == "GET"
         assert self.res.path_params == {}
         assert isinstance(self.res.request, Request)
-        assert self.res._router is not None
-        assert isinstance(self.res._router, Router)
+        assert self.res._router is not None  # pylint: disable=protected-access
+        assert isinstance(self.res._router, Router)  # pylint: disable=protected-access
         assert self.res.request.user is None
 
     @patch.object(Resource, "_get_user")
@@ -296,7 +295,9 @@ class TestCORSResource:
         inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE)
         inst.method = "OPTIONS"
         assert inst().headers == {
-            "Access-Control-Allow-Headers": ", ".join(CORSResource._cors_headers),
+            "Access-Control-Allow-Headers": ", ".join(
+                CORSResource._cors_headers  # pylint: disable=protected-access
+            ),
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
             ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
         }
@@ -337,8 +338,10 @@ class TestPagination:  # pylint: disable=attribute-defined-outside-init
 
     def test_pagination_uri_with_existing_pagination_query_params(self):
         self.resource.request.query_params = {"offset": "3", "limit": "42"}
-        assert self.resource._pagination_uri == "/test/path?offset={offset}&limit={limit}"
+        expected = "/test/path?offset={offset}&limit={limit}"
+        assert self.resource._pagination_uri == expected  # pylint: disable=protected-access
 
     def test_pagination_uri_without_query_params(self):
         self.resource.request.query_params = {}
-        assert self.resource._pagination_uri == "/test/path?offset={offset}&limit={limit}"
+        expected = "/test/path?offset={offset}&limit={limit}"
+        assert self.resource._pagination_uri == expected  # pylint: disable=protected-access

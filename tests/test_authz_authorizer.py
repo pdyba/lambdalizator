@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access
 from datetime import datetime, timedelta
 
 import pytest
@@ -9,8 +8,10 @@ from lbz.authz import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from tests import sample_private_key
 
-# pylint: disable=too-many-public-methods, attribute-defined-outside-init
+
+# pylint: disable=too-many-public-methods
 class TestAuthorizer:
+    # pylint: disable=attribute-defined-outside-init
     def setup_method(self):
         self.iat = int(datetime.utcnow().timestamp())
         self.exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
@@ -24,7 +25,8 @@ class TestAuthorizer:
         }
         self.authz = self._make_authorizer(self.token_payload)
 
-    def _make_authorizer(self, token_payload: dict) -> Authorizer:
+    @staticmethod
+    def _make_authorizer(token_payload: dict) -> Authorizer:
         jwt = Authorizer.sign_authz(token_payload, sample_private_key)
         return Authorizer(jwt, "test_resource", "permission_name")
 
@@ -43,6 +45,7 @@ class TestAuthorizer:
             == "Authorizer(auth_jwt=<jwt>, resource_name='test_resource', permission_name='permission_name')"
         )
 
+    # pylint: disable=protected-access
     def test__set_policy_w_scope(self):
         self.authz._set_policy("", {"allow": "Lambda", "deny": "Lambda"})
         assert self.authz.allow == "Lambda"

@@ -15,10 +15,10 @@ from tests.utils import encode_token
 allowed_audiences = [str(uuid4()), str(uuid4())]
 
 
-# pylint: disable = attribute-defined-outside-init
 @patch("lbz.jwt_utils.PUBLIC_KEYS", [sample_public_key])
 @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences)
 class TestAuthentication:
+    # pylint: disable=attribute-defined-outside-init
     def setup_class(self):
         with patch("lbz.jwt_utils.PUBLIC_KEYS", [sample_public_key]), patch(
             "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences

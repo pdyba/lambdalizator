@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access
 import io
 import socket
 from socketserver import BaseServer
@@ -34,6 +33,7 @@ class MyClass:
         self.tcp_socket.connect("0.0.0.0", "8888")
 
 
+# pylint: disable=protected-access
 def test_my_lambda_dev_handler():
     with mock.patch("socket.socket") as msocket:
         msocket.makefile = lambda a, b: io.BytesIO(b"GET / HTTP/1.1\r\n")

@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access
+
 import pytest
 
 from lbz.authz import Authorizer, has_permission, ALL, LIMITED_ALLOW
