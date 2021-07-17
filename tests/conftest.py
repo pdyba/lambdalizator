@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access, too-few-public-methods
+# pylint: disable=no-self-use, protected-access
 import pytest
 from multidict import CIMultiDict
 
@@ -15,6 +15,7 @@ def sample_request():
         uri_params={},
         method="GET",
         body="",
+        # pylint issue #214
         context={},
         stage_vars={},
         is_base64_encoded=False,
@@ -29,6 +30,7 @@ def sample_event():
         resource_path="/",
         method="GET",
         headers={},
+        # pylint issue #214
         path_params={},
         query_params={},
     )

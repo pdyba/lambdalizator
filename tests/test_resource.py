@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access, too-few-public-methods
+# pylint: disable=no-self-use, protected-access
 import json
 from collections import defaultdict
 from http import HTTPStatus
@@ -35,6 +35,7 @@ req = Request(
     body="",
     context={},
     stage_vars={},
+    # pylint issue #214
     is_base64_encoded=False,
     query_params=None,
     user=None,
@@ -301,10 +302,10 @@ class TestCORSResource:
         }
 
 
-class TestPagination:  # pylint: disable=attribute-defined-outside-init, unused-argument
+class TestPagination:  # pylint: disable=attribute-defined-outside-init
     @patch.object(PaginatedCORSResource, "__init__", return_value=None)
-    def setup_method(self, test_method, init_mock) -> None:
-        self.resource = PaginatedCORSResource()  # pylint: disable=no-value-for-parameter
+    def setup_method(self, _test_method, _init_mock: MagicMock) -> None:
+        self.resource = PaginatedCORSResource({}, [])
         self.resource.path = "/test/path"
         self.resource.urn = "/test/path"
         self.resource.request = SimpleNamespace(

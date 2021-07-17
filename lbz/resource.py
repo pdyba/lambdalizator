@@ -70,7 +70,7 @@ class Resource:
             else:
                 logger.warning(err)
             return err.get_response(self.request.context["requestId"])
-        except Exception as err:  # pylint: disable=W0703
+        except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
             return ServerError().get_response(self.request.context["requestId"])
         finally:

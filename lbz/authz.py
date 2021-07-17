@@ -34,15 +34,15 @@ class Authorizer:
 
     def __init__(
         self, auth_jwt: str, resource_name: str, permission_name: str, policy_override: dict = None
-    ):  # pylint disable=R0902
+    ):
         self.outcome = DENY
         self.allowed_resource = None
         self.denied_resource = None
         self.resource = resource_name
         self.permission = permission_name
-        self.refs = {}
-        self.allow = {}
-        self.deny = {}
+        self.refs: dict = {}
+        self.allow: dict = {}
+        self.deny: dict = {}
         self._set_policy(auth_jwt, policy_override)
 
     def __repr__(self):
@@ -170,6 +170,7 @@ class Authorizer:
 def check_permission(resource: Resource, permission_name: str) -> dict:
     """
     Check if requester has sufficient permissions to do something on specific resource.
+
     Raises if not.
     """
     authorization_header = resource.request.headers.get("Authorization")
@@ -193,6 +194,7 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
 def has_permission(resource: Resource, permission_name: str) -> bool:
     """
     Safe Check if requester has sufficient permissions to do something on specific resource.
+
     Does not raise.
     """
     try:

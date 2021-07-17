@@ -136,6 +136,6 @@ Released 2021-07-08
 
 
 ### Version 0.3.12
-Released 2021-07-09
+Released 2021-07-18
 
-- Add pylint, with configuration at 9.98/10.00 score
+- Add pylint, with configuration at 10.00/10.00 score

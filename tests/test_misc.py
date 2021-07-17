@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access, too-few-public-methods
+# pylint: disable=no-self-use, protected-access
 from collections.abc import MutableMapping
 
 from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger
@@ -19,7 +19,7 @@ def test_singleton():
     a_inst = AClass()
     b_inst = AClass()
     c_inst = AClass()
-    assert a_inst == b_inst == c_inst
+    assert a_inst is b_inst is c_inst
     assert Singleton._instances[AClass] == a_inst
     a_inst._del()
     assert Singleton._instances.get(AClass) is None

@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access, too-few-public-methods
+# pylint: disable=no-self-use, protected-access
 from hashlib import sha1
 
 from lbz.dev.misc import EVENT

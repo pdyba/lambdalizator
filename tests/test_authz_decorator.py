@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access, too-few-public-methods
+# pylint: disable=no-self-use, protected-access
 from http import HTTPStatus
 from os import environ
 from unittest.mock import patch
@@ -13,10 +13,10 @@ from tests import sample_private_key
 from tests.fixtures.cognito_auth import env_mock
 from tests.test_resource import event
 
-# pylint: disable=unused-argument
+
 class TestAuthorizationDecorator:
     @patch.dict(environ, env_mock)
-    def test_success(self, *args):
+    def test_success(self, *_args):
         class XResource(Resource):
             @add_route("/")
             @authorization()
@@ -29,18 +29,18 @@ class TestAuthorizationDecorator:
         assert resp.status_code == HTTPStatus.OK
 
     @patch.dict(environ, env_mock)
-    def test_no_auth_header(self, *args):
+    def test_no_auth_header(self, *_args):
         class XResource(Resource):
             @add_route("/")
             @authorization()
-            def handler(self, restrictions):
+            def handler(self, restrictions):  # pylint: disable=unused-argument
                 return Response("x")
 
         resp = XResource({**event, "headers": {}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     @patch.dict(environ, env_mock)
-    def test_no_auth_header_guest_in_place(self, *args):
+    def test_no_auth_header_guest_in_place(self, *_args):
         class XResource(Resource):
             @add_route("/")
             @authorization()
@@ -59,7 +59,7 @@ class TestAuthorizationDecorator:
         assert resp.status_code == 200
 
     @patch.dict(environ, env_mock)
-    def test_different_permission_name(self, *args):
+    def test_different_permission_name(self, *_args):
         class XResource(Resource):
             @add_route("/")
             @authorization("perm-name")
@@ -82,7 +82,7 @@ class TestAuthorizationDecorator:
         assert resp.status_code == HTTPStatus.FORBIDDEN
 
     @patch.dict(environ, env_mock)
-    def test_different_class_name_success(self, *args):
+    def test_different_class_name_success(self, *_args):
         class XResource(Resource):
             _name = "test_res"
 

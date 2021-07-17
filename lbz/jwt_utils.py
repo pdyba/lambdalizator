@@ -47,7 +47,6 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
 def decode_jwt(auth_jwt_token: str) -> dict:
     """
     Decods JWT token.
-    :return:
     """
     if not PUBLIC_KEYS:
         msg = "Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable"

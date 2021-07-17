@@ -5,7 +5,7 @@ black-check:
 	black . --line-length 99 --check
 
 test:
-	coverage run --include 'tests/*' -m pytest "tests"
+	coverage run --include 'lbz/*' -m pytest "tests"
 	coverage report --skip-covered
 
 build:
@@ -18,5 +18,4 @@ requirements-dev:
 	pip install -r requirements_dev.txt
 
 lint:
-	pylint setup.py lbz
-	pylint examples tests
+	pylint setup.py lbz examples tests

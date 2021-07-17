@@ -128,26 +128,26 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
             logging.exception("Fail trying to send json")
         return self._error(500, "Server error")
 
-    def do_GET(self):  # pylint: disable=C0103,C0116
+    def do_GET(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_PATCH(self):  # pylint: disable=C0103,C0116
+    def do_PATCH(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_POST(self):  # pylint: disable=C0103,C0116
+    def do_POST(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_PUT(self):  # pylint: disable=C0103,C0116
+    def do_PUT(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_DELETE(self):  # pylint: disable=C0103,C0116
+    def do_DELETE(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_OPTIONS(self):  # pylint: disable=C0103,C0116
+    def do_OPTIONS(self):  # pylint: disable=invalid-name
         self.handle_request()
 
 
-class MyDevServer:  # pylint: disable=R0903
+class MyDevServer:
     """
     Development Server base class.
     """
@@ -157,7 +157,7 @@ class MyDevServer:  # pylint: disable=R0903
         Creates a server instance.
         """
 
-        class MyClassLambdaDevHandler(MyLambdaDevHandler):  # pylint: disable=C0115
+        class MyClassLambdaDevHandler(MyLambdaDevHandler):
             cls = acls
 
         self.my_handler = MyClassLambdaDevHandler

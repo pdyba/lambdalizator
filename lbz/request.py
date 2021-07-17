@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint disable=R0902
 """
 Request standardisation.
 """
@@ -17,7 +16,7 @@ from lbz.misc import MultiDict, get_logger
 logger = get_logger(__name__)
 
 
-class Request:  # pylint disable=C0116,R0913,C0116
+class Request:
     """Represents request from API gateway."""
 
     _json_body = None
@@ -34,7 +33,7 @@ class Request:  # pylint disable=C0116,R0913,C0116
         is_base64_encoded: bool,
         query_params: dict = None,
         user: User = None,
-    ):  # pylint disable=R0902
+    ):
         self.query_params = MultiDict(query_params)
         self.headers = headers
         self.uri_params = uri_params

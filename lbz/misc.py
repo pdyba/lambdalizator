@@ -8,6 +8,7 @@ import logging.handlers
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
+from typing import Union
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
@@ -30,7 +31,7 @@ class Singleton(type):
             pass
     """
 
-    _instances = {}
+    _instances: dict = {}
 
     def __call__(cls, *args, **kwargs):
         def _del(cls):
@@ -44,7 +45,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-class MultiDict(MutableMapping):  # pylint: disable=too-many-ancestors, C0116
+class MultiDict(MutableMapping):
     """
     Advanced Multi Dictionary.
     """
@@ -82,8 +83,6 @@ class MultiDict(MutableMapping):  # pylint: disable=too-many-ancestors, C0116
     def getlist(self, k: str) -> list:
         """
         Returns a list of all values for specific key.
-        :param k:
-        :return:
         """
         return list(self._dict[k])
 
@@ -117,7 +116,7 @@ def error_catcher(function, default_return=False):
     return wrapped
 
 
-def copy_without_keys(data: dict, *keys) -> dict:
+def copy_without_keys(data: Union[dict, MultiDict], *keys) -> dict:
     """
     Clean up dict from unwanted keys.
     """

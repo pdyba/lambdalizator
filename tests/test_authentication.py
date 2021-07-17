@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access, too-few-public-methods
+# pylint: disable=no-self-use, protected-access
 import time
 from unittest.mock import patch
 from uuid import uuid4
@@ -64,13 +64,11 @@ class TestAuthentication:
     def test_loading_user_parses_user_attributes(self):
         parsed = self.cognito_user.copy()
         del parsed["aud"]
-        for key, value in parsed.items():
-            assert (
-                self.sample_user.__getattribute__(
-                    key.replace("cognito:", "").replace("custom:", "")
-                )
-                == value
+        for key, expected_value in parsed.items():
+            value = self.sample_user.__getattribute__(
+                key.replace("cognito:", "").replace("custom:", "")
             )
+            assert value == expected_value
 
     def test_loading_user_does_not_parse_standard_claims(self):
         current_ts = int(time.time())

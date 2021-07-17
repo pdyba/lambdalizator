@@ -96,7 +96,8 @@ class UnsupportedMethod(LambdaFWException):
 
     status_code = HTTPStatus.METHOD_NOT_ALLOWED.value
 
-    def __init__(self, method):  # pylint: disable=super-init-not-called
+    def __init__(self, method):
+        super().__init__(method)
         self.message = "Unsupported method: %s" % method
 
 

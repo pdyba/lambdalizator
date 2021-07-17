@@ -7,7 +7,7 @@ from lbz.misc import get_logger
 logger = get_logger(__name__)
 
 
-class Client:  # pylint: disable=R0913,C0116
+class Client:
     """
     Client created for testing purposes.
     """

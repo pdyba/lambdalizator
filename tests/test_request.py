@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access, too-few-public-methods
+# pylint: disable=no-self-use, protected-access
 from uuid import uuid4
 
 import pytest
@@ -19,11 +19,12 @@ class TestRequestInit:
             headers=CIMultiDict(),
             uri_params={},
             method="",
+            # pylint issue #214
             body="",
             context={},
             stage_vars={},
-            is_base64_encoded=False,
             query_params=None,
+            is_base64_encoded=False,
             user=None,
         )
         assert isinstance(req.query_params, MultiDict)
@@ -53,6 +54,7 @@ class TestRequest:  # pylint: disable=attribute-defined-outside-init
         self.resp = Request(
             headers=CIMultiDict({"Content-Type": "application/json"}),
             uri_params={},
+            # pylint issue #214
             method="GET",
             body="",
             context={},

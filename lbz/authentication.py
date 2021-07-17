@@ -14,7 +14,7 @@ REMOVE_PREFIXES = os.environ.get("AUTH_REMOVE_PREFIXES") == "1"
 
 def remove_prefix(text: str):
     """
-    Removes prefix of a text based on :
+    Removes prefix of a text based on : sign.
     """
     return text[text.index(":") + 1 :] if ":" in text else text
 

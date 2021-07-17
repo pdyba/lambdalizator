@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access, too-few-public-methods
+# pylint: disable=no-self-use, protected-access
 from lbz.router import add_route
 from lbz.router import Router
 from lbz.misc import NestedDict
@@ -13,7 +13,7 @@ class TestRouter:
         self.router = Router()
         self.router.add_route("/", "GET", "x")
 
-    def teardown_method(self, test_method):  # pylint: disable=unused-argument
+    def teardown_method(self, _test_method):
         self.router._del()
         self.router = None
 
