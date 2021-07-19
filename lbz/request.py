@@ -1,7 +1,6 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """
-Request standardisation.
+Request standardisation module.
 """
 import base64
 import json
@@ -55,9 +54,6 @@ class Request:
 
     @property
     def raw_body(self) -> Union[bytes, str]:
-        """
-        Raw encoded body.
-        """
         if not self._raw_body and self._body is not None:
             if self._is_base64_encoded:
                 self._raw_body = self._decode_base64(self._body)
@@ -69,9 +65,6 @@ class Request:
 
     @property
     def json_body(self) -> Optional[dict]:
-        """
-        Json Body.
-        """
         content_type = self.headers.get("Content-Type")
         if content_type is None:
             return None
@@ -89,9 +82,6 @@ class Request:
         raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
 
     def to_dict(self) -> dict:
-        """
-        Dumps instance to dict.
-        """
         copied = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
         copied["headers"] = dict(copied["headers"])
         copied["user"] = repr(copied["user"])

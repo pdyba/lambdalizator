@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """Helper class for testing."""
 from lbz.dev.misc import Event

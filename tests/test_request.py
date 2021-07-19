@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 from uuid import uuid4
 
@@ -13,7 +12,6 @@ from tests.utils import encode_token
 
 
 class TestRequestInit:
-    # pylint: disable=protected-access
     def test__init__(self):
         req = Request(
             headers=CIMultiDict(),
@@ -34,8 +32,8 @@ class TestRequestInit:
         assert isinstance(req.context, dict)
         assert isinstance(req.stage_vars, dict)
         assert isinstance(req.method, str)
-        assert isinstance(req._body, str)
-        assert isinstance(req._is_base64_encoded, bool)
+        assert isinstance(req._body, str)  # pylint: disable=protected-access
+        assert isinstance(req._is_base64_encoded, bool)  # pylint: disable=protected-access
         assert req.user is None
 
 

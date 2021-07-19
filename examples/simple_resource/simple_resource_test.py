@@ -1,12 +1,12 @@
 # coding=utf-8
-# pylint: disable=no-self-use, no-name-in-module, import-error
+# pylint: disable=no-name-in-module, import-error
 """
 Simple Lambda Handler
 """
 import unittest
 from lbz.dev.test import Client
 
-from simple_resource import HelloWorld
+from .simple_resource import HelloWorld
 
 
 class PublicTestCase(unittest.TestCase):

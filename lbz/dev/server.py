@@ -1,7 +1,6 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """
-Dev Server.
+Development Server.
 """
 import json
 import logging
@@ -153,10 +152,6 @@ class MyDevServer:
     """
 
     def __init__(self, acls: Resource = None, address: str = "localhost", port: int = 8000):
-        """
-        Creates a server instance.
-        """
-
         class MyClassLambdaDevHandler(MyLambdaDevHandler):
             cls = acls
 

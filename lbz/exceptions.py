@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """
 Set of HTTP Exceptions that are json compatabile.
@@ -97,8 +96,7 @@ class UnsupportedMethod(LambdaFWException):
     status_code = HTTPStatus.METHOD_NOT_ALLOWED.value
 
     def __init__(self, method):
-        super().__init__(method)
-        self.message = "Unsupported method: %s" % method
+        super().__init__("Unsupported method: %s" % method)
 
 
 class Unauthorized(LambdaFWException):

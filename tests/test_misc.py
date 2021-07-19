@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 from collections.abc import MutableMapping
 
@@ -11,7 +10,6 @@ def test_nested_dict():
     assert nest == {"a": {"b": {"c": {"d": {"e": "z"}}}}}
 
 
-# pylint: disable=protected-access
 def test_singleton():
     class AClass(metaclass=Singleton):
         pass
@@ -20,9 +18,9 @@ def test_singleton():
     b_inst = AClass()
     c_inst = AClass()
     assert a_inst is b_inst is c_inst
-    assert Singleton._instances[AClass] == a_inst
-    a_inst._del()
-    assert Singleton._instances.get(AClass) is None
+    assert Singleton._instances[AClass] == a_inst  # pylint: disable=protected-access
+    a_inst._del()  # pylint: disable=protected-access
+    assert Singleton._instances.get(AClass) is None  # pylint: disable=protected-access
 
 
 def test_multi_dict():

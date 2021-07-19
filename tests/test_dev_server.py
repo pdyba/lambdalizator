@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 import io
 import socket
@@ -33,7 +32,6 @@ class MyClass:
         self.tcp_socket.connect("0.0.0.0", "8888")
 
 
-# pylint: disable=protected-access
 def test_my_lambda_dev_handler():
     with mock.patch("socket.socket") as msocket:
         msocket.makefile = lambda a, b: io.BytesIO(b"GET / HTTP/1.1\r\n")
@@ -43,11 +41,11 @@ def test_my_lambda_dev_handler():
         my_class.tcp_socket.connect.assert_called_with(  # pylint: disable=no-member
             "0.0.0.0", "8888"
         )
-    path, params = handler._get_route_params("/")
+    path, params = handler._get_route_params("/")  # pylint: disable=protected-access
     assert path == "/"
     assert params is None
 
-    path, params = handler._get_route_params("/t/123")
+    path, params = handler._get_route_params("/t/123")  # pylint: disable=protected-access
     assert path == "/t/{id}"
     assert params == {"id": "123"}
 

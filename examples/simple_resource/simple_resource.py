@@ -1,5 +1,5 @@
 # coding=utf-8
-# pylint: disable=no-self-use, no-name-in-module, import-error
+# pylint: disable=no-name-in-module, import-error
 from lbz.router import add_route
 from lbz.response import Response
 from lbz.resource import Resource

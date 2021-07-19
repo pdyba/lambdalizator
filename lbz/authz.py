@@ -1,7 +1,6 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """
-Authorization related module.
+Authorization module.
 """
 import warnings
 from functools import wraps

@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """
 JWT based Authentication module.
@@ -20,10 +19,6 @@ def remove_prefix(text: str):
 
 
 class User:
-    """
-    User class
-    """
-
     _max_attributes = 1000
 
     def __init__(self, token: str):

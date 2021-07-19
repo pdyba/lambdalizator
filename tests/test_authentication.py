@@ -1,6 +1,4 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-self-use, protected-access
 import time
 from unittest.mock import patch
 from uuid import uuid4
@@ -18,8 +16,8 @@ allowed_audiences = [str(uuid4()), str(uuid4())]
 @patch("lbz.jwt_utils.PUBLIC_KEYS", [sample_public_key])
 @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences)
 class TestAuthentication:
-    # pylint: disable=attribute-defined-outside-init
     def setup_class(self):
+        # pylint: disable=attribute-defined-outside-init
         with patch("lbz.jwt_utils.PUBLIC_KEYS", [sample_public_key]), patch(
             "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
         ):
