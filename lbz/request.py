@@ -76,7 +76,7 @@ class Request:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError:
                     msg = f"The provided payload is invalid.\nPayload body:\n{self.raw_body}"
-                    raise BadRequestError(msg)  # pylint: disable=raise-missing-from
+                    raise BadRequestError(msg) from ValueError
             return self._json_body
         logger.warning("Wrong headers: %s", self.headers)
         raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
