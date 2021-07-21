@@ -58,8 +58,9 @@ event_wrong_uri = Event(
 )
 
 
-class TestResource:  # pylint: disable=attribute-defined-outside-init
+class TestResource:
     def setup_method(self):
+        # pylint: disable=attribute-defined-outside-init
         self.res = Resource(event)
 
     def test___init__(self):
@@ -302,9 +303,10 @@ class TestCORSResource:
         }
 
 
-class TestPagination:  # pylint: disable=attribute-defined-outside-init
+class TestPagination:
     @patch.object(PaginatedCORSResource, "__init__", return_value=None)
     def setup_method(self, _test_method, _init_mock: MagicMock) -> None:
+        # pylint: disable=attribute-defined-outside-init
         self.resource = PaginatedCORSResource({}, [])
         self.resource.path = "/test/path"
         self.resource.urn = "/test/path"

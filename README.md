@@ -52,7 +52,7 @@ class HelloWorld(Resource):
 ```
 ### 2. Define handler
 ```python
-# simple_resource_handler.py
+# simple_resource.py
 
 from lbz.exceptions import LambdaFWException
 

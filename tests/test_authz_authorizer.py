@@ -10,8 +10,8 @@ from tests import sample_private_key
 
 # pylint: disable=too-many-public-methods
 class TestAuthorizer:
-    # pylint: disable=attribute-defined-outside-init
     def setup_method(self):
+        # pylint: disable=attribute-defined-outside-init
         self.iat = int(datetime.utcnow().timestamp())
         self.exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
         self.iss = "test-issuer"

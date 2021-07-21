@@ -37,8 +37,9 @@ class TestRequestInit:
         assert req.user is None
 
 
-class TestRequest:  # pylint: disable=attribute-defined-outside-init
+class TestRequest:
     def setup_method(self):
+        # pylint: disable=attribute-defined-outside-init
         self.cognito_user = {
             "cognito:username": str(uuid4()),
             "email": f"{str(uuid4())}@{str(uuid4())}.com",
@@ -63,6 +64,7 @@ class TestRequest:  # pylint: disable=attribute-defined-outside-init
         )
 
     def teardown_method(self):
+        # pylint: disable= attribute-defined-outside-init
         self.resp = None
 
     def test___repr__(self):

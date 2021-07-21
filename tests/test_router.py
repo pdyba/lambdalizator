@@ -6,13 +6,14 @@ from lbz.router import Router
 from lbz.router import add_route
 
 
-# pylint: disable= attribute-defined-outside-init
 class TestRouter:
     def setup_method(self):
+        # pylint: disable= attribute-defined-outside-init
         self.router = Router()
         self.router.add_route("/", "GET", "x")
 
     def teardown_method(self, _test_method):
+        # pylint: disable= attribute-defined-outside-init
         self.router._del()  # pylint: disable=protected-access
         self.router = None
 
@@ -57,7 +58,7 @@ class TestAddRoute:
         assert len(router) == 0
 
         @add_route("/")
-        def random_method():  # pylint: disable=unused-variable
+        def random_method():
             pass
 
         assert len(router) == 1

@@ -1,6 +1,10 @@
+#!/usr/local/bin/python3.8
 # coding=utf-8
-# pylint: disable=no-name-in-module, import-error
+"""
+Simple Lambda Handler with authorization
+"""
 from lbz.authz import authorization
+from lbz.dev.server import MyDevServer
 from lbz.exceptions import ServerError
 from lbz.resource import Resource
 from lbz.response import Response
@@ -20,4 +24,9 @@ def handle(event, context):
     try:
         return HelloWorldWithAuthorization(event)()
     except Exception:  # pylint: disable=broad-except
-        return ServerError().get_response(context.aws_request_id)  # pylint: disable=no-member
+        return ServerError().get_response(context.aws_request_id).to_dict()
+
+
+if __name__ == "__main__":
+    server = MyDevServer(acls=HelloWorldWithAuthorization, port=8001)
+    server.run()
