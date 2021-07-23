@@ -18,10 +18,12 @@ class LambdaFWException(Exception):
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
 
-    def __init__(self, message: str = ""):
+    def __init__(self, message: str = "", log_msg: str = None):
         super().__init__()
         if message:
             self.message = message
+        if log_msg:
+            logger.error(log_msg)
 
     def __str__(self) -> str:
         return f"[{self.status_code}] {self.message}"
@@ -35,13 +37,6 @@ class LambdaFWException(Exception):
             status_code=self.status_code,
             headers={"Content-Type": "application/json"},
         )
-
-
-class AccessDenied(LambdaFWException):
-    """Request forbidden -- authorization will not help"""
-
-    message = HTTPStatus.FORBIDDEN.description
-    status_code = HTTPStatus.FORBIDDEN.value
 
 
 class BadRequestError(LambdaFWException):
@@ -63,11 +58,6 @@ class ServerError(LambdaFWException):
 
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
-
-    def __init__(self, message: str = "", log_msg: str = None):
-        super().__init__(message)
-        if log_msg:
-            logger.error(log_msg)
 
 
 class RequestTimeout(LambdaFWException):

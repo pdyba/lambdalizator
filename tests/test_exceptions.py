@@ -1,7 +1,6 @@
 # coding=utf-8
 from lbz.exceptions import (
     LambdaFWException,
-    AccessDenied,
     BadRequestError,
     InvalidResolutionError,
     ServerError,
@@ -19,12 +18,6 @@ def test_lambda_fw_exception():
     assert exp.message == "Nope"
     assert exp.status_code == 500
     assert isinstance(exp.get_response(request_id=""), Response)
-
-
-def test_access_denied():
-    exp = AccessDenied()
-    assert exp.message == "Request forbidden -- authorization will not help"
-    assert exp.status_code == 403
 
 
 def test_bad_request_error():
