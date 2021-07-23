@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.8
+#!/usr/bin/env python3.8
 # coding=utf-8
 """
 Simple Lambda Handler with authorization

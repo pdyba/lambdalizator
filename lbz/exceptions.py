@@ -18,7 +18,8 @@ class LambdaFWException(Exception):
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
 
-    def __init__(self, message: str = ""):  # pylint: disable=super-init-not-called
+    def __init__(self, message: str = ""):
+        super().__init__()
         if message:
             self.message = message
 

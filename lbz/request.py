@@ -74,9 +74,9 @@ class Request:
             if self._json_body is None:
                 try:
                     self._json_body = json.loads(self.raw_body)
-                except ValueError:
+                except ValueError as error:
                     msg = f"The provided payload is invalid.\nPayload body:\n{self.raw_body}"
-                    raise BadRequestError(msg) from ValueError
+                    raise BadRequestError(msg) from error
             return self._json_body
         logger.warning("Wrong headers: %s", self.headers)
         raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")

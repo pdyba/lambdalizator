@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.8
+#!/usr/bin/env python3.8
 # coding=utf-8
 """
 Simple Lambda Handler
@@ -26,7 +26,7 @@ def handle(event, context):
         return LambdaFWException().get_response(context.aws_request_id).to_dict()
 
 
-class PublicTestCase:
+class TestHelloWorld:
     def setup_method(self) -> None:
         # pylint: disable=attribute-defined-outside-init
         self.client = Client(resource=HelloWorld)
