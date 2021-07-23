@@ -41,13 +41,6 @@ class LambdaFWException(Exception):
         )
 
 
-class ServerError(LambdaFWException):
-    """500 - Server got itself in trouble"""
-
-    message = HTTPStatus.INTERNAL_SERVER_ERROR.description
-    status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
-
-
 class BadRequestError(LambdaFWException):
     """400 - Bad request syntax or unsupported method"""
 
@@ -251,6 +244,83 @@ class UnavailableForLegalReasons(LambdaFWException):
 
     message = HTTPStatus.UNAVAILABLE_FOR_LEGAL_REASONS.description
     status_code = HTTPStatus.UNAVAILABLE_FOR_LEGAL_REASONS.value
+
+
+class ServerError(LambdaFWException):
+    """500 - Server got itself in trouble"""
+
+    message = HTTPStatus.INTERNAL_SERVER_ERROR.description
+    status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
+
+
+class NotImplementedHTTP(LambdaFWException):
+    """501 - Server does not support this operation"""
+
+    message = HTTPStatus.NOT_IMPLEMENTED.description
+    status_code = HTTPStatus.NOT_IMPLEMENTED.value
+
+
+class BadGateway(LambdaFWException):
+    """502 - Invalid responses from another server/proxy"""
+
+    message = HTTPStatus.BAD_GATEWAY.description
+    status_code = HTTPStatus.BAD_GATEWAY.value
+
+
+class ServiceUnavailable(LambdaFWException):
+    """503 - The server cannot process the request due to a high load"""
+
+    message = HTTPStatus.SERVICE_UNAVAILABLE.description
+    status_code = HTTPStatus.SERVICE_UNAVAILABLE.value
+
+
+class GatewayTimeout(LambdaFWException):
+    """504 - The gateway server did not receive a timely response"""
+
+    message = HTTPStatus.GATEWAY_TIMEOUT.description
+    status_code = HTTPStatus.GATEWAY_TIMEOUT.value
+
+
+class HTTPVersionNotSupported(LambdaFWException):
+    """505 - Cannot fulfill request"""
+
+    message = HTTPStatus.HTTP_VERSION_NOT_SUPPORTED.description
+    status_code = HTTPStatus.HTTP_VERSION_NOT_SUPPORTED.value
+
+
+class VariantAlsoNegotiates(LambdaFWException):
+    """506 -  """
+
+    message = HTTPStatus.VARIANT_ALSO_NEGOTIATES.description
+    status_code = HTTPStatus.VARIANT_ALSO_NEGOTIATES.value
+
+
+class InsufficientStorage(LambdaFWException):
+    """507 -  """
+
+    message = HTTPStatus.INSUFFICIENT_STORAGE.description
+    status_code = HTTPStatus.INSUFFICIENT_STORAGE.value
+
+
+class LoopDetected(LambdaFWException):
+    """508 -  """
+
+    message = HTTPStatus.LOOP_DETECTED.description
+    status_code = HTTPStatus.LOOP_DETECTED.value
+
+
+class NotExtended(LambdaFWException):
+    """510 -  """
+
+    message = HTTPStatus.NOT_EXTENDED.description
+    status_code = HTTPStatus.NOT_EXTENDED.value
+
+
+class NetworkAuthenticationRequired(LambdaFWException):
+    """511 - The client needs to authenticate to gain network access"""
+
+    message = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.description
+    status_code = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.value
 
 
 class SecurityRiskWarning(Warning):
