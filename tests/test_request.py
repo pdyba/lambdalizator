@@ -126,11 +126,8 @@ class TestRequest:
             assert isinstance(getattr(self.resp.user, letter), str)
 
     def test_headers_are_case_insensitive(self):
-        assert (
-            self.resp.headers["content-type"]
-            == self.resp.headers["CoNtEnT-TyPe"]
-            == "application/json"
-        )
+        assert self.resp.headers["content-type"] == self.resp.headers["CoNtEnT-TyPe"]
+        assert self.resp.headers["content-type"] == "application/json"
 
     def test_to_dict(self):
         assert self.resp.to_dict() == {

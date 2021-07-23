@@ -5,7 +5,7 @@ Authorization module.
 import warnings
 from functools import wraps
 from os import environ
-from typing import Callable, Union
+from typing import Callable, Union, Type
 
 from jose import jwt
 
@@ -35,8 +35,8 @@ class Authorizer:
         self, auth_jwt: str, resource_name: str, permission_name: str, policy_override: dict = None
     ):
         self.outcome = DENY
-        self.allowed_resource = None
-        self.denied_resource = None
+        self.allowed_resource: Union[str, dict, None] = None
+        self.denied_resource: Union[str, dict, None] = None
         self.resource = resource_name
         self.permission = permission_name
         self.refs: dict = {}
@@ -166,23 +166,20 @@ class Authorizer:
         )
 
 
-def check_permission(resource: Resource, permission_name: str) -> dict:
+def check_permission(resource: Union[Type[Resource], Resource], permission_name: str) -> dict:
     """
     Check if requester has sufficient permissions to do something on specific resource.
 
     Raises if not.
     """
-    authorization_header = resource.request.headers.get("Authorization")
-    authorization_scope = None
-    if not authorization_header:
-        if hasattr(resource, "get_guest_authorization"):
-            authorization_scope = resource.get_guest_authorization()
-        else:
-            raise Unauthorized("Authorization header missing or empty")
+    authorization_header = resource.request.headers.get("Authorization", "")
+    authorization_scope = resource.get_guest_authorization()
+    if not authorization_header and not authorization_scope:
+        raise Unauthorized("Authorization header missing or empty")
 
     authorizer = Authorizer(
         auth_jwt=authorization_header,
-        resource_name=getattr(resource, "_name") or resource.__class__.__name__.lower(),
+        resource_name=resource.get_name(),
         permission_name=permission_name,
         policy_override=authorization_scope,
     )
@@ -190,7 +187,7 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
     return authorizer.restrictions
 
 
-def has_permission(resource: Resource, permission_name: str) -> bool:
+def has_permission(resource: Union[Type[Resource], Resource], permission_name: str) -> bool:
     """
     Safe Check if requester has sufficient permissions to do something on specific resource.
 
@@ -210,7 +207,7 @@ def authorization(permission_name: str = None):
 
     def decorator(func: Callable):
         @wraps(func)
-        def wrapped(self: Resource, *args, **kwargs):
+        def wrapped(self: Union[Type[Resource], Resource], *args, **kwargs):
             restrictions = check_permission(self, permission_name or func.__name__)
             return func(self, *args, restrictions=restrictions, **kwargs)
 

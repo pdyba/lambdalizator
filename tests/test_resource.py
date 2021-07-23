@@ -3,7 +3,6 @@ import json
 from collections import defaultdict
 from http import HTTPStatus
 from os import environ
-from types import SimpleNamespace
 from typing import List
 from unittest.mock import patch, MagicMock, ANY
 
@@ -13,6 +12,7 @@ from multidict import CIMultiDict
 from lbz.authentication import User
 from lbz.dev.misc import Event
 from lbz.exceptions import NotFound, ServerError
+from lbz.misc import MultiDict
 from lbz.request import Request
 from lbz.resource import (
     Resource,
@@ -221,6 +221,18 @@ class TestResource:
             "request_id": ANY,
         }
 
+    def test__get_name_from_name(self):
+        class XResource(Resource):
+            _name = "test"
+
+        assert XResource.get_name() == "test"
+
+    def test__get_name_from__name__(self):
+        class XResource(Resource):
+            pass
+
+        assert XResource.get_name() == "xresource"
+
 
 ORIGIN_LOCALHOST = "http://localhost:3000"
 ORIGIN_EXAMPLE = "https://api.example.com"
@@ -234,7 +246,7 @@ class TestCORSResource:
         del environ["CORS_ORIGIN"]
 
     def make_cors_handler(self, origins: List[str] = None, req_origin: str = None) -> CORSResource:
-        an_event = defaultdict(MagicMock())
+        an_event: defaultdict = defaultdict(MagicMock())
         an_event["headers"] = {"origin": req_origin} if req_origin is not None else {}
         cors_handler = CORSResource(an_event, ["GET", "POST"], origins=origins)
         return cors_handler
@@ -278,8 +290,10 @@ class TestCORSResource:
 
     def test_all_headers(self):
         content_type = "image/jpeg"
+        expected_header = "Content-Type, X-Amz-Date, Authentication, Authorization, X-Api-Key, X-Amz-Security-Token"  # noqa: E501
+
         assert self.make_cors_handler().resp_headers(content_type) == {
-            "Access-Control-Allow-Headers": "Content-Type, X-Amz-Date, Authentication, Authorization, X-Api-Key, X-Amz-Security-Token",
+            "Access-Control-Allow-Headers": expected_header,
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
             ALLOW_ORIGIN_HEADER: ORIGIN_LOCALHOST,
             "Content-Type": content_type,
@@ -310,12 +324,13 @@ class TestPagination:
         self.resource = PaginatedCORSResource({}, [])
         self.resource.path = "/test/path"
         self.resource.urn = "/test/path"
-        self.resource.request = SimpleNamespace(
-            query_params={
-                "test": "param",
-                "another": "example",
+        req.query_params = MultiDict(
+            {
+                "test": ["param"],
+                "another": ["example"],
             }
         )
+        self.resource.request = req
 
     def test_get_pagination(self):
         expected_prefix = "/test/path?test=param&another=example"

@@ -33,7 +33,7 @@ class Request:
         query_params: dict = None,
         user: User = None,
     ):
-        self.query_params = MultiDict(query_params)
+        self.query_params = MultiDict(query_params or {})
         self.headers = headers
         self.uri_params = uri_params
         self.method = method
@@ -75,8 +75,9 @@ class Request:
                 try:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError as error:
-                    msg = f"The provided payload is invalid.\nPayload body:\n{self.raw_body}"
-                    raise BadRequestError(msg) from error
+                    raise BadRequestError(
+                        "Payload is invalid.\nPayload body:\n {!r}".format(self.raw_body)
+                    ) from error
             return self._json_body
         logger.warning("Wrong headers: %s", self.headers)
         raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")

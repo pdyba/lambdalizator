@@ -7,6 +7,7 @@ import logging.handlers
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
+from typing import Union
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
@@ -114,7 +115,7 @@ def error_catcher(function, default_return=False):
     return wrapped
 
 
-def copy_without_keys(data: dict, *keys) -> dict:
+def copy_without_keys(data: Union[dict, MultiDict], *keys) -> dict:
     """
     Clean up dict from unwanted keys.
     """

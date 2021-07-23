@@ -19,3 +19,6 @@ requirements-dev:
 
 lint:
 	pylint setup.py lbz examples tests
+	mypy --install-types
+	mypy setup.py lbz examples tests
+	flake8 setup.py lbz examples tests

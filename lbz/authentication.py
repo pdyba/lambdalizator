@@ -15,7 +15,7 @@ def remove_prefix(text: str):
     """
     Removes prefix of a text based on : sign.
     """
-    return text[text.index(":") + 1 :] if ":" in text else text
+    return text[text.index(":") + 1 :] if ":" in text else text  # noqa:E203
 
 
 class User:

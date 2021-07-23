@@ -52,7 +52,7 @@ def decode_jwt(auth_jwt_token: str) -> dict:
         raise RuntimeError(msg)
 
     jwk = get_matching_jwk(auth_jwt_token)
-    for aud in ALLOWED_AUDIENCES or [None]:
+    for aud in ALLOWED_AUDIENCES or []:
         try:
             return jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
         except JWTClaimsError:

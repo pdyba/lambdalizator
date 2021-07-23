@@ -47,7 +47,7 @@ class TestAuthorizationDecorator:
                 return Response("x")
 
             @staticmethod
-            def get_guest_authorization():
+            def get_guest_authorization() -> dict:
                 return {
                     "allow": "*",
                     "deny": {},

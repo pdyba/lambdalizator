@@ -31,8 +31,12 @@ class Resource:
     Resource class.
     """
 
-    _name = ""
+    _name: str = ""
     _router = Router()
+
+    @classmethod
+    def get_name(cls):
+        return cls._name or cls.__name__.lower()
 
     def __init__(self, event: dict):
         self._load_configuration()
@@ -97,6 +101,12 @@ class Resource:
     def post_request_hook(self):
         """
         Place to configure post request hooks.
+        """
+
+    @staticmethod
+    def get_guest_authorization() -> dict:
+        """
+        Place to configure default authorization.
         """
 
 

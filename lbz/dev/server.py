@@ -5,22 +5,27 @@ Development Server.
 import json
 import logging
 import urllib.parse
+from abc import ABCMeta, abstractmethod
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
-from typing import Tuple, Union
+from typing import Tuple, Union, Type
 
 from lbz.dev.misc import Event
 from lbz.resource import Resource
 from lbz.response import Response
 
 
-class MyLambdaDevHandler(BaseHTTPRequestHandler):
+class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
     """
     Mimics AWS Lambda behavior.
     """
 
-    cls = None
-    done = False
+    done: bool = False
+
+    @property
+    @abstractmethod
+    def cls(self) -> Type[Resource]:
+        pass
 
     def _get_route_params(self, org_path: str) -> Tuple[Union[str, None], Union[dict, None]]:
         """
@@ -151,9 +156,9 @@ class MyDevServer:
     Development Server base class.
     """
 
-    def __init__(self, acls: Resource = None, address: str = "localhost", port: int = 8000):
+    def __init__(self, acls: Type[Resource], address: str = "localhost", port: int = 8000):
         class MyClassLambdaDevHandler(MyLambdaDevHandler):
-            cls = acls
+            cls: Type[Resource] = acls
 
         self.my_handler = MyClassLambdaDevHandler
         self.address = address
