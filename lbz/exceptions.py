@@ -191,28 +191,28 @@ class MisdirectedRequest(LambdaFWException):
 
 
 class UnprocessableEntity(LambdaFWException):
-    """422 -  """
+    """422 -"""
 
     message = HTTPStatus.UNPROCESSABLE_ENTITY.description
     status_code = HTTPStatus.UNPROCESSABLE_ENTITY.value
 
 
 class Locked(LambdaFWException):
-    """423 -  """
+    """423 -"""
 
     message = HTTPStatus.LOCKED.description
     status_code = HTTPStatus.LOCKED.value
 
 
 class FailedDependency(LambdaFWException):
-    """424 -  """
+    """424 -"""
 
     message = HTTPStatus.FAILED_DEPENDENCY.description
     status_code = HTTPStatus.FAILED_DEPENDENCY.value
 
 
 class UpgradeRequired(LambdaFWException):
-    """426 -  """
+    """426 -"""
 
     message = HTTPStatus.UPGRADE_REQUIRED.description
     status_code = HTTPStatus.UPGRADE_REQUIRED.value
@@ -289,28 +289,28 @@ class HTTPVersionNotSupported(LambdaFWException):
 
 
 class VariantAlsoNegotiates(LambdaFWException):
-    """506 -  """
+    """506 -"""
 
     message = HTTPStatus.VARIANT_ALSO_NEGOTIATES.description
     status_code = HTTPStatus.VARIANT_ALSO_NEGOTIATES.value
 
 
 class InsufficientStorage(LambdaFWException):
-    """507 -  """
+    """507 -"""
 
     message = HTTPStatus.INSUFFICIENT_STORAGE.description
     status_code = HTTPStatus.INSUFFICIENT_STORAGE.value
 
 
 class LoopDetected(LambdaFWException):
-    """508 -  """
+    """508 -"""
 
     message = HTTPStatus.LOOP_DETECTED.description
     status_code = HTTPStatus.LOOP_DETECTED.value
 
 
 class NotExtended(LambdaFWException):
-    """510 -  """
+    """510 -"""
 
     message = HTTPStatus.NOT_EXTENDED.description
     status_code = HTTPStatus.NOT_EXTENDED.value
