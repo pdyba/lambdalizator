@@ -1,16 +1,40 @@
 # coding=utf-8
 from lbz.exceptions import (
-    LambdaFWException,
     BadRequestError,
+    Conflict,
+    ExpectationFailed,
+    FailedDependency,
+    Gone,
+    ImATeapot,
     InvalidResolutionError,
-    ServerError,
+    LambdaFWException,
+    LengthRequired,
+    Locked,
+    MisdirectedRequest,
+    NotAcceptable,
     NotFound,
+    PayloadTooLarge,
+    PaymentRequired,
     PermissionDenied,
-    UnsupportedMethod,
-    Unauthorized,
+    PreconditionFailed,
+    PreconditionRequired,
+    ProxyAuthenticationRequired,
+    RangeNotSatisfiable,
+    RequestHeaderFieldsTooLarge,
     RequestTimeout,
+    SecurityRiskWarning,
+    ServerError,
+    TooManyRequests,
+    URITooLong,
+    Unauthorized,
+    UnavailableForLegalReasons,
+    UnprocessableEntity,
+    UnsupportedMediaType,
+    UnsupportedMethod,
+    UpgradeRequired,
 )
 from lbz.response import Response
+import pytest
 
 
 def test_lambda_fw_exception():
@@ -20,49 +44,53 @@ def test_lambda_fw_exception():
     assert isinstance(exp.get_response(request_id=""), Response)
 
 
-def test_bad_request_error():
-    exp = BadRequestError()
-    assert exp.message == "Bad request syntax or unsupported method"
-    assert exp.status_code == 400
-
-
-def test_invalid_resolution_error():
-    exp = InvalidResolutionError()
-    assert exp.message == "Unaccepted image resolution"
-    assert exp.status_code == 400
-
-
-def test_server_error():
-    exp = ServerError()
-    assert exp.message == "Server got itself in trouble"
-    assert exp.status_code == 500
-
-
-def test_not_found():
-    exp = NotFound()
-    assert exp.message == "Nothing matches the given URI"
-    assert exp.status_code == 404
-
-
-def test_permission_denied():
-    exp = PermissionDenied()
-    assert exp.message == "Request forbidden -- authorization will not help"
-    assert exp.status_code == 403
-
-
 def test_unsupported_method():
     exp = UnsupportedMethod("GET")
     assert exp.message == "Unsupported method: GET"
     assert exp.status_code == 405
 
 
-def test_unauthorized():
-    exp = Unauthorized()
-    assert exp.message == "No permission -- see authorization schemes"
-    assert exp.status_code == 401
+@pytest.mark.parametrize(
+    "an_excetption",
+    [
+        BadRequestError,
+        Conflict,
+        ExpectationFailed,
+        FailedDependency,
+        Gone,
+        ImATeapot,
+        InvalidResolutionError,
+        LengthRequired,
+        Locked,
+        MisdirectedRequest,
+        NotAcceptable,
+        NotFound,
+        PayloadTooLarge,
+        PaymentRequired,
+        PermissionDenied,
+        PreconditionFailed,
+        PreconditionRequired,
+        ProxyAuthenticationRequired,
+        RangeNotSatisfiable,
+        RequestHeaderFieldsTooLarge,
+        RequestTimeout,
+        ServerError,
+        TooManyRequests,
+        URITooLong,
+        Unauthorized,
+        UnavailableForLegalReasons,
+        UnprocessableEntity,
+        UnsupportedMediaType,
+        UpgradeRequired,
+    ],
+)
+def test_all_exceptions(an_excetption):
+    exp = an_excetption()
+    code, msg = exp.__doc__.split(" - ")
+    assert exp.message == msg.strip()
+    assert exp.status_code == int(code)
 
 
-def test_request_timeout():
-    exp = RequestTimeout()
-    assert exp.message == "Request timed out; try again later"
-    assert exp.status_code == 408
+def test_security_warning():
+    warn = SecurityRiskWarning()
+    assert isinstance(warn, Warning)

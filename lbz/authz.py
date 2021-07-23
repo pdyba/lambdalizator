@@ -43,6 +43,9 @@ class Authorizer:
         self.allow: dict = {}
         self.deny: dict = {}
         self._set_policy(auth_jwt, policy_override)
+        self.error = PermissionDenied(
+            log_warn=f"You don't have permission to {self.permission} on {self.resource}"
+        )
 
     def __repr__(self):
         return (
@@ -88,13 +91,11 @@ class Authorizer:
         if self.denied_resource and self.outcome:
             self.outcome = LIMITED_ALLOW
         if self.outcome == DENY:
-            raise PermissionDenied
+            raise self.error
 
     def _deny_if_all(self, permission):
         if permission == ALL:
-            raise PermissionDenied(
-                f"You don't have permission to {self.permission} on {self.resource}"
-            )
+            raise self.error
 
     def _check_deny(self):
         self._deny_if_all(self.deny.get("*", self.allow.get(self.resource)))
@@ -123,14 +124,14 @@ class Authorizer:
             if ref_name not in self.refs:
                 logger.warning("Missing %s ref in the policy", ref_name)
                 self.outcome = DENY
-                raise PermissionDenied
+                raise self.error
             return self.refs[ref_name]
 
         return permissions
 
     def _check_allow_and_set_resources(self):
         if not self.allow:
-            raise PermissionDenied
+            raise self.error
         if self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(
             self.allow.get("*", self.allow.get(self.resource))
         ):
