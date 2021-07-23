@@ -63,7 +63,7 @@ def handle(event, context):
     try:
         return HelloWorld(event)()
     except Exception as err:
-        return LambdaFWException().get_response(context.aws_request_id)to_dict()
+        return LambdaFWException().get_response(context.aws_request_id).to_dict()
 
 ```
 ### 3. Create dev Server 🖥️
