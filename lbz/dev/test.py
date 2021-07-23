@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """Helper class for testing."""
 from lbz.dev.misc import Event
@@ -8,6 +7,10 @@ logger = get_logger(__name__)
 
 
 class Client:
+    """
+    Client created for testing purposes.
+    """
+
     def __init__(self, resource):
         self.resource = resource
 

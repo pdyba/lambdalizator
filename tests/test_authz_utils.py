@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import pytest
 
 from lbz.authz import Authorizer, has_permission, ALL, LIMITED_ALLOW

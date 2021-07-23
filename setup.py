@@ -3,6 +3,9 @@ from setuptools import setup
 with open("version") as file:
     version = file.read()
 
+with open("README.md") as file:
+    long_description = file.read()
+
 setup(
     name="lbz",
     version=version,
@@ -14,7 +17,7 @@ setup(
     license="LICENSE",
     description="AWS Lambda REST ToolBox",
     long_description_content_type="text/markdown",
-    long_description=open("README.md").read(),
+    long_description=long_description,
     install_requires=["python-jose"],
     classifiers=[
         "Environment :: Web Environment",

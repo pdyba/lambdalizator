@@ -1,3 +1,7 @@
+# coding=utf-8
+"""
+JWT helpers module.
+"""
 import json
 import os
 
@@ -22,6 +26,9 @@ if any("kid" not in public_key for public_key in PUBLIC_KEYS):
 
 
 def get_matching_jwk(auth_jwt_token: str) -> dict:
+    """
+    Checks provided JWT token against allowed tokens.
+    """
     try:
         kid_from_jwt_header = jwt.get_unverified_header(auth_jwt_token)["kid"]
         for key in PUBLIC_KEYS:
@@ -32,11 +39,14 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
             "The key with id=%s was not found in the environment variable.", kid_from_jwt_header
         )
         raise Unauthorized
-    except (JWTError, KeyError):
-        raise Unauthorized
+    except (JWTError, KeyError) as error:
+        raise Unauthorized from error
 
 
 def decode_jwt(auth_jwt_token: str) -> dict:
+    """
+    Decodes JWT token.
+    """
     if not PUBLIC_KEYS:
         msg = "Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable"
         raise RuntimeError(msg)
@@ -47,10 +57,10 @@ def decode_jwt(auth_jwt_token: str) -> dict:
             return jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
         except JWTClaimsError:
             pass
-        except ExpiredSignatureError:
-            raise Unauthorized(f"Your token has expired. Please refresh it.")
-        except JWTError:
-            raise Unauthorized
+        except ExpiredSignatureError as error:
+            raise Unauthorized("Your token has expired. Please refresh it.") from error
+        except JWTError as error:
+            raise Unauthorized from error
         except Exception as ex:
             msg = f"An error occurred during decoding the token.\nToken body:\n{auth_jwt_token}"
             raise RuntimeError(msg) from ex

@@ -6,7 +6,7 @@ on:
 
 jobs:
   check_code_formatting:
-    name: Check code formatting
+    name: Check code quality (formatting and linters)
     runs-on: ubuntu-latest
     container: python:3.8-slim
     steps:
@@ -16,8 +16,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements_dev.txt
 
-      - name: Run Black
-        run: black -l 99 --check .
+      - name: Install make
+        run: |
+          apt-get update
+          apt-get install make
+
+      - name: Run Black Check
+        run: make black-check
+
+      - name: Run Linters
+        run: make lint
 
   run_unit_tests:
     name: Run unit tests

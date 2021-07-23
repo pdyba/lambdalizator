@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """
 Misc Helpers of Lambda Framework.
@@ -13,6 +12,10 @@ LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
 
 class NestedDict(dict):
+    """
+    Endless nested dict.
+    """
+
     def __getitem__(self, key):
         if key in self:
             return self.get(key)
@@ -26,7 +29,7 @@ class Singleton(type):
             pass
     """
 
-    _instances = {}
+    _instances: dict = {}
 
     def __call__(cls, *args, **kwargs):
         def _del(cls):
@@ -40,7 +43,11 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-class MultiDict(MutableMapping):  # pylint: disable=too-many-ancestors
+class MultiDict(MutableMapping):
+    """
+    Advanced Multi Dictionary.
+    """
+
     def __init__(self, mapping: dict):
         if mapping is None:
             mapping = {}
@@ -50,8 +57,8 @@ class MultiDict(MutableMapping):  # pylint: disable=too-many-ancestors
     def __getitem__(self, k):
         try:
             return self._dict[k][-1]
-        except IndexError:
-            raise KeyError(k)
+        except IndexError as error:
+            raise KeyError(k) from error
 
     def __setitem__(self, k, v):
         self._dict[k] = [v]
@@ -71,7 +78,10 @@ class MultiDict(MutableMapping):  # pylint: disable=too-many-ancestors
     def __str__(self):
         return repr(self)
 
-    def getlist(self, k):
+    def getlist(self, k: str) -> list:
+        """
+        Returns a list of all values for specific key.
+        """
         return list(self._dict[k])
 
 
@@ -86,11 +96,15 @@ logger = get_logger(__name__)
 
 
 def error_catcher(function, default_return=False):
+    """
+    Universal Error Catcher
+    """
+
     @wraps(function)
     def wrapped(*args, **kwargs):
         try:
             return function(*args, **kwargs)
-        except Exception as error:
+        except Exception as error:  # pylint: disable=broad-except
             if len(args) > 0 and hasattr(args[0], "logger"):
                 args[0].logger.exception(error)
             else:
@@ -101,4 +115,7 @@ def error_catcher(function, default_return=False):
 
 
 def copy_without_keys(data: dict, *keys) -> dict:
+    """
+    Clean up dict from unwanted keys.
+    """
     return {key: value for key, value in data.items() if key not in keys}

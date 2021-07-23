@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """
 Dev misc tools.
@@ -10,7 +9,7 @@ from uuid import uuid4
 
 WORKING_DIR = pathlib.Path(__file__).parent.absolute()
 
-event = """
+EVENT = """
 {
   "resource": "/",
   "path": "/",
@@ -64,6 +63,8 @@ event = """
 
 
 class Event(dict):
+    """Fake Event object for AWS Lambda compatibility"""
+
     def __init__(
         self,
         resource_path: str,
@@ -73,8 +74,7 @@ class Event(dict):
         path_params=None,
         headers=None,
     ):
-        """Creates fake Event object."""
-        super().__init__(**json.loads(event))
+        super().__init__(**json.loads(EVENT))
 
         self["resource"] = resource_path
         self["pathParameters"] = {} if path_params is None else path_params

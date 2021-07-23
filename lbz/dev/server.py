@@ -1,17 +1,17 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 """
-Dev Server.
+Development Server.
 """
-from http.server import BaseHTTPRequestHandler
-from http.server import HTTPServer
 import json
 import logging
 import urllib.parse
+from http.server import BaseHTTPRequestHandler
+from http.server import HTTPServer
 from typing import Tuple, Union
 
-from lbz.response import Response
 from lbz.dev.misc import Event
+from lbz.resource import Resource
+from lbz.response import Response
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler):
@@ -28,32 +28,31 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
         :param org_path:
         :return: standarised route, url params / None
         """
-        router = self.cls._router
+        router = self.cls._router  # pylint: disable=protected-access
         if org_path in router:
             return org_path, None
-        else:
-            if org_path.find("?") != -1:
-                org_path = org_path[: org_path.find("?")]
-            path = org_path.split("/")
-            path.remove("")
-            for org_route in router:
-                if org_route == "/":
-                    continue
-                route = org_route.split("/")
-                route.remove("")
-                if len(path) == len(route):
-                    acc = 0
-                    params = {}
-                    for i, r in enumerate(route):
-                        if r.startswith("{"):
-                            acc += 1
-                            param = path[i]
-                            params[r.strip("{").strip("}")] = param
-                        if r == path[i]:
-                            acc += 1
-                    if len(path) == acc:
-                        return org_route, params
-        return None, None  # to be raised
+        if org_path.find("?") != -1:
+            org_path = org_path[: org_path.find("?")]
+        path = org_path.split("/")
+        path.remove("")
+        for org_route in router:
+            if org_route == "/":
+                continue
+            route = org_route.split("/")
+            route.remove("")
+            if len(path) == len(route):
+                acc = 0
+                params = {}
+                for i, route_part in enumerate(route):
+                    if route_part.startswith("{"):
+                        acc += 1
+                        param = path[i]
+                        params[route_part.strip("{").strip("}")] = param
+                    if route_part == path[i]:
+                        acc += 1
+                if len(path) == acc:
+                    return org_route, params
+        return None, None
 
     def _send_json(self, code, obj, headers=None):
         # Make sure only one response is sent
@@ -75,9 +74,12 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
         self._send_json(code, {"error": message}, headers={"Content-Type": content_type})
 
     def handle_request(self):
+        """
+        Main method for handling all incoming requests.
+        """
         try:
             if self.path == "/favicon.ico":
-                return
+                return "/favicon.ico"
             self.done = False
 
             request_size = int(self.headers.get("Content-Length", 0))
@@ -93,7 +95,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
             route, params = self._get_route_params(self.path)
             if route is None:
                 return self._error(666, "Path not Found")
-            resource = self.cls(
+            resource = self.cls(  # pylint: disable=not-callable
                 Event(
                     resource_path=route,
                     method=self.command,
@@ -112,35 +114,44 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler):
                     response = json.loads(body)
             else:
                 logging.warning("Did not create a Response instance:")
-                logging.warning(f"CLS: {self.cls} REQUEST: {request_obj} QParms: {query_params}")
+                logging.warning(
+                    "CLS: %s REQUEST: %s QParms: %s",
+                    self.cls,
+                    request_obj,
+                    query_params,
+                )
                 resp_headers = {}
 
             self._send_json(code, response, resp_headers)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             logging.exception("Fail trying to send json")
         return self._error(500, "Server error")
 
-    def do_GET(self):
+    def do_GET(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_PATCH(self):
+    def do_PATCH(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_POST(self):
+    def do_POST(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_PUT(self):
+    def do_PUT(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_DELETE(self):
+    def do_DELETE(self):  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_OPTIONS(self):
+    def do_OPTIONS(self):  # pylint: disable=invalid-name
         self.handle_request()
 
 
 class MyDevServer:
-    def __init__(self, acls=None, address="localhost", port=8000):
+    """
+    Development Server base class.
+    """
+
+    def __init__(self, acls: Resource = None, address: str = "localhost", port: int = 8000):
         class MyClassLambdaDevHandler(MyLambdaDevHandler):
             cls = acls
 
@@ -150,6 +161,9 @@ class MyDevServer:
         self.server_address = (self.address, self.port)
 
     def run(self):
-        print(f"serving on http://{self.server_address[0]}:{self.server_address[1]}")
+        """
+        Start the server.
+        """
+        print(f"serving on http://{self.address}:{self.port}")
         httpd = HTTPServer(self.server_address, self.my_handler)
         httpd.serve_forever()

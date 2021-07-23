@@ -52,7 +52,7 @@ class HelloWorld(Resource):
 ```
 ### 2. Define handler
 ```python
-# simple_resource_handler.py
+# simple_resource.py
 
 from lbz.exceptions import LambdaFWException
 
@@ -61,11 +61,9 @@ from simple_resource import HelloWorld
 
 def handle(event, context):
     try:
-        exp = HelloWorld(event)
-        resp = exp()
-        return resp
+        return HelloWorld(event)()
     except Exception as err:
-        return LambdaFWException().to_dict()
+        return LambdaFWException().get_response(context.aws_request_id).to_dict()
 
 ```
 ### 3. Create dev Server 🖥️
@@ -85,21 +83,19 @@ if __name__ == '__main__':
 ### 4. Don't forget to unit test ⌨️ 
 
 ```python
-# python -m unittest simple_resource_test.py
-import unittest
+# pytest simple_resource_test.py
 from lbz.dev.test import Client
 
 from simple_resource import HelloWorld
 
+class TestHelloWorld:
+    def setup_method(self) -> None:
+        # pylint: disable=attribute-defined-outside-init
+        self.client = Client(resource=HelloWorld)
 
-class PublicTestCase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.client = Client(resource=HelloWorld)
-
-    def test_filter_queries_all_active_when_no_params(self):
+    def test_filter_queries_all_active_when_no_params(self) -> None:
         data = self.client.get("/").to_dict()["body"]
-        self.assertEqual(data, '{"message":"HelloWorld"}')
+        assert data == '{"message":"HelloWorld"}'
 ```
 
 ### 5. Authenticate it 💂

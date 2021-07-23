@@ -126,10 +126,16 @@ Released 2021-06-13
 - Improve the messages that are logged in the entire library
 
 ### Version 0.3.11
-Released 2021-06-30
+Released 2021-07-08
 
 - Add CORS-enabled Resource class supporting:
   - `*` 
   - `domain.com`
   - `*.domain.com`
 - Add Paginated Resource Helper class
+
+
+### Version 0.3.12
+Released 2021-07-18
+
+- Add pylint, with configuration at 10.00/10.00 score

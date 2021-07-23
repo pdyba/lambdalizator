@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 from http import HTTPStatus
 from os import environ
@@ -15,8 +14,8 @@ from tests.test_resource import event
 
 class TestAuthorizationDecorator:
     @patch.dict(environ, env_mock)
-    def test_success(self, *args):
-        class X(Resource):
+    def test_success(self, *_args):
+        class XResource(Resource):
             @add_route("/")
             @authorization()
             def handler(self, restrictions):
@@ -24,23 +23,23 @@ class TestAuthorizationDecorator:
                 return Response("x")
 
         auth_header = Authorizer.sign_authz({"allow": "*", "deny": {}}, sample_private_key)
-        resp = X({**event, "headers": {"authorization": auth_header}})()
+        resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 
     @patch.dict(environ, env_mock)
-    def test_no_auth_header(self, *args):
-        class X(Resource):
+    def test_no_auth_header(self, *_args):
+        class XResource(Resource):
             @add_route("/")
             @authorization()
-            def handler(self, restrictions):
+            def handler(self, restrictions):  # pylint: disable=unused-argument
                 return Response("x")
 
-        resp = X({**event, "headers": {}})()
+        resp = XResource({**event, "headers": {}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     @patch.dict(environ, env_mock)
-    def test_no_auth_header_guest_in_place(self, *args):
-        class X(Resource):
+    def test_no_auth_header_guest_in_place(self, *_args):
+        class XResource(Resource):
             @add_route("/")
             @authorization()
             def handler(self, restrictions):
@@ -54,12 +53,12 @@ class TestAuthorizationDecorator:
                     "deny": {},
                 }
 
-        resp = X({**event, "headers": {}})()
+        resp = XResource({**event, "headers": {}})()
         assert resp.status_code == 200
 
     @patch.dict(environ, env_mock)
-    def test_different_permission_name(self, *args):
-        class X(Resource):
+    def test_different_permission_name(self, *_args):
+        class XResource(Resource):
             @add_route("/")
             @authorization("perm-name")
             def handler(self, restrictions):
@@ -67,20 +66,22 @@ class TestAuthorizationDecorator:
                 return Response("x")
 
         auth_header = Authorizer.sign_authz(
-            {"allow": {"x": {"perm-name": {"allow": "self"}}}, "deny": {}}, sample_private_key
+            {"allow": {"xresource": {"perm-name": {"allow": "self"}}}, "deny": {}},
+            sample_private_key,
         )
-        resp = X({**event, "headers": {"authorization": auth_header}})()
+        resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 
         auth_header = Authorizer.sign_authz(
-            {"allow": {"x": {"handler": {"allow": "*"}}}, "deny": {}}, sample_private_key
+            {"allow": {"xresource": {"handler": {"allow": "*"}}}, "deny": {}},
+            sample_private_key,
         )
-        resp = X({**event, "headers": {"authorization": auth_header}})()
+        resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.FORBIDDEN
 
     @patch.dict(environ, env_mock)
-    def test_different_class_name_success(self, *args):
-        class X(Resource):
+    def test_different_class_name_success(self, *_args):
+        class XResource(Resource):
             _name = "test_res"
 
             @add_route("/")
@@ -90,11 +91,12 @@ class TestAuthorizationDecorator:
                 return Response("x")
 
         auth_header = Authorizer.sign_authz(
-            {"allow": {"test_res": {"handler": {"allow": "*"}}}, "deny": {}}, sample_private_key
+            {"allow": {"test_res": {"handler": {"allow": "*"}}}, "deny": {}},
+            sample_private_key,
         )
-        resp = X({**event, "headers": {"authorization": auth_header}})()
+        resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 
         auth_header = Authorizer.sign_authz({"allow": {"x": "*"}, "deny": {}}, sample_private_key)
-        resp = X({**event, "headers": {"authorization": auth_header}})()
+        resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.FORBIDDEN

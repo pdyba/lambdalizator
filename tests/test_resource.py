@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 import json
 from collections import defaultdict
@@ -15,7 +14,12 @@ from lbz.authentication import User
 from lbz.dev.misc import Event
 from lbz.exceptions import NotFound, ServerError
 from lbz.request import Request
-from lbz.resource import Resource, CORSResource, PaginatedCORSResource, ALLOW_ORIGIN_HEADER
+from lbz.resource import (
+    Resource,
+    CORSResource,
+    PaginatedCORSResource,
+    ALLOW_ORIGIN_HEADER,
+)
 from lbz.response import Response
 from lbz.router import Router
 from lbz.router import add_route
@@ -29,6 +33,7 @@ req = Request(
     body="",
     context={},
     stage_vars={},
+    # pylint issue #214
     is_base64_encoded=False,
     query_params=None,
     user=None,
@@ -55,6 +60,7 @@ event_wrong_uri = Event(
 
 class TestResource:
     def setup_method(self):
+        # pylint: disable=attribute-defined-outside-init
         self.res = Resource(event)
 
     def test___init__(self):
@@ -64,18 +70,18 @@ class TestResource:
         assert self.res.method == "GET"
         assert self.res.path_params == {}
         assert isinstance(self.res.request, Request)
-        assert self.res._router is not None
-        assert isinstance(self.res._router, Router)
+        assert self.res._router is not None  # pylint: disable=protected-access
+        assert isinstance(self.res._router, Router)  # pylint: disable=protected-access
         assert self.res.request.user is None
 
     @patch.object(Resource, "_get_user")
     def test___call__(self, get_user: MagicMock):
-        class X(Resource):
+        class XResource(Resource):
             @add_route("/")
-            def a(self):
+            def test_method(self):
                 return Response({"message": "x"})
 
-        cls = X(event)
+        cls = XResource(event)
         resp = cls()
         assert isinstance(resp, Response), resp
         assert resp.to_dict() == {
@@ -109,57 +115,57 @@ class TestResource:
         assert str(self.res) == "<Resource GET @ /foo/id-12345/bar >"
 
     def test_unauthorized_when_authentication_not_configured(self):
-        class X(Resource):
+        class XResource(Resource):
             @add_route("/")
-            def a(self):
+            def test_method(self):
                 return Response("x")
 
-        resp = X({**event, "headers": {"authentication": "dummy"}})()
+        resp = XResource({**event, "headers": {"authentication": "dummy"}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     @patch.object(User, "__init__", return_value=None)
     def test_user_loaded_when_cognito_authentication_configured_correctly(
         self, load_user: MagicMock
     ):
-        class X(Resource):
+        class XResource(Resource):
             @add_route("/")
-            def a(self):
+            def test_method(self):
                 return Response("x")
 
         key = json.loads(env_mock["ALLOWED_PUBLIC_KEYS"])["keys"][0]
         key_id = key["kid"]
         authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
 
-        X({**event, "headers": {"authentication": authentication_token}})()
+        XResource({**event, "headers": {"authentication": authentication_token}})()
         load_user.assert_called_once_with(authentication_token)
 
     def test_unauthorized_when_jwt_header_lacks_kid(self):
-        class X(Resource):
+        class XResource(Resource):
             @add_route("/")
-            def a(self):
+            def test_method(self):
                 return Response("x")
 
         authentication_token = jwt.encode({"foo": "bar"}, "")
-        resp = X({**event, "headers": {"authentication": authentication_token}})()
+        resp = XResource({**event, "headers": {"authentication": authentication_token}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     def test_unauthorized_when_no_matching_key_in_env_variable(self):
-        class X(Resource):
+        class XResource(Resource):
             @add_route("/")
-            def a(self):
+            def test_method(self):
                 return Response("x")
 
         authentication_token = jwt.encode({"kid": "foobar"}, "")
-        resp = X({**event, "headers": {"authentication": authentication_token}})()
+        resp = XResource({**event, "headers": {"authentication": authentication_token}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     def test_unauthorized_when_jwt_header_malformed(self):
-        class X(Resource):
+        class XResource(Resource):
             @add_route("/")
-            def a(self):
+            def test_method(self):
                 return Response("x")
 
-        resp = X({**event, "headers": {"authentication": "12345"}})()
+        resp = XResource({**event, "headers": {"authentication": "12345"}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     def test_pre_request_hook(self):
@@ -197,12 +203,12 @@ class TestResource:
         assert post_request_called
 
     def test_500_returned_when_server_error_caught(self):
-        class X(Resource):
+        class XResource(Resource):
             @add_route("/")
-            def a(self):
+            def test_method(self):
                 raise RuntimeError("test")
 
-        resp = X(event)()
+        resp = XResource(event)()
         assert isinstance(resp, Response), resp
         assert resp.to_dict() == {
             "headers": {"Content-Type": "application/json"},
@@ -228,9 +234,9 @@ class TestCORSResource:
         del environ["CORS_ORIGIN"]
 
     def make_cors_handler(self, origins: List[str] = None, req_origin: str = None) -> CORSResource:
-        event = defaultdict(MagicMock())
-        event["headers"] = {"origin": req_origin} if req_origin is not None else {}
-        cors_handler = CORSResource(event, ["GET", "POST"], origins=origins)
+        an_event = defaultdict(MagicMock())
+        an_event["headers"] = {"origin": req_origin} if req_origin is not None else {}
+        cors_handler = CORSResource(an_event, ["GET", "POST"], origins=origins)
         return cors_handler
 
     def test_cors_origin_headers_from_env_are_correct_1(self):
@@ -283,13 +289,15 @@ class TestCORSResource:
         assert self.make_cors_handler().resp_headers_json["Content-Type"] == "application/json"
 
     def test_resp_headers_no_content_type_by_default(self):
-        assert self.make_cors_handler().resp_headers().get("Content-Type") == None
+        assert self.make_cors_handler().resp_headers().get("Content-Type") is None
 
     def test_options_request(self):
         inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE)
         inst.method = "OPTIONS"
         assert inst().headers == {
-            "Access-Control-Allow-Headers": ", ".join(CORSResource._cors_headers),
+            "Access-Control-Allow-Headers": ", ".join(
+                CORSResource._cors_headers  # pylint: disable=protected-access
+            ),
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
             ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
         }
@@ -297,8 +305,9 @@ class TestCORSResource:
 
 class TestPagination:
     @patch.object(PaginatedCORSResource, "__init__", return_value=None)
-    def setup_method(self, test_method, init_mock) -> None:
-        self.resource = PaginatedCORSResource()
+    def setup_method(self, _test_method, _init_mock: MagicMock) -> None:
+        # pylint: disable=attribute-defined-outside-init
+        self.resource = PaginatedCORSResource({}, [])
         self.resource.path = "/test/path"
         self.resource.urn = "/test/path"
         self.resource.request = SimpleNamespace(
@@ -330,8 +339,10 @@ class TestPagination:
 
     def test_pagination_uri_with_existing_pagination_query_params(self):
         self.resource.request.query_params = {"offset": "3", "limit": "42"}
-        assert self.resource._pagination_uri == "/test/path?offset={offset}&limit={limit}"
+        expected = "/test/path?offset={offset}&limit={limit}"
+        assert self.resource._pagination_uri == expected  # pylint: disable=protected-access
 
     def test_pagination_uri_without_query_params(self):
         self.resource.request.query_params = {}
-        assert self.resource._pagination_uri == "/test/path?offset={offset}&limit={limit}"
+        expected = "/test/path?offset={offset}&limit={limit}"
+        assert self.resource._pagination_uri == expected  # pylint: disable=protected-access

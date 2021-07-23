@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
 from datetime import datetime, timedelta
 
@@ -9,8 +8,10 @@ from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from tests import sample_private_key
 
 
+# pylint: disable=too-many-public-methods
 class TestAuthorizer:
     def setup_method(self):
+        # pylint: disable=attribute-defined-outside-init
         self.iat = int(datetime.utcnow().timestamp())
         self.exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
         self.iss = "test-issuer"
@@ -23,7 +24,8 @@ class TestAuthorizer:
         }
         self.authz = self._make_authorizer(self.token_payload)
 
-    def _make_authorizer(self, token_payload: dict) -> Authorizer:
+    @staticmethod
+    def _make_authorizer(token_payload: dict) -> Authorizer:
         jwt = Authorizer.sign_authz(token_payload, sample_private_key)
         return Authorizer(jwt, "test_resource", "permission_name")
 
@@ -43,7 +45,9 @@ class TestAuthorizer:
         )
 
     def test__set_policy_w_scope(self):
-        self.authz._set_policy("", {"allow": "Lambda", "deny": "Lambda"})
+        self.authz._set_policy(  # pylint: disable=protected-access
+            "", {"allow": "Lambda", "deny": "Lambda"}
+        )
         assert self.authz.allow == "Lambda"
         assert self.authz.deny == "Lambda"
 
@@ -64,7 +68,10 @@ class TestAuthorizer:
 
     def test_validate_one(self):
         authorizer = self._make_authorizer(
-            {**self.token_payload, "allow": {"test_resource": {"permission_name": {"allow": ALL}}}}
+            {
+                **self.token_payload,
+                "allow": {"test_resource": {"permission_name": {"allow": ALL}}},
+            }
         )
         authorizer.check_access()
         assert authorizer.outcome == ALLOW
@@ -138,60 +145,60 @@ class TestAuthorizer:
 
     def test_deny_if_all(self):
         with pytest.raises(PermissionDenied):
-            self.authz._deny_if_all(ALL)
+            self.authz._deny_if_all(ALL)  # pylint: disable=protected-access
 
     def test_check_deny_any(self):
         self.authz.deny = {ALL: ALL}
         with pytest.raises(PermissionDenied):
-            self.authz._check_deny()
+            self.authz._check_deny()  # pylint: disable=protected-access
         assert self.authz.outcome == DENY
 
     def test_check_deny_res(self):
         self.authz.deny = {"test_resource": ALL}
         with pytest.raises(PermissionDenied):
-            self.authz._check_deny()
+            self.authz._check_deny()  # pylint: disable=protected-access
         assert self.authz.outcome == DENY
 
     def test_check_deny_one(self):
         self.authz.deny = {"test_resource": {"permission_name": ALL}}
         with pytest.raises(PermissionDenied):
-            self.authz._check_deny()
+            self.authz._check_deny()  # pylint: disable=protected-access
         assert self.authz.outcome == DENY
 
     def test_check_deny_one_scope(self):
         self.authz.deny = {"test_resource": {"permission_name": "self"}}
-        self.authz._check_deny()
+        self.authz._check_deny()  # pylint: disable=protected-access
         assert self.authz.denied_resource == "self"
 
     def test_allow_if_all(self):
-        assert self.authz._allow_if_allow_all(ALL)
+        assert self.authz._allow_if_allow_all(ALL)  # pylint: disable=protected-access
         assert self.authz.outcome == ALLOW
         assert self.authz.allowed_resource == ALL
 
     def test_check_allow_all(self):
-        self.authz._check_allow_and_set_resources()
+        self.authz._check_allow_and_set_resources()  # pylint: disable=protected-access
         assert self.authz.outcome == ALLOW
 
     def test_check_allow_fail_all(self):
         self.authz.allow = None
         with pytest.raises(PermissionDenied):
-            self.authz._check_allow_and_set_resources()
+            self.authz._check_allow_and_set_resources()  # pylint: disable=protected-access
             assert self.authz.outcome == ALLOW
 
     def test_check_allow_one(self):
         self.authz.allow = {"test_resource": {"permission_name": {"allow": ALL}}}
-        self.authz._check_allow_and_set_resources()
+        self.authz._check_allow_and_set_resources()  # pylint: disable=protected-access
         assert self.authz.outcome == ALLOW
 
     def test_check_allow_one_scope(self):
         self.authz.allow = {"test_resource": {"permission_name": {"allow": "self"}}}
-        self.authz._check_allow_and_set_resources()
+        self.authz._check_allow_and_set_resources()  # pylint: disable=protected-access
         assert self.authz.outcome == ALLOW
         assert self.authz.allowed_resource == "self"
 
     def test_check_allow_fail_one_scope(self):
         self.authz.allow = {"test_resource": {"permission_name": {"deny": "self"}}}
-        self.authz._check_allow_and_set_resources()
+        self.authz._check_allow_and_set_resources()  # pylint: disable=protected-access
         assert self.authz.outcome == ALLOW
         assert self.authz.denied_resource == "self"
 

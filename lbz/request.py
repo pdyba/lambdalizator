@@ -1,5 +1,7 @@
-#!/usr/local/bin/python3.8
 # coding=utf-8
+"""
+Request standardisation module.
+"""
 import base64
 import json
 from typing import Optional, Union
@@ -72,13 +74,12 @@ class Request:
             if self._json_body is None:
                 try:
                     self._json_body = json.loads(self.raw_body)
-                except ValueError:
+                except ValueError as error:
                     msg = f"The provided payload is invalid.\nPayload body:\n{self.raw_body}"
-                    raise BadRequestError(msg)
+                    raise BadRequestError(msg) from error
             return self._json_body
-        else:
-            logger.warning("Wrong headers: %s", self.headers)
-            raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
+        logger.warning("Wrong headers: %s", self.headers)
+        raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
 
     def to_dict(self) -> dict:
         copied = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
