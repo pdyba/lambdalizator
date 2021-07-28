@@ -19,7 +19,7 @@ from lbz.exceptions import (
     NotAcceptable,
     NotExtended,
     NotFound,
-    NotImplementedHTTP,
+    NotImplementedFunctionality,
     PayloadTooLarge,
     PaymentRequired,
     PermissionDenied,
@@ -47,7 +47,7 @@ import pytest
 
 
 def test_lambda_fw_exception():
-    exp = LambdaFWException("Nope")
+    exp = LambdaFWException(message="Nope")
     assert exp.message == "Nope"
     assert exp.status_code == 500
     assert isinstance(exp.get_response(request_id=""), Response)
@@ -60,7 +60,7 @@ def test_unsupported_method():
 
 
 @pytest.mark.parametrize(
-    "an_excetption",
+    "custom_exception",
     [
         BadGateway,
         BadRequestError,
@@ -80,7 +80,7 @@ def test_unsupported_method():
         NotAcceptable,
         NotExtended,
         NotFound,
-        NotImplementedHTTP,
+        NotImplementedFunctionality,
         PayloadTooLarge,
         PaymentRequired,
         PermissionDenied,
@@ -102,9 +102,14 @@ def test_unsupported_method():
         VariantAlsoNegotiates,
     ],
 )
-def test_all_exceptions(an_excetption):
-    exp = an_excetption()
-    code, msg = exp.__doc__.split(" - ")
+def test_custom_exception(custom_exception):
+    exp = custom_exception()
+    try:
+        code, msg = exp.__doc__.split(" - ")
+    except ValueError:
+        code, msg = exp.__doc__.strip(" -"), ""
+
+    assert issubclass(custom_exception, LambdaFWException)
     assert exp.message == msg.strip()
     assert exp.status_code == int(code)
 

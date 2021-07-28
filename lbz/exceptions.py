@@ -13,19 +13,16 @@ logger = get_logger(__name__)
 class LambdaFWException(Exception):
     """
     Standarised for AWS Lambda exception class.
+    Log Levels: CRITICAL, ERROR, WARNING, INFO, DEBUG
     """
 
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
 
-    def __init__(self, message: str = None, log_msg: str = None, log_warn: str = None):
-        super().__init__()
+    def __init__(self, *args, message: str = None):
+        super().__init__(*args)
         if message:
             self.message = message
-        if log_msg:
-            logger.error(log_msg)
-        if log_warn:
-            logger.warning(log_msg)
 
     def __str__(self) -> str:
         return f"[{self.status_code}] {self.message}"
@@ -37,7 +34,6 @@ class LambdaFWException(Exception):
         return Response(
             {"message": self.message, "request_id": request_id},
             status_code=self.status_code,
-            headers={"Content-Type": "application/json"},
         )
 
 
@@ -89,7 +85,7 @@ class UnsupportedMethod(LambdaFWException):
     status_code = HTTPStatus.METHOD_NOT_ALLOWED.value
 
     def __init__(self, method):
-        super().__init__("Unsupported method: %s" % method)
+        super().__init__(message="Unsupported method: %s" % method)
 
 
 class NotAcceptable(LambdaFWException):
@@ -253,7 +249,7 @@ class ServerError(LambdaFWException):
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
 
 
-class NotImplementedHTTP(LambdaFWException):
+class NotImplementedFunctionality(LambdaFWException):
     """501 - Server does not support this operation"""
 
     message = HTTPStatus.NOT_IMPLEMENTED.description
