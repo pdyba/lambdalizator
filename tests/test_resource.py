@@ -221,13 +221,13 @@ class TestResource:
             "request_id": ANY,
         }
 
-    def test__get_name_from_name(self):
+    def test__get_name_from__name_parameter(self):
         class XResource(Resource):
             _name = "test"
 
         assert XResource.get_name() == "test"
 
-    def test__get_name_from__name__(self):
+    def test__get_name_from___name___parameter(self):
         class XResource(Resource):
             pass
 

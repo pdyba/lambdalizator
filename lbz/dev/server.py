@@ -12,7 +12,6 @@ from typing import Tuple, Union, Type
 
 from lbz.dev.misc import Event
 from lbz.resource import Resource
-from lbz.response import Response
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
@@ -59,7 +58,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                     return org_route, params
         return None, None
 
-    def _send_json(self, code, obj, headers=None):
+    def _send_json(self, code: int, obj: dict, headers: dict = None) -> None:
         # Make sure only one response is sent
         if self.done:
             return
@@ -74,17 +73,17 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
         self.done = True
         self.wfile.write(json.dumps(obj, indent=4, sort_keys=True).encode("utf-8"))
 
-    def _error(self, code, message):
+    def _error(self, code: int, message: str) -> None:
         content_type = "application/json;charset=UTF-8"
         self._send_json(code, {"error": message}, headers={"Content-Type": content_type})
 
-    def handle_request(self):
+    def handle_request(self) -> None:
         """
         Main method for handling all incoming requests.
         """
         try:
             if self.path == "/favicon.ico":
-                return "/favicon.ico"
+                return
             self.done = False
 
             request_size = int(self.headers.get("Content-Length", 0))
@@ -112,42 +111,33 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
             )
             response = resource()
             code = response.status_code
-            if isinstance(response, Response):
-                response = response.to_dict()
-                resp_headers = response.get("headers", {})
-                if body := response.get("body"):
-                    response = json.loads(body)
+            response_as_dict = response.to_dict()
+            resp_headers = response_as_dict.get("headers", {})
+            if body := response_as_dict.get("body"):
+                response_as_dict = json.loads(body)
             else:
-                logging.warning("Did not create a Response instance:")
-                logging.warning(
-                    "CLS: %s REQUEST: %s QParms: %s",
-                    self.cls,
-                    request_obj,
-                    query_params,
-                )
-                resp_headers = {}
-
-            self._send_json(code, response, resp_headers)
+                response_as_dict = {}
+            self._send_json(code, response_as_dict, resp_headers)
         except Exception:  # pylint: disable=broad-except
             logging.exception("Fail trying to send json")
-        return self._error(500, "Server error")
+        self._error(500, "Server error")
 
-    def do_GET(self):  # pylint: disable=invalid-name
+    def do_GET(self) -> None:  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_PATCH(self):  # pylint: disable=invalid-name
+    def do_PATCH(self) -> None:  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_POST(self):  # pylint: disable=invalid-name
+    def do_POST(self) -> None:  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_PUT(self):  # pylint: disable=invalid-name
+    def do_PUT(self) -> None:  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_DELETE(self):  # pylint: disable=invalid-name
+    def do_DELETE(self) -> None:  # pylint: disable=invalid-name
         self.handle_request()
 
-    def do_OPTIONS(self):  # pylint: disable=invalid-name
+    def do_OPTIONS(self) -> None:  # pylint: disable=invalid-name
         self.handle_request()
 
 
@@ -165,7 +155,7 @@ class MyDevServer:
         self.port = port
         self.server_address = (self.address, self.port)
 
-    def run(self):
+    def run(self) -> None:
         """
         Start the server.
         """

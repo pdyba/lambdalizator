@@ -11,7 +11,7 @@ STANDARD_CLAIMS = ("sub", "aud", "auth_time", "iss", "exp", "iat", "token_use")
 REMOVE_PREFIXES = os.environ.get("AUTH_REMOVE_PREFIXES") == "1"
 
 
-def remove_prefix(text: str):
+def remove_prefix(text: str) -> str:
     """
     Removes prefix of a text based on : sign.
     """
@@ -27,7 +27,7 @@ class User:
         for key, value in self.get_user_details_from_auth_token().items():
             self.__setattr__(key, value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if hasattr(self, "username"):
             return f"User username={self.username}"
         return "User"

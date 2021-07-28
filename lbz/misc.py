@@ -7,7 +7,7 @@ import logging.handlers
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
-from typing import Union
+from typing import Union, Any, Callable, Hashable, Iterator
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
@@ -17,7 +17,7 @@ class NestedDict(dict):
     Endless nested dict.
     """
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Union[Any, dict]:
         if key in self:
             return self.get(key)
         return self.setdefault(key, NestedDict())
@@ -32,8 +32,8 @@ class Singleton(type):
 
     _instances: dict = {}
 
-    def __call__(cls, *args, **kwargs):
-        def _del(cls):
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
+        def _del(cls: Any) -> None:
             """Enables deletion of singletons"""
             del Singleton._instances[cls._cls_name]
 
@@ -49,34 +49,34 @@ class MultiDict(MutableMapping):
     Advanced Multi Dictionary.
     """
 
-    def __init__(self, mapping: dict):
+    def __init__(self, mapping: Union[dict, None]):
         if mapping is None:
             mapping = {}
 
         self._dict = mapping
 
-    def __getitem__(self, k):
+    def __getitem__(self, k: str) -> Any:
         try:
             return self._dict[k][-1]
         except IndexError as error:
             raise KeyError(k) from error
 
-    def __setitem__(self, k, v):
+    def __setitem__(self, k: Hashable, v: Any) -> None:
         self._dict[k] = [v]
 
-    def __delitem__(self, k):
+    def __delitem__(self, k: Hashable) -> None:
         del self._dict[k]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._dict)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         return iter(self._dict)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "MultiDict(%s)" % self._dict
 
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self)
 
     def getlist(self, k: str) -> list:
@@ -86,7 +86,7 @@ class MultiDict(MutableMapping):
         return list(self._dict[k])
 
 
-def get_logger(name: str):
+def get_logger(name: str) -> logging.Logger:
     """Shortcut for creating logger instance."""
     logger_obj = logging.getLogger(name)
     logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
@@ -96,13 +96,13 @@ def get_logger(name: str):
 logger = get_logger(__name__)
 
 
-def error_catcher(function, default_return=False):
+def error_catcher(function: Callable, default_return: Any = False) -> Any:
     """
     Universal Error Catcher
     """
 
     @wraps(function)
-    def wrapped(*args, **kwargs):
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
         try:
             return function(*args, **kwargs)
         except Exception as error:  # pylint: disable=broad-except
@@ -115,7 +115,7 @@ def error_catcher(function, default_return=False):
     return wrapped
 
 
-def copy_without_keys(data: Union[dict, MultiDict], *keys) -> dict:
+def copy_without_keys(data: Union[dict, MultiDict], *keys: str) -> dict:
     """
     Clean up dict from unwanted keys.
     """

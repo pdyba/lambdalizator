@@ -5,8 +5,9 @@ Dev misc tools.
 import json
 import pathlib
 from uuid import uuid4
+from typing import Any
 
-from lbz.dev.event import EVENT
+from lbz.dev.event import EVENT_TEMPLATE
 
 WORKING_DIR = pathlib.Path(__file__).parent.absolute()
 
@@ -18,12 +19,12 @@ class Event(dict):
         self,
         resource_path: str,
         method: str,
-        body=None,
-        query_params=None,
-        path_params=None,
-        headers=None,
-    ):
-        super().__init__(**json.loads(EVENT))
+        body: dict = None,
+        query_params: dict = None,
+        path_params: dict = None,
+        headers: Any = None,
+    ) -> None:
+        super().__init__(**json.loads(EVENT_TEMPLATE))
 
         self["resource"] = resource_path
         self["pathParameters"] = {} if path_params is None else path_params
@@ -38,5 +39,5 @@ class Event(dict):
         self["requestContext"]["httpMethod"] = method
         self["requestContext"]["requestId"] = str(uuid4())
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Fake Event {self['method']} @ {self['path']} body: {self['body']}>"

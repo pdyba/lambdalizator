@@ -5,7 +5,7 @@ Authorization module.
 import warnings
 from functools import wraps
 from os import environ
-from typing import Callable, Union, Type
+from typing import Callable, Union, Type, Any, Dict
 
 from jose import jwt
 
@@ -39,18 +39,18 @@ class Authorizer:
         self.denied_resource: Union[str, dict, None] = None
         self.resource = resource_name
         self.permission = permission_name
-        self.refs: dict = {}
+        self.refs: Dict[str, dict] = {}
         self.allow: dict = {}
         self.deny: dict = {}
         self._set_policy(auth_jwt, policy_override)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"Authorizer(auth_jwt=<jwt>, resource_name='{self.resource}', "
             f"permission_name='{self.permission}')"
         )
 
-    def _set_policy(self, auth_jwt: str, policy_override: dict = None):
+    def _set_policy(self, auth_jwt: str, policy_override: dict = None) -> None:
         policy = policy_override if policy_override else decode_jwt(auth_jwt)
         self.refs = policy.get("refs", {})
         try:
@@ -76,7 +76,7 @@ class Authorizer:
         elif issuer != ALLOWED_ISS:
             raise PermissionDenied(f"{issuer} is not an allowed token issuer")
 
-    def check_access(self):
+    def check_access(self) -> None:
         """
         Main authorization checking logic.
         """
@@ -90,13 +90,13 @@ class Authorizer:
         if self.outcome == DENY:
             raise PermissionDenied
 
-    def _deny_if_all(self, permission):
+    def _deny_if_all(self, permission: Union[dict, str]) -> None:
         if permission == ALL:
             raise PermissionDenied(
                 f"You don't have permission to {self.permission} on {self.resource}"
             )
 
-    def _check_deny(self):
+    def _check_deny(self) -> None:
         self._deny_if_all(self.deny.get("*", self.allow.get(self.resource)))
         if d_domain := self.deny.get(self.resource):
             self._deny_if_all(d_domain)
@@ -104,7 +104,7 @@ class Authorizer:
                 self._check_resource(resource)
                 self.denied_resource = resource
 
-    def _check_resource(self, resource):
+    def _check_resource(self, resource: Union[dict, str]) -> None:
         self._deny_if_all(resource)
         if isinstance(resource, dict):
             for key, value in resource.items():
@@ -125,10 +125,9 @@ class Authorizer:
                 self.outcome = DENY
                 raise PermissionDenied
             return self.refs[ref_name]
-
         return permissions
 
-    def _check_allow_and_set_resources(self):
+    def _check_allow_and_set_resources(self) -> None:
         if not self.allow:
             raise PermissionDenied
         if self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(
@@ -152,7 +151,7 @@ class Authorizer:
         return {"allow": self.allowed_resource, "deny": self.denied_resource}
 
     @staticmethod
-    def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
+    def sign_authz(authz_data: dict, private_key_jwk: dict) -> Union[str, Any]:
         """
         Signs authorization in JWT format.
         """
@@ -163,7 +162,7 @@ class Authorizer:
 
         return jwt.encode(
             authz_data, private_key_jwk, algorithm="RS256", headers={"kid": private_key_jwk["kid"]}
-        )
+        )  # Any - should be returning always str.
 
 
 def check_permission(resource: Union[Type[Resource], Resource], permission_name: str) -> dict:
@@ -173,15 +172,15 @@ def check_permission(resource: Union[Type[Resource], Resource], permission_name:
     Raises if not.
     """
     authorization_header = resource.request.headers.get("Authorization", "")
-    authorization_scope = resource.get_guest_authorization()
-    if not authorization_header and not authorization_scope:
+    guest_authorization_policy = resource.get_guest_authorization()
+    if not authorization_header and not guest_authorization_policy:
         raise Unauthorized("Authorization header missing or empty")
 
     authorizer = Authorizer(
         auth_jwt=authorization_header,
         resource_name=resource.get_name(),
         permission_name=permission_name,
-        policy_override=authorization_scope,
+        policy_override=guest_authorization_policy,
     )
     authorizer.check_access()
     return authorizer.restrictions
@@ -200,14 +199,14 @@ def has_permission(resource: Union[Type[Resource], Resource], permission_name: s
     return True
 
 
-def authorization(permission_name: str = None):
+def authorization(permission_name: str = None) -> Any:
     """
     Wrapper for easy adding authorization requirement.
     """
 
-    def decorator(func: Callable):
+    def decorator(func: Callable) -> Any:
         @wraps(func)
-        def wrapped(self: Union[Type[Resource], Resource], *args, **kwargs):
+        def wrapped(self: Union[Type[Resource], Resource], *args: Any, **kwargs: Any) -> Any:
             restrictions = check_permission(self, permission_name or func.__name__)
             return func(self, *args, restrictions=restrictions, **kwargs)
 

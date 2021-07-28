@@ -35,7 +35,7 @@ class Response:
             return {"Content-Type": "text/plain"}
         raise RuntimeError("Response body type not supported yet.")
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Dumps response to AWS Lambda compatible response format.
         """

@@ -94,7 +94,7 @@ class TestRequest:
         assert self.resp.raw_body == b"abcx"
 
     def test_json_body_dict(self):
-        self.resp._body = {"x": "abcx"}  # pylint: disable=protected-access
+        self.resp._body = '{"x": "abcx"}'  # pylint: disable=protected-access
         assert self.resp.json_body == {"x": "abcx"}
 
     def test_json_body_json(self):

@@ -1,5 +1,5 @@
 # flake8: noqa
-EVENT = """
+EVENT_TEMPLATE = """
 {
   "resource": "/",
   "path": "/",

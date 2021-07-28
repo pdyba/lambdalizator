@@ -18,7 +18,7 @@ class LambdaFWException(Exception):
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
 
-    def __init__(self, message: str = ""):
+    def __init__(self, message: str = "") -> None:
         super().__init__()
         if message:
             self.message = message
@@ -96,7 +96,7 @@ class UnsupportedMethod(LambdaFWException):
 
     status_code = HTTPStatus.METHOD_NOT_ALLOWED.value
 
-    def __init__(self, method):
+    def __init__(self, method: str) -> None:
         super().__init__("Unsupported method: %s" % method)
 
 

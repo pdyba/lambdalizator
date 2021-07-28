@@ -3,7 +3,7 @@
 from copy import deepcopy
 from http import HTTPStatus
 from os import environ as env
-from typing import Union, List
+from typing import Union, List, Optional
 from urllib.parse import urlencode
 
 from multidict import CIMultiDict
@@ -35,7 +35,7 @@ class Resource:
     _router = Router()
 
     @classmethod
-    def get_name(cls):
+    def get_name(cls) -> str:
         return cls._name or cls.__name__.lower()
 
     def __init__(self, event: dict):
@@ -79,7 +79,7 @@ class Resource:
         finally:
             self.post_request_hook()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"
 
     def _load_configuration(self) -> None:
@@ -93,12 +93,12 @@ class Resource:
             raise Unauthorized("Authentication method not supported")
         return None
 
-    def pre_request_hook(self):
+    def pre_request_hook(self) -> None:
         """
         Place to configure pre request hooks.
         """
 
-    def post_request_hook(self):
+    def post_request_hook(self) -> None:
         """
         Place to configure post request hooks.
         """
@@ -144,13 +144,14 @@ class CORSResource(Resource):
             resp.headers.update(self.resp_headers())
         return resp
 
-    def _get_allowed_origins(self, origins: list) -> str:
+    def _get_allowed_origins(self, origins: Union[List[str], str]) -> str:
         """
         Checks requests origins against allowed origins.
         """
         if "*" in origins:
             return "*"
-        if request_origin := self.request.headers.get("Origin"):
+        request_origin: Optional[str] = self.request.headers.get("Origin")
+        if request_origin:
             for allowed_origin in origins:
                 if request_origin == allowed_origin:
                     return request_origin

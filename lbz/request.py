@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 class Request:
     """Represents request from API gateway."""
 
-    _json_body = None
+    _json_body: dict = {}
     _raw_body = b""
 
     def __init__(
@@ -33,21 +33,21 @@ class Request:
         query_params: dict = None,
         user: User = None,
     ):
-        self.query_params = MultiDict(query_params or {})
-        self.headers = headers
-        self.uri_params = uri_params
-        self.method = method
-        self.context = context
+        self.query_params: MultiDict = MultiDict(query_params or {})
+        self.headers: CIMultiDict = headers
+        self.uri_params: dict = uri_params
+        self.method: str = method
+        self.context: dict = context
         self.stage_vars = stage_vars
-        self.user = user
-        self._is_base64_encoded = is_base64_encoded
-        self._body = body
+        self.user: Optional[User] = user
+        self._is_base64_encoded: bool = is_base64_encoded
+        self._body: Union[str, bytes] = body
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Request {self.method} >"
 
     @staticmethod
-    def _decode_base64(encoded) -> bytes:
+    def _decode_base64(encoded: Union[str, bytes]) -> bytes:
         if not isinstance(encoded, bytes):
             encoded = encoded.encode("ascii")
         return base64.b64decode(encoded)
@@ -69,9 +69,7 @@ class Request:
         if content_type is None:
             return None
         if content_type.startswith("application/json"):
-            if isinstance(self._body, dict):
-                return self._body
-            if self._json_body is None:
+            if not self._json_body:
                 try:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError as error:

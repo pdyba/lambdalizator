@@ -205,6 +205,6 @@ class TestAuthorizer:
         self.authz.denied_resource = {"city": "warszawa"}
         assert self.authz.restrictions == {"allow": ALL, "deny": {"city": "warszawa"}}
 
-    def test_sign_authz(self):  # noqa: E501
+    def test_sign_authz(self):
         token = Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, sample_private_key)
         assert token == EXPECTED_TOKEN
