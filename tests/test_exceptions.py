@@ -106,7 +106,7 @@ def test_custom_exception(custom_exception):
     exp = custom_exception()
     try:
         code, msg = exp.__doc__.split(" - ")
-    except ValueError:
+    except ValueError:  # black removes the intentional white space
         code, msg = exp.__doc__.strip(" -"), ""
 
     assert issubclass(custom_exception, LambdaFWException)

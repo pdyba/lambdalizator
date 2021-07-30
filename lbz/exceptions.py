@@ -4,23 +4,19 @@ Set of HTTP Exceptions that are json compatabile.
 """
 from http import HTTPStatus
 
-from lbz.misc import get_logger
 from lbz.response import Response
-
-logger = get_logger(__name__)
 
 
 class LambdaFWException(Exception):
     """
     Standarised for AWS Lambda exception class.
-    Log Levels: CRITICAL, ERROR, WARNING, INFO, DEBUG
     """
 
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
 
-    def __init__(self, *args, message: str = None):
-        super().__init__(*args)
+    def __init__(self, message: str = "", errors: list = None):
+        super().__init__(message, errors)
         if message:
             self.message = message
 
