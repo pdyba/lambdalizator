@@ -16,8 +16,8 @@ class LambdaFWException(Exception):
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
 
-    def __init__(self, message: str = "", *args: Any):
-        super().__init__(message, *args)
+    def __init__(self, message: str = "") -> None:
+        super().__init__(message)
         if message:
             self.message = message
 
