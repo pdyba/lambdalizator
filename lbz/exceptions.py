@@ -3,6 +3,7 @@
 Set of HTTP Exceptions that are json compatabile.
 """
 from http import HTTPStatus
+from typing import Any
 
 from lbz.response import Response
 
@@ -15,8 +16,8 @@ class LambdaFWException(Exception):
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
 
-    def __init__(self, message: str = "", errors: list = None):
-        super().__init__(message, errors)
+    def __init__(self, message: str = "", *args: Any):
+        super().__init__(message, *args)
         if message:
             self.message = message
 
