@@ -3,7 +3,6 @@
 Set of HTTP Exceptions that are json compatabile.
 """
 from http import HTTPStatus
-from typing import Any
 
 from lbz.response import Response
 
