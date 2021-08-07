@@ -2,6 +2,8 @@
 """
 Authorization module.
 """
+# TODO: standardize the naming convention
+# In some places, we are using permission and in other resource but it looks like sometimes they mean the same
 import warnings
 from functools import wraps
 from os import environ
@@ -76,9 +78,9 @@ class Authorizer:
         elif issuer != ALLOWED_ISS:
             raise PermissionDenied(f"{issuer} is not an allowed token issuer")
 
-    def _raise_permission_denied(self) -> PermissionDenied:
+    def _raise_permission_denied(self) -> None:
         logger.debug("You don't have permission to %s on %s", self.permission, self.resource)
-        return PermissionDenied()
+        raise PermissionDenied()
 
     def check_access(self) -> None:
         """
@@ -92,11 +94,11 @@ class Authorizer:
         if self.denied_resource and self.outcome:
             self.outcome = LIMITED_ALLOW
         if self.outcome == DENY:
-            raise self._raise_permission_denied()
+            self._raise_permission_denied()
 
     def _deny_if_all(self, permission: Union[dict, str]) -> None:
         if permission == ALL:
-            raise self._raise_permission_denied()
+            self._raise_permission_denied()
 
     def _check_deny(self) -> None:
         self._deny_if_all(self.deny.get("*", self.allow.get(self.resource)))
@@ -125,13 +127,13 @@ class Authorizer:
             if ref_name not in self.refs:
                 logger.warning("Missing %s ref in the policy", ref_name)
                 self.outcome = DENY
-                raise self._raise_permission_denied()
+                self._raise_permission_denied()
             return self.refs[ref_name]
         return permissions
 
     def _check_allow_and_set_resources(self) -> None:
         if not self.allow:
-            raise self._raise_permission_denied()
+            self._raise_permission_denied()
         if self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(
             self.allow.get("*", self.allow.get(self.resource))
         ):
@@ -162,9 +164,10 @@ class Authorizer:
         if "kid" not in private_key_jwk:
             raise ValueError("private_key_jwk must have the 'kid' field")
 
-        return jwt.encode(
+        authz: str = jwt.encode(
             authz_data, private_key_jwk, algorithm="RS256", headers={"kid": private_key_jwk["kid"]}
-        )  # Any - should be returning always str.
+        )
+        return authz
 
 
 def check_permission(resource: Union[Type[Resource], Resource], permission_name: str) -> dict:
@@ -201,7 +204,7 @@ def has_permission(resource: Union[Type[Resource], Resource], permission_name: s
     return True
 
 
-def authorization(permission_name: str = None) -> Any:
+def authorization(permission_name: str = None) -> Callable:
     """
     Wrapper for easy adding authorization requirement.
     """

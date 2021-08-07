@@ -3,7 +3,7 @@
 from copy import deepcopy
 from http import HTTPStatus
 from os import environ as env
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Callable
 from urllib.parse import urlencode
 
 from multidict import CIMultiDict
@@ -66,7 +66,9 @@ class Resource:
             if self.method not in self._router[self.path]:
                 raise UnsupportedMethod(method=self.method)
             self.request.user = self._get_user(self.request.headers)
-            return getattr(self, self._router[self.path][self.method])(**self.path_params)
+            endpoint: Callable = getattr(self, self._router[self.path][self.method])
+            response: Response = endpoint(**self.path_params)
+            return response
         except LambdaFWException as err:
             if 500 <= err.status_code < 600:
                 logger.exception(err)

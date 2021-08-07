@@ -221,13 +221,13 @@ class TestResource:
             "request_id": ANY,
         }
 
-    def test__get_name_from__name_parameter(self):
+    def test_get_name_from__name_parameter(self):
         class XResource(Resource):
             _name = "test"
 
         assert XResource.get_name() == "test"
 
-    def test__get_name_from___name___parameter(self):
+    def test_get_name_from__name__parameter(self):
         class XResource(Resource):
             pass
 
@@ -246,7 +246,7 @@ class TestCORSResource:
         del environ["CORS_ORIGIN"]
 
     def make_cors_handler(self, origins: List[str] = None, req_origin: str = None) -> CORSResource:
-        an_event: defaultdict = defaultdict(MagicMock())
+        an_event = defaultdict(MagicMock())
         an_event["headers"] = {"origin": req_origin} if req_origin is not None else {}
         cors_handler = CORSResource(an_event, ["GET", "POST"], origins=origins)
         return cors_handler

@@ -1,2 +1,2 @@
-python-jose>=3.2.0,<3.3.0
+python-jose>=3.3.0,<3.4.0
 multidict>=5.1.0,<5.2.0

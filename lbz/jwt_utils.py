@@ -4,6 +4,7 @@ JWT helpers module.
 """
 import json
 import os
+from typing import List
 
 from jose import jwt
 from jose.exceptions import JWTError, JWTClaimsError, ExpiredSignatureError
@@ -13,7 +14,7 @@ from lbz.misc import get_logger
 
 logger = get_logger(__name__)
 
-PUBLIC_KEYS = []
+PUBLIC_KEYS: List[dict] = []
 ALLOWED_AUDIENCES = []
 
 if allowed_pubkeys_str := os.environ.get("ALLOWED_PUBLIC_KEYS"):
@@ -54,7 +55,8 @@ def decode_jwt(auth_jwt_token: str) -> dict:
     jwk = get_matching_jwk(auth_jwt_token)
     for aud in ALLOWED_AUDIENCES or []:
         try:
-            return jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
+            decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
+            return decoded_jwt
         except JWTClaimsError:
             pass
         except ExpiredSignatureError as error:

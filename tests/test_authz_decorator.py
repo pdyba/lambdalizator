@@ -7,7 +7,7 @@ from lbz.authz import Authorizer, authorization
 from lbz.resource import Resource
 from lbz.response import Response
 from lbz.router import add_route
-from tests import sample_private_key
+from tests import SAMPLE_PRIVATE_KEY
 from tests.fixtures.cognito_auth import env_mock
 from tests.test_resource import event
 
@@ -22,7 +22,7 @@ class TestAuthorizationDecorator:
                 assert restrictions == {"allow": "*", "deny": None}
                 return Response("x")
 
-        auth_header = Authorizer.sign_authz({"allow": "*", "deny": {}}, sample_private_key)
+        auth_header = Authorizer.sign_authz({"allow": "*", "deny": {}}, SAMPLE_PRIVATE_KEY)
         resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 
@@ -67,14 +67,14 @@ class TestAuthorizationDecorator:
 
         auth_header = Authorizer.sign_authz(
             {"allow": {"xresource": {"perm-name": {"allow": "self"}}}, "deny": {}},
-            sample_private_key,
+            SAMPLE_PRIVATE_KEY,
         )
         resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 
         auth_header = Authorizer.sign_authz(
             {"allow": {"xresource": {"handler": {"allow": "*"}}}, "deny": {}},
-            sample_private_key,
+            SAMPLE_PRIVATE_KEY,
         )
         resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.FORBIDDEN
@@ -92,11 +92,11 @@ class TestAuthorizationDecorator:
 
         auth_header = Authorizer.sign_authz(
             {"allow": {"test_res": {"handler": {"allow": "*"}}}, "deny": {}},
-            sample_private_key,
+            SAMPLE_PRIVATE_KEY,
         )
         resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 
-        auth_header = Authorizer.sign_authz({"allow": {"x": "*"}, "deny": {}}, sample_private_key)
+        auth_header = Authorizer.sign_authz({"allow": {"x": "*"}, "deny": {}}, SAMPLE_PRIVATE_KEY)
         resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.FORBIDDEN

@@ -1,12 +1,12 @@
 from jose import jwt
 
-from tests.fixtures.rsa_pair import sample_private_key
+from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY
 
 
 def encode_token(claims):
     return jwt.encode(
         claims,
-        sample_private_key,
+        SAMPLE_PRIVATE_KEY,
         algorithm="RS256",
-        headers={"kid": sample_private_key["kid"]},
+        headers={"kid": SAMPLE_PRIVATE_KEY["kid"]},
     )

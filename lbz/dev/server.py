@@ -99,6 +99,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
             route, params = self._get_route_params(self.path)
             if route is None:
                 self._error(666, "Path not Found")
+                return
             resource = self.cls(  # pylint: disable=not-callable
                 Event(
                     resource_path=route,

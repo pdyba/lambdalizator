@@ -7,18 +7,18 @@ import pytest
 
 from lbz.authentication import User
 from lbz.exceptions import Unauthorized
-from tests.fixtures.rsa_pair import sample_public_key
+from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token
 
 allowed_audiences = [str(uuid4()), str(uuid4())]
 
 
-@patch("lbz.jwt_utils.PUBLIC_KEYS", [sample_public_key])
+@patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY])
 @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences)
 class TestAuthentication:
     def setup_class(self):
         # pylint: disable=attribute-defined-outside-init
-        with patch("lbz.jwt_utils.PUBLIC_KEYS", [sample_public_key]), patch(
+        with patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY]), patch(
             "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
         ):
             self.cognito_user = {
@@ -55,7 +55,7 @@ class TestAuthentication:
     def test_decoding_user_raises_unauthorized_when_invalid_public_key(self):
         with pytest.raises(Unauthorized), patch(
             "lbz.jwt_utils.PUBLIC_KEYS",
-            [{**sample_public_key.copy(), "n": str(uuid4())}],
+            [{**SAMPLE_PUBLIC_KEY.copy(), "n": str(uuid4())}],
         ):
             User(self.id_token)
 

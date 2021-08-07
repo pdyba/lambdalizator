@@ -1,6 +1,6 @@
 # coding=utf-8
 """Helper class for testing."""
-from typing import Union
+from typing import Union, Type
 
 from lbz.dev.misc import Event
 from lbz.misc import get_logger
@@ -15,7 +15,9 @@ class Client:
     Client created for testing purposes.
     """
 
-    def __init__(self, resource: Resource):
+    def __init__(
+        self, resource: Type[Resource]
+    ):  # here, you are expecting to get a class, not its instance
         self.resource = resource
 
     def post(

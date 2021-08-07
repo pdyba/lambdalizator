@@ -5,7 +5,7 @@ import pytest
 
 from lbz.authz import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
-from tests import sample_private_key, EXPECTED_TOKEN
+from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
 
 
 # pylint: disable=too-many-public-methods
@@ -26,7 +26,7 @@ class TestAuthorizer:
 
     @staticmethod
     def _make_authorizer(token_payload: dict) -> Authorizer:
-        jwt = Authorizer.sign_authz(token_payload, sample_private_key)
+        jwt = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
         return Authorizer(jwt, "test_resource", "permission_name")
 
     def test__init__(self):
@@ -206,5 +206,5 @@ class TestAuthorizer:
         assert self.authz.restrictions == {"allow": ALL, "deny": {"city": "warszawa"}}
 
     def test_sign_authz(self):
-        token = Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, sample_private_key)
+        token = Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, SAMPLE_PRIVATE_KEY)
         assert token == EXPECTED_TOKEN
