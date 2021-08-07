@@ -45,13 +45,13 @@ def test_multi_dict():
 
 def test_multi_dict_init_empty():
     multi_dict = MultiDict(None)
-    assert multi_dict._dict == {}
+    assert multi_dict._dict == {}  # pylint: disable=protected-access
 
 
 def test_multi_dict_index_error():
     multi_dict = MultiDict({"a": []})
     with pytest.raises(KeyError):
-        multi_dict["a"]
+        multi_dict["a"]  # pylint: disable=pointless-statement
 
 
 def test_get_logger(caplog):

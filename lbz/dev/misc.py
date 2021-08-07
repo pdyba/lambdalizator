@@ -4,8 +4,8 @@ Dev misc tools.
 """
 import json
 import pathlib
-from uuid import uuid4
 from typing import Any
+from uuid import uuid4
 
 from lbz.dev.event import EVENT_TEMPLATE
 
@@ -42,9 +42,11 @@ class Event(dict):
     def __repr__(self) -> str:
         return f"<Fake Event {self['method']} @ {self['path']} body: {self['body']}>"
 
-    def __eq__(self, other):
-        self_copy = self.copy()
-        self_copy.pop("requestContext")
-        other_copy = other.copy()
-        other_copy.pop("requestContext")
-        return hash(json.dumps(self_copy)) == hash(json.dumps(other_copy))
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, dict):
+            self_copy = self.copy()
+            self_copy.pop("requestContext")
+            other_copy = other.copy()
+            other_copy.pop("requestContext")
+            return hash(json.dumps(self_copy)) == hash(json.dumps(other_copy))
+        raise NotImplementedError

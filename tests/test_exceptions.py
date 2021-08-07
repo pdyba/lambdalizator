@@ -1,4 +1,6 @@
 # coding=utf-8
+import pytest
+
 from lbz.exceptions import (
     BadGateway,
     BadRequestError,
@@ -43,7 +45,6 @@ from lbz.exceptions import (
     VariantAlsoNegotiates,
 )
 from lbz.response import Response
-import pytest
 
 
 def test_lambda_fw_exception():

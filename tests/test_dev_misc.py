@@ -1,6 +1,8 @@
 # coding=utf-8
 from hashlib import sha1
 
+import pytest
+
 from lbz.dev.misc import EVENT_TEMPLATE, Event
 
 
@@ -38,20 +40,29 @@ def test_event():
 
 
 def test_eq_():
-    e1 = Event(
-        resource_path="/",
-        method="GET",
+    event_1 = Event(
+        resource_path="/x",
+        method="POST",
         body=None,
         query_params={"a": ["1", "2"], "b": ["3"]},
         path_params=None,
         headers=None,
     )
-    e2 = Event(
-        resource_path="/",
-        method="GET",
+    event_2 = Event(
+        resource_path="/x",
+        method="POST",
         body=None,
         query_params={"a": ["1", "2"], "b": ["3"]},
         path_params=None,
         headers=None,
     )
-    assert e1 == e2
+    assert event_1 == event_2
+
+
+def test_eq_raises():
+    event_1 = Event(
+        resource_path="/v",
+        method="GET",
+    )
+    with pytest.raises(NotImplementedError):
+        assert event_1 == "test"

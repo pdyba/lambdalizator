@@ -24,12 +24,12 @@ class TestGetMatchingJWK:
         get_unverified_header_mock.assert_called_once()
 
     @patch.object(jwt, "get_unverified_header", return_value=BAD_PUBLICK_KEY)
-    def test_get_matching_key_fail(self, get_unverified_header_mock: MagicMock):
+    def test_get_matching_key_fail(self, _get_unverified_header_mock: MagicMock):
         with pytest.raises(Unauthorized):
             get_matching_jwk("x")
 
     @patch.object(jwt, "get_unverified_header", return_value={})
-    def test_get_matching_missing_key(self, get_unverified_header_mock: MagicMock):
+    def test_get_matching_missing_key(self, _get_unverified_header_mock: MagicMock):
         with pytest.raises(Unauthorized):
             get_matching_jwk("x")
 
@@ -51,8 +51,8 @@ class TestDecodeJWT:
             "iat": iat,
             "iss": "test-issuer",
         }
-        jwt = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
-        decoded_jwt_data = decode_jwt(jwt)
+        jwt_token = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
+        decoded_jwt_data = decode_jwt(jwt_token)
         assert decoded_jwt_data == token_payload
 
     def test_expired_jwt(self):
@@ -63,12 +63,12 @@ class TestDecodeJWT:
             "iat": iat,
             "iss": "test-issuer",
         }
-        jwt = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
+        jwt_token = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
         with pytest.raises(Unauthorized, match="Your token has expired. Please refresh it."):
-            decode_jwt(jwt)
+            decode_jwt(jwt_token)
 
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_other_exception(self, get_matching_jwk_mock: MagicMock):
+    def test_other_exception(self, _get_matching_jwk_mock: MagicMock):
         with pytest.raises(RuntimeError):
             decode_jwt({"a"})
 

@@ -6,9 +6,9 @@ from os import environ
 from typing import List
 from unittest.mock import patch, MagicMock, ANY
 
+import pytest
 from jose import jwt
 from multidict import CIMultiDict
-import pytest
 
 from lbz.authentication import User
 from lbz.dev.misc import Event
@@ -203,7 +203,7 @@ class TestResourceAuthentication:
             def test_method(self):
                 return Response("x")
 
-        self.res = XResource
+        self.res = XResource  # pylint: disable=attribute-defined-outside-init
 
     def test_unauthorized_when_authentication_not_configured(self):
         resp = self.res({**event, "headers": {"authentication": "dummy"}})()

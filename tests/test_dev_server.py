@@ -12,13 +12,16 @@ from lbz.response import Response
 from lbz.router import add_route
 
 
+# TODO: Check why in some tests there are two responses - its not affecting actual runtime
+
+
 class HelloWorld(Resource):
     @add_route("/", method="GET")
     def list(self):
         return Response({"message": "HelloWorld"})
 
     @add_route("/txt", method="GET")
-    def list(self):
+    def txt(self):
         return Response("HelloWorld")
 
     @add_route("/p", method="POST")
@@ -32,7 +35,7 @@ class HelloWorld(Resource):
 
 def test_my_dev_server_no_cls_raises():
     with pytest.raises(TypeError):
-        MyLambdaDevHandler.cls()
+        MyLambdaDevHandler.cls()  # pylint: disable=no-value-for-parameter
 
 
 class MyLambdaDevHandlerHelloWorld(MyLambdaDevHandler):
@@ -70,9 +73,8 @@ def test_my_lambda_dev_handler():
     assert path == "/"
     assert params is None
 
-    path, params = handler._get_route_params("")  # pylint: disable=protected-access
-    assert path is None
-    assert params is None
+    with pytest.raises(ValueError):
+        handler._get_route_params("")  # pylint: disable=protected-access
 
 
 @pytest.mark.parametrize(
@@ -101,7 +103,7 @@ def test_handle_txt():
         with patch("socket.socket") as msocket:
             msocket.makefile = lambda a, b: io.BytesIO(b"GET /txt HTTP/1.1\r\n")
             msocket.rfile.close = lambda: 0
-            handler = MyLambdaDevHandlerHelloWorld(msocket, ("127.0.0.1", 8888), BaseServer)
+            MyLambdaDevHandlerHelloWorld(msocket, ("127.0.0.1", 8888), BaseServer)
 
         mocked_send.assert_has_calls(
             [
@@ -147,7 +149,7 @@ def test_my_dev_server():
 
 def test_my_dev_server_run():
     dev_serv = MyDevServer(MyLambdaDevHandlerHelloWorld)
-    assert dev_serv.start() == None
+    dev_serv.start()
     assert dev_serv.is_alive()
-    assert dev_serv.stop() == None
+    dev_serv.stop()
     assert not dev_serv.is_alive()

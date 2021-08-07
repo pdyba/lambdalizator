@@ -1,12 +1,14 @@
 # coding=utf-8
+from copy import deepcopy
 from datetime import datetime, timedelta
 from unittest.mock import patch
-from copy import deepcopy
+
 import pytest
-import os
+
 from lbz.authz import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
+
 
 # pylint: disable=too-many-public-methods
 class TestAuthorizerSetupClass:

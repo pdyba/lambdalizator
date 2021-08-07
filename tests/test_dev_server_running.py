@@ -26,7 +26,7 @@ class ServerTester(Resource):
         return Response({"q": str(self.request.query_params)})
 
     @add_route("/{id_1}/{id_2}", method="GET")
-    def url_params_tester(self, id_1, id_2):
+    def url_params_tester(self, id_1, id_2):  # pylint: disable=unused-argument
         return Response({"p": self.path_params})
 
 
@@ -36,9 +36,10 @@ def run(server, cls):
 
 class TestServerRunning:
     def setup_class(self):
-        self.p = Process(target=run, args=(MyDevServer, ServerTester))
-        self.p.daemon = True
-        self.p.start()
+        # pylint: disable=attribute-defined-outside-init
+        self.proc = Process(target=run, args=(MyDevServer, ServerTester))
+        self.proc.daemon = True
+        self.proc.start()
         sleep(0.4)
         self.url = "http://localhost:8000"
 

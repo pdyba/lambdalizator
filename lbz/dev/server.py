@@ -8,8 +8,9 @@ import urllib.parse
 from abc import ABCMeta, abstractmethod
 from http.server import BaseHTTPRequestHandler
 from http.server import ThreadingHTTPServer
-from typing import Tuple, Union, Type
 from threading import Thread
+from typing import Tuple, Union, Type
+
 from lbz.dev.misc import Event
 from lbz.resource import Resource
 from lbz.response import Response
@@ -27,7 +28,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
     def cls(self) -> Type[Resource]:
         """Resource base class"""
 
-    def _get_route_params(self, org_path: str) -> Tuple[Union[str, None], Union[dict, None]]:
+    def _get_route_params(self, org_path: str) -> Tuple[str, Union[dict, None]]:
         """
         Parses route and params.
         :param org_path:
@@ -57,9 +58,9 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                         acc += 1
                 if len(path) == acc:
                     return org_route, params
-        return None, None
+        raise ValueError
 
-    def _send_json(self, code: int, obj: dict, headers: dict = None) -> None:
+    def _send_json(self, code: int, obj: Union[str, dict], headers: dict = None) -> None:
         # Make sure only one response is sent
         if self.done:
             return
@@ -155,5 +156,5 @@ class MyDevServer(Thread):
         print(f"serving on http://{self.address}:{self.port}")
         self.httpd.serve_forever()
 
-    def stop(self):
+    def stop(self) -> None:
         self.httpd.shutdown()
