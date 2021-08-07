@@ -151,3 +151,12 @@ Released 2021-08-01
 Released 2021-07-30
 
 - Code quality improvments based on mypy type checking
+
+
+### Version 0.3.15
+Released 2021-08-10
+
+- Code quality improvements, brings coverage to 99%
+- Adds more functional test for DevServer
+- Improves tests exectuion time (15s -> <5s)
+

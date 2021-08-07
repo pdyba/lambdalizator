@@ -3,7 +3,7 @@
 JWT helpers module.
 """
 import json
-import os
+from os import environ as env
 from typing import List
 
 from jose import jwt
@@ -17,9 +17,9 @@ logger = get_logger(__name__)
 PUBLIC_KEYS: List[dict] = []
 ALLOWED_AUDIENCES = []
 
-if allowed_pubkeys_str := os.environ.get("ALLOWED_PUBLIC_KEYS"):
+if allowed_pubkeys_str := env.get("ALLOWED_PUBLIC_KEYS"):
     PUBLIC_KEYS.extend(json.loads(allowed_pubkeys_str)["keys"])
-if allowed_audiences_str := os.environ.get("ALLOWED_AUDIENCES"):
+if allowed_audiences_str := env.get("ALLOWED_AUDIENCES"):
     ALLOWED_AUDIENCES.extend(allowed_audiences_str.split(","))
 
 if any("kid" not in public_key for public_key in PUBLIC_KEYS):
@@ -53,7 +53,7 @@ def decode_jwt(auth_jwt_token: str) -> dict:
         raise RuntimeError(msg)
 
     jwk = get_matching_jwk(auth_jwt_token)
-    for aud in ALLOWED_AUDIENCES or []:
+    for aud in ALLOWED_AUDIENCES:
         try:
             decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
             return decoded_jwt

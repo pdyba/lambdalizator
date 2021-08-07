@@ -7,11 +7,12 @@ import logging
 import urllib.parse
 from abc import ABCMeta, abstractmethod
 from http.server import BaseHTTPRequestHandler
-from http.server import HTTPServer
+from http.server import ThreadingHTTPServer
 from typing import Tuple, Union, Type
-
+from threading import Thread
 from lbz.dev.misc import Event
 from lbz.resource import Resource
+from lbz.response import Response
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
@@ -24,7 +25,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
     @property
     @abstractmethod
     def cls(self) -> Type[Resource]:
-        pass
+        """Resource base class"""
 
     def _get_route_params(self, org_path: str) -> Tuple[Union[str, None], Union[dict, None]]:
         """
@@ -33,10 +34,10 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
         :return: standarised route, url params / None
         """
         router = self.cls._router  # pylint: disable=protected-access
-        if org_path in router:
-            return org_path, None
         if org_path.find("?") != -1:
             org_path = org_path[: org_path.find("?")]
+        if org_path in router:
+            return org_path, None
         path = org_path.split("/")
         path.remove("")
         for org_route in router:
@@ -85,7 +86,6 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
             if self.path == "/favicon.ico":
                 return
             self.done = False
-
             request_size = int(self.headers.get("Content-Length", 0))
             if request_size:
                 request_body = self.rfile.read(request_size).decode(
@@ -97,9 +97,6 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
             parsed_url = urllib.parse.urlparse(self.path)
             query_params = urllib.parse.parse_qs(parsed_url.query, keep_blank_values=True)
             route, params = self._get_route_params(self.path)
-            if route is None:
-                self._error(666, "Path not Found")
-                return
             resource = self.cls(  # pylint: disable=not-callable
                 Event(
                     resource_path=route,
@@ -110,15 +107,8 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                     body=request_obj,
                 )
             )
-            response = resource()
-            code = response.status_code
-            response_as_dict = response.to_dict()
-            resp_headers = response_as_dict.get("headers", {})
-            if body := response_as_dict.get("body"):
-                response_as_dict = json.loads(body)
-            else:
-                response_as_dict = {}
-            self._send_json(code, response_as_dict, resp_headers)
+            response: Response = resource()
+            self._send_json(response.status_code, response.body, response.headers)
         except Exception:  # pylint: disable=broad-except
             logging.exception("Fail trying to send json")
         self._error(500, "Server error")
@@ -142,7 +132,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
         self.handle_request()
 
 
-class MyDevServer:
+class MyDevServer(Thread):
     """
     Development Server base class.
     """
@@ -151,15 +141,19 @@ class MyDevServer:
         class MyClassLambdaDevHandler(MyLambdaDevHandler):
             cls: Type[Resource] = acls
 
+        super().__init__()
         self.my_handler = MyClassLambdaDevHandler
         self.address = address
         self.port = port
         self.server_address = (self.address, self.port)
+        self.httpd = ThreadingHTTPServer(self.server_address, self.my_handler)
 
     def run(self) -> None:
         """
         Start the server.
         """
         print(f"serving on http://{self.address}:{self.port}")
-        httpd = HTTPServer(self.server_address, self.my_handler)
-        httpd.serve_forever()
+        self.httpd.serve_forever()
+
+    def stop(self):
+        self.httpd.shutdown()

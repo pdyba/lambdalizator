@@ -28,7 +28,7 @@ class User:
             self.__setattr__(key, value)
 
     def __repr__(self) -> str:
-        if hasattr(self, "username"):
+        if self.username:
             return f"User username={self.username}"
         return "User"
 

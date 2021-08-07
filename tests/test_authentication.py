@@ -41,6 +41,9 @@ class TestAuthentication:
         sample_user = User(encode_token({"cognito:username": username}))
         assert sample_user.__repr__() == f"User username={username}"
 
+        sample_user_2 = User(encode_token({"type": "x"}))
+        assert sample_user_2.__repr__() == f"User"
+
     def test_decoding_user(self):
         assert User(self.id_token)
 

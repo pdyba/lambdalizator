@@ -139,8 +139,7 @@ class Authorizer:
         ):
             return
         if d_domain := self.allow.get(self.resource):
-            if self._allow_if_allow_all(d_domain):
-                return
+            self._allow_if_allow_all(d_domain)
             if resource_to_check := d_domain.get(self.permission):
                 self.outcome = ALLOW
                 effective_permissions = self._get_effective_permissions(resource_to_check)

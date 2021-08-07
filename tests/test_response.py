@@ -1,6 +1,8 @@
 # coding=utf-8
 from base64 import b64encode
 
+import pytest
+
 from lbz.response import Response
 
 
@@ -67,3 +69,7 @@ class TestResponse:
             "statusCode": 666,
             "isBase64Encoded": True,
         }
+
+    def test_unsported_header_raises(self):
+        with pytest.raises(RuntimeError):
+            Response(b"xxx", status_code=666)

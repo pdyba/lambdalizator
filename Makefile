@@ -6,7 +6,7 @@ black-check:
 
 test:
 	coverage run --include 'lbz/*' -m pytest "tests"
-	coverage report --skip-covered
+	coverage report --skip-covered -m
 
 build:
 	python setup.py sdist bdist_wheel

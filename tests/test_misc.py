@@ -1,6 +1,8 @@
 # coding=utf-8
 from collections.abc import MutableMapping
 
+import pytest
+
 from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger
 
 
@@ -39,6 +41,17 @@ def test_multi_dict():
         assert letter == "b"
     assert len(multi_dict) == 1
     assert multi_dict.getlist("b") == ["abc"]
+
+
+def test_multi_dict_init_empty():
+    multi_dict = MultiDict(None)
+    assert multi_dict._dict == {}
+
+
+def test_multi_dict_index_error():
+    multi_dict = MultiDict({"a": []})
+    with pytest.raises(KeyError):
+        multi_dict["a"]
 
 
 def test_get_logger(caplog):

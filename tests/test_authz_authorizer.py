@@ -1,13 +1,12 @@
 # coding=utf-8
 from datetime import datetime, timedelta
 from unittest.mock import patch
-
+from copy import deepcopy
 import pytest
-
+import os
 from lbz.authz import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
-
 
 # pylint: disable=too-many-public-methods
 class TestAuthorizerSetupClass:
@@ -105,6 +104,11 @@ class TestAuthorizerSetupMethod:
         with pytest.raises(PermissionDenied):
             self.authz._check_allow_and_set_resources()  # pylint: disable=protected-access
             assert self.authz.outcome == ALLOW
+
+    def test_check_allow_domain(self):
+        self.authz.allow = {"test_resource": ALL}
+        self.authz._check_allow_and_set_resources()  # pylint: disable=protected-access
+        assert self.authz.outcome == ALLOW
 
     def test_check_allow_one(self):
         self.authz.allow = {"test_resource": {"permission_name": {"allow": ALL}}}
@@ -238,3 +242,13 @@ class TestAuthorizerSetupMethod:
     def test_sign_authz(self):
         token = Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, SAMPLE_PRIVATE_KEY)
         assert token == EXPECTED_TOKEN
+
+    def test_sign_authz_not_a_dict_error(self):
+        with pytest.raises(ValueError):
+            Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, "")
+
+    def test_sign_authz_no_kid_error(self):
+        prive_key = deepcopy(SAMPLE_PRIVATE_KEY)
+        del prive_key["kid"]
+        with pytest.raises(ValueError):
+            Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, prive_key)

@@ -8,6 +8,7 @@ from unittest.mock import patch, MagicMock, ANY
 
 from jose import jwt
 from multidict import CIMultiDict
+import pytest
 
 from lbz.authentication import User
 from lbz.dev.misc import Event
@@ -57,8 +58,17 @@ event_wrong_uri = Event(
     body=req,
 )
 
+event_wrong_method = Event(
+    resource_path="/",
+    method="" "PRINT",
+    headers={},
+    path_params={},
+    query_params={},
+    body=req,
+)
 
-class TestResource:
+
+class TestResourceInit:
     def setup_method(self):
         # pylint: disable=attribute-defined-outside-init
         self.res = Resource(event)
@@ -74,6 +84,12 @@ class TestResource:
         assert isinstance(self.res._router, Router)  # pylint: disable=protected-access
         assert self.res.request.user is None
 
+    def test___repr__(self):
+        self.res.urn = "/foo/id-12345/bar"
+        assert str(self.res) == "<Resource GET @ /foo/id-12345/bar >"
+
+
+class TestResource:
     @patch.object(Resource, "_get_user")
     def test___call__(self, get_user: MagicMock):
         class XResource(Resource):
@@ -97,6 +113,10 @@ class TestResource:
         assert isinstance(response, Response)
         assert response.status_code == HTTPStatus.NOT_FOUND
 
+    def test_unsupported_method(self):
+        res = Resource(event_wrong_method)()
+        assert res.status_code == HTTPStatus.METHOD_NOT_ALLOWED
+
     def test_request_id_added_when_frameworks_exception_raised(self):
         class TestAPI(Resource):
             @add_route("/")
@@ -109,64 +129,6 @@ class TestResource:
             "message": NotFound.message,
             "request_id": event["requestContext"]["requestId"],
         }
-
-    def test___repr__(self):
-        self.res.urn = "/foo/id-12345/bar"
-        assert str(self.res) == "<Resource GET @ /foo/id-12345/bar >"
-
-    def test_unauthorized_when_authentication_not_configured(self):
-        class XResource(Resource):
-            @add_route("/")
-            def test_method(self):
-                return Response("x")
-
-        resp = XResource({**event, "headers": {"authentication": "dummy"}})()
-        assert resp.status_code == HTTPStatus.UNAUTHORIZED
-
-    @patch.object(User, "__init__", return_value=None)
-    def test_user_loaded_when_cognito_authentication_configured_correctly(
-        self, load_user: MagicMock
-    ):
-        class XResource(Resource):
-            @add_route("/")
-            def test_method(self):
-                return Response("x")
-
-        key = json.loads(env_mock["ALLOWED_PUBLIC_KEYS"])["keys"][0]
-        key_id = key["kid"]
-        authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
-
-        XResource({**event, "headers": {"authentication": authentication_token}})()
-        load_user.assert_called_once_with(authentication_token)
-
-    def test_unauthorized_when_jwt_header_lacks_kid(self):
-        class XResource(Resource):
-            @add_route("/")
-            def test_method(self):
-                return Response("x")
-
-        authentication_token = jwt.encode({"foo": "bar"}, "")
-        resp = XResource({**event, "headers": {"authentication": authentication_token}})()
-        assert resp.status_code == HTTPStatus.UNAUTHORIZED
-
-    def test_unauthorized_when_no_matching_key_in_env_variable(self):
-        class XResource(Resource):
-            @add_route("/")
-            def test_method(self):
-                return Response("x")
-
-        authentication_token = jwt.encode({"kid": "foobar"}, "")
-        resp = XResource({**event, "headers": {"authentication": authentication_token}})()
-        assert resp.status_code == HTTPStatus.UNAUTHORIZED
-
-    def test_unauthorized_when_jwt_header_malformed(self):
-        class XResource(Resource):
-            @add_route("/")
-            def test_method(self):
-                return Response("x")
-
-        resp = XResource({**event, "headers": {"authentication": "12345"}})()
-        assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     def test_pre_request_hook(self):
         pre_request_called = False
@@ -234,15 +196,59 @@ class TestResource:
         assert XResource.get_name() == "xresource"
 
 
+class TestResourceAuthentication:
+    def setup_class(self):
+        class XResource(Resource):
+            @add_route("/")
+            def test_method(self):
+                return Response("x")
+
+        self.res = XResource
+
+    def test_unauthorized_when_authentication_not_configured(self):
+        resp = self.res({**event, "headers": {"authentication": "dummy"}})()
+        assert resp.status_code == HTTPStatus.UNAUTHORIZED
+
+    @patch.object(User, "__init__", return_value=None)
+    def test_user_loaded_when_cognito_authentication_configured_correctly(
+        self, load_user: MagicMock
+    ):
+        key = json.loads(env_mock["ALLOWED_PUBLIC_KEYS"])["keys"][0]
+        key_id = key["kid"]
+        authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
+
+        self.res({**event, "headers": {"authentication": authentication_token}})()
+        load_user.assert_called_once_with(authentication_token)
+
+    def test_unauthorized_when_jwt_header_lacks_kid(self):
+        authentication_token = jwt.encode({"foo": "bar"}, "")
+        resp = self.res({**event, "headers": {"authentication": authentication_token}})()
+        assert resp.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_unauthorized_when_no_matching_key_in_env_variable(self):
+        authentication_token = jwt.encode({"kid": "foobar"}, "")
+        resp = self.res({**event, "headers": {"authentication": authentication_token}})()
+        assert resp.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_unauthorized_when_jwt_header_malformed(self):
+        resp = self.res({**event, "headers": {"authentication": "12345"}})()
+        assert resp.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_unauthorized_when_authentication_not_configured_correctly(self):
+        with patch("lbz.resource.env", {}):
+            resp = self.res({**event, "headers": {"authentication": "dummy"}})()
+            assert resp.status_code == HTTPStatus.UNAUTHORIZED
+
+
 ORIGIN_LOCALHOST = "http://localhost:3000"
 ORIGIN_EXAMPLE = "https://api.example.com"
 
 
 class TestCORSResource:
-    def setup_method(self):
+    def setup_class(self):
         environ["CORS_ORIGIN"] = f"{ORIGIN_LOCALHOST},{ORIGIN_EXAMPLE}"
 
-    def teardown_method(self):
+    def teardown_class(self):
         del environ["CORS_ORIGIN"]
 
     def make_cors_handler(self, origins: List[str] = None, req_origin: str = None) -> CORSResource:
@@ -251,20 +257,19 @@ class TestCORSResource:
         cors_handler = CORSResource(an_event, ["GET", "POST"], origins=origins)
         return cors_handler
 
-    def test_cors_origin_headers_from_env_are_correct_1(self):
-        assert self.make_cors_handler().resp_headers_json[ALLOW_ORIGIN_HEADER] == ORIGIN_LOCALHOST
-
-    def test_cors_origin_headers_from_env_are_correct_2(self):
-        headers = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE).resp_headers_json[
+    @pytest.mark.parametrize(
+        "req_origin, orig_outcome",
+        [
+            (None, ORIGIN_LOCALHOST),
+            (ORIGIN_EXAMPLE, ORIGIN_EXAMPLE),
+            ("invalid_origin", ORIGIN_LOCALHOST),
+        ],
+    )
+    def test_cors_origin_headers_from_env_are_correct(self, req_origin, orig_outcome):
+        headers = self.make_cors_handler(req_origin=req_origin).resp_headers_json[
             ALLOW_ORIGIN_HEADER
         ]
-        assert headers == ORIGIN_EXAMPLE
-
-    def test_cors_origin_headers_from_env_are_correct_3(self):
-        headers = self.make_cors_handler(req_origin="invalid_origin").resp_headers_json[
-            ALLOW_ORIGIN_HEADER
-        ]
-        assert headers == ORIGIN_LOCALHOST
+        assert headers == orig_outcome
 
     def test_cors_origin_headers_from_param_are_correct(self):
         origin_headers = [ORIGIN_LOCALHOST, ORIGIN_EXAMPLE]
@@ -315,6 +320,15 @@ class TestCORSResource:
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
             ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
         }
+
+    @patch.object(CORSResource, "resp_headers", return_value={})
+    def test_not_allow_oring_in_header(self, resp_headers_mock: MagicMock):
+        an_event = defaultdict(MagicMock())
+        an_event["method"] = "GET"
+        an_event["headers"] = {"origin": "notlocalhost"}
+        resp = CORSResource(an_event, ["GET", "POST"], origins="localhost")()
+        assert resp.status_code >= 400
+        resp_headers_mock.assert_called_once()
 
 
 class TestPagination:

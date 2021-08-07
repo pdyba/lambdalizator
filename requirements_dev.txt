@@ -6,4 +6,3 @@ black
 flake8
 pylint
 mypy
-frozendict
