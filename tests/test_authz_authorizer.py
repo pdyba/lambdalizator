@@ -76,6 +76,7 @@ class TestAuthorizerSetupMethod:
             return Authorizer("xx", "test_resource", "permission_name")
 
     def setup_method(self):
+        # pylint: disable=attribute-defined-outside-init
         self.authz = self._mocked_make_authorizer(self.token_payload)
 
     def test_check_deny_res(self):
@@ -134,11 +135,12 @@ class TestAuthorizerSetupMethod:
 
     def test__set_policy_w_scope(self):
         self.authz._set_policy(  # pylint: disable=protected-access
-            "", {
+            "",
+            {
                 **self.token_payload,
                 "allow": "Lambda",
                 "deny": "Lambda",
-            }
+            },
         )
         assert self.authz.allow == "Lambda"
         assert self.authz.deny == "Lambda"
