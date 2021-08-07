@@ -38,7 +38,7 @@ class TestRequestInit:
 
 
 class TestRequest:
-    def setup_method(self):
+    def setup_class(self):
         # pylint: disable=attribute-defined-outside-init
         self.cognito_user = {
             "cognito:username": str(uuid4()),
@@ -50,6 +50,8 @@ class TestRequest:
             "custom:e": str(uuid4()),
         }
         self.id_token = encode_token(self.cognito_user)
+
+    def setup_method(self):
         self.resp = Request(
             headers=CIMultiDict({"Content-Type": "application/json"}),
             uri_params={},

@@ -63,7 +63,7 @@ class Authorizer:
 
         if EXPIRATION_KEY not in policy:
             warnings.warn(
-                f"The auth token doesn't have the '{EXPIRATION_KEY}' field - it will be mandatory"
+                f"The auth token doesn't have the '{EXPIRATION_KEY}' field - it will be mandatory "
                 f"in the next version of Lambdalizator",
                 DeprecationWarning,
             )
