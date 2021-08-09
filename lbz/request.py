@@ -18,30 +18,29 @@ logger = get_logger(__name__)
 class Request:
     """Represents request from API gateway."""
 
-    _json_body: dict = {}
-    _raw_body = b""
-
     def __init__(
         self,
         headers: CIMultiDict,
         uri_params: dict,
         method: str,
-        body: str,
+        body: Union[str, bytes],
         context: dict,
         stage_vars: dict,
         is_base64_encoded: bool,
-        query_params: dict = None,
-        user: User = None,
+        query_params: Optional[dict] = None,
+        user: Optional[User] = None,
     ):
-        self.query_params: MultiDict = MultiDict(query_params or {})
-        self.headers: CIMultiDict = headers
-        self.uri_params: dict = uri_params
-        self.method: str = method
-        self.context: dict = context
+        self.query_params = MultiDict(query_params or {})
+        self.headers = headers
+        self.uri_params = uri_params
+        self.method = method
+        self.context = context
         self.stage_vars = stage_vars
-        self.user: Optional[User] = user
-        self._is_base64_encoded: bool = is_base64_encoded
-        self._body: Union[str, bytes] = body
+        self.user = user
+        self._is_base64_encoded = is_base64_encoded
+        self._body = body
+        self._json_body: Optional[dict] = None
+        self._raw_body: bytes = b""
 
     def __repr__(self) -> str:
         return f"<Request {self.method} >"
@@ -74,7 +73,7 @@ class Request:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError as error:
                     raise BadRequestError(
-                        "Payload is invalid.\nPayload body:\n {!r}".format(self.raw_body)
+                        "Invalid payload.\nPayload body:\n {!r}".format(self.raw_body)
                     ) from error
             return self._json_body
         logger.warning("Wrong headers: %s", self.headers)

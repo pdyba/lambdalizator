@@ -51,7 +51,7 @@ def test_my_lambda_dev_handler():
 
 
 def test_my_dev_server():
-    dev_serv = MyDevServer(MyLambdaDevHandlerHelloWorld)
+    dev_serv = MyDevServer(HelloWorld)
     assert dev_serv.server_address == ("localhost", 8000)
     assert dev_serv.port == 8000
     assert dev_serv.address == "localhost"

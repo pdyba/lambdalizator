@@ -22,53 +22,53 @@ class Client:
 
     def post(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "POST", params, query_params, body, headers)
+        return self._process(path, "POST", params, query_params, body, headers)
 
     def get(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "GET", params, query_params, body, headers)
+        return self._process(path, "GET", params, query_params, body, headers)
 
     def patch(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "PATCH", params, query_params, body, headers)
+        return self._process(path, "PATCH", params, query_params, body, headers)
 
     def put(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "PUT", params, query_params, body, headers)
+        return self._process(path, "PUT", params, query_params, body, headers)
 
     def delete(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "DELETE", params, query_params, body, headers)
+        return self._process(path, "DELETE", params, query_params, body, headers)
 
     def _process(
         self,

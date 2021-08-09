@@ -146,7 +146,7 @@ class CORSResource(Resource):
             resp.headers.update(self.resp_headers())
         return resp
 
-    def _get_allowed_origins(self, origins: Union[List[str], str]) -> str:
+    def _get_allowed_origins(self, origins: List[str]) -> str:
         """
         Checks requests origins against allowed origins.
         """

@@ -209,9 +209,9 @@ def authorization(permission_name: str = None) -> Callable:
     Wrapper for easy adding authorization requirement.
     """
 
-    def decorator(func: Callable) -> Any:
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapped(self: Union[Type[Resource], Resource], *args: Any, **kwargs: Any) -> Any:
+        def wrapped(self: Resource, *args: Any, **kwargs: Any) -> Any:
             restrictions = check_permission(self, permission_name or func.__name__)
             return func(self, *args, restrictions=restrictions, **kwargs)
 

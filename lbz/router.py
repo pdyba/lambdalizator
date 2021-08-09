@@ -17,7 +17,7 @@ class Router(metaclass=Singleton):
     def __init__(self) -> None:
         self._routes = NestedDict()
 
-    def __getitem__(self, route: str) -> dict:
+    def __getitem__(self, route: str) -> Any:
         return self._routes[route]
 
     def __str__(self) -> str:
@@ -35,19 +35,19 @@ class Router(metaclass=Singleton):
     def __iter__(self) -> Iterator:
         return self._routes.__iter__()
 
-    def add_route(self, routes: str, method: str, handler: str) -> None:
+    def add_route(self, route: str, method: str, handler: str) -> None:
         """
         Registers handler to route and method.
         """
-        self._routes[routes][method] = handler
+        self._routes[route][method] = handler
 
 
-def add_route(route: str, method: str = "GET") -> Any:
+def add_route(route: str, method: str = "GET") -> Callable:
     """
     Flask-like wrapper for adding routes.
     """
 
-    def wrapper(func: Callable) -> Any:
+    def wrapper(func: Callable) -> Callable:
         router = Router()
         router.add_route(route, method, func.__name__)
 
