@@ -2,8 +2,6 @@
 """
 Authorization module.
 """
-# TODO: standardize the naming convention
-# In some places, we are using permission and in other resource but it looks like sometimes they mean the same
 import warnings
 from functools import wraps
 from os import environ
@@ -109,6 +107,7 @@ class Authorizer:
                 self.denied_resource = resource
 
     def _check_resource(self, resource: Union[dict, str]) -> None:
+        # TODO: standardize the naming convention (resource != permission)
         self._deny_if_all(resource)
         if isinstance(resource, dict):
             for key, value in resource.items():
@@ -155,7 +154,7 @@ class Authorizer:
         return {"allow": self.allowed_resource, "deny": self.denied_resource}
 
     @staticmethod
-    def sign_authz(authz_data: dict, private_key_jwk: dict) -> Union[str, Any]:
+    def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
         """
         Signs authorization in JWT format.
         """
@@ -191,7 +190,7 @@ def check_permission(resource: Union[Type[Resource], Resource], permission_name:
     return authorizer.restrictions
 
 
-def has_permission(resource: Union[Type[Resource], Resource], permission_name: str) -> bool:
+def has_permission(resource: Resource, permission_name: str) -> bool:
     """
     Safe Check if requester has sufficient permissions to do something on specific resource.
 

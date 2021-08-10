@@ -144,10 +144,10 @@ Released 2021-07-18
 ### Version 0.3.13
 Released 2021-08-01
 
-- Reworks Exceptions and adds missing ones to be compatabile with all HTTP error codes.
+- Reworks Exceptions and adds missing ones to be compatible with all HTTP error codes.
 
 
 ### Version 0.3.14
-Released 2021-07-30
+Released 2021-08-10
 
-- Code quality improvments based on mypy type checking
+- Code quality improvements based on mypy type checking

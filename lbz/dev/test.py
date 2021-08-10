@@ -15,9 +15,7 @@ class Client:
     Client created for testing purposes.
     """
 
-    def __init__(
-        self, resource: Type[Resource]
-    ):  # here, you are expecting to get a class, not its instance
+    def __init__(self, resource: Type[Resource]):
         self.resource = resource
 
     def post(

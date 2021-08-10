@@ -290,7 +290,7 @@ class TestCORSResource:
 
     def test_all_headers(self):
         content_type = "image/jpeg"
-        expected_header = "Content-Type, X-Amz-Date, Authentication, Authorization, X-Api-Key, X-Amz-Security-Token"  # noqa: E501
+        expected_header = "Content-Type, X-Amz-Date, Authentication, Authorization, X-Api-Key, X-Amz-Security-Token"
 
         assert self.make_cors_handler().resp_headers(content_type) == {
             "Access-Control-Allow-Headers": expected_header,
