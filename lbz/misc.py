@@ -35,7 +35,7 @@ class Singleton(type):
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:
         def _del(a_cls: Any) -> None:
             """Enables deletion of singletons"""
-            del Singleton._instances[a_cls._cls_name]
+            del Singleton._instances[a_cls._cls_name]  # pylint: disable=protected-access
 
         if cls not in cls._instances:
             cls._del = _del
