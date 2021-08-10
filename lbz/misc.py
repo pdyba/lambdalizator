@@ -7,7 +7,7 @@ import logging.handlers
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
-from typing import Any, Callable, Hashable, Iterator, Optional, Union
+from typing import Any, Callable, Hashable, Iterator, Optional, List
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
@@ -42,6 +42,34 @@ class Singleton(type):
             cls._cls_name = cls
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+def get_logger(name: str) -> logging.Logger:
+    """Shortcut for creating logger instance."""
+    logger_obj = logging.getLogger(name)
+    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
+    return logger_obj
+
+
+logger = get_logger(__name__)
+
+
+def error_catcher(function: Callable, default_return: Any = False) -> Callable:
+    """
+    Universal Error Catcher
+    """
+
+    @wraps(function)
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return function(*args, **kwargs)
+        except Exception as error:  # pylint: disable=broad-except
+            if len(args) > 0 and hasattr(args[0], "logger"):
+                args[0].logger.exception(error)
+            else:
+                logger.exception(error)
+            return default_return
+
+    return wrapped
 
 
 class MultiDict(MutableMapping):
@@ -85,37 +113,21 @@ class MultiDict(MutableMapping):
         """
         return list(self._dict[k])
 
+    @error_catcher
+    def safe_delete(self, key: str) -> None:
+        del self._dict[key]
 
-def get_logger(name: str) -> logging.Logger:
-    """Shortcut for creating logger instance."""
-    logger_obj = logging.getLogger(name)
-    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
-    return logger_obj
+    def items(self):
+        for key, values in self._dict.items():
+            for value in values:
+                yield(key, value)
 
+    def clean_keys(self, keys: List[str]) -> object:
+        for key in keys:
+            self.safe_delete(key)
+        return self
 
-logger = get_logger(__name__)
-
-
-def error_catcher(function: Callable, default_return: Any = False) -> Callable:
-    """
-    Universal Error Catcher
-    """
-
-    @wraps(function)
-    def wrapped(*args: Any, **kwargs: Any) -> Any:
-        try:
-            return function(*args, **kwargs)
-        except Exception as error:  # pylint: disable=broad-except
-            if len(args) > 0 and hasattr(args[0], "logger"):
-                args[0].logger.exception(error)
-            else:
-                logger.exception(error)
-            return default_return
-
-    return wrapped
-
-
-def copy_without_keys(data: Union[dict, MultiDict], *keys: str) -> dict:
+def copy_without_keys(data: dict, *keys: str) -> dict:
     """
     Clean up dict from unwanted keys.
     """

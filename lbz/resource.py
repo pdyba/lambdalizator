@@ -207,6 +207,6 @@ class PaginatedCORSResource(CORSResource):
 
     @property
     def _pagination_uri(self) -> str:
-        if query_params := copy_without_keys(self.request.query_params, "offset", "limit"):
+        if query_params := self.request.query_params.clean_keys(["offset", "limit"]):
             return f"{self.urn}?{urlencode(query_params)}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"
