@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 from multidict import CIMultiDict
 
 from lbz.authentication import User
+from lbz.authz.collector import authz_collector
 from lbz.exceptions import (
     LambdaFWException,
     NotFound,
@@ -111,6 +112,8 @@ class Resource:
         Place to configure default authorization.
         """
 
+    def get_all_possible_authz(self) -> dict:
+        return authz_collector.dump_authz(self.get_name(), guest_permissions=self.get_guest_authorization())
 
 class CORSResource(Resource):
     """
