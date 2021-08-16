@@ -290,10 +290,12 @@ class TestCORSResource:
 
     def test_all_headers(self):
         content_type = "image/jpeg"
-        expected_header = "Content-Type, X-Amz-Date, Authentication, Authorization, X-Api-Key, X-Amz-Security-Token"
 
         assert self.make_cors_handler().resp_headers(content_type) == {
-            "Access-Control-Allow-Headers": expected_header,
+            "Access-Control-Allow-Headers": (
+                "Content-Type, X-Amz-Date, Authentication, "
+                "Authorization, X-Api-Key, X-Amz-Security-Token"
+            ),
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
             ALLOW_ORIGIN_HEADER: ORIGIN_LOCALHOST,
             "Content-Type": content_type,

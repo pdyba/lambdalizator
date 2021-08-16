@@ -5,7 +5,7 @@ Authorization module.
 import warnings
 from functools import wraps
 from os import environ
-from typing import Callable, Union, Type, Any, Dict
+from typing import Callable, Union, Any, Dict
 
 from jose import jwt
 
@@ -169,7 +169,7 @@ class Authorizer:
         return authz
 
 
-def check_permission(resource: Union[Type[Resource], Resource], permission_name: str) -> dict:
+def check_permission(resource: Resource, permission_name: str) -> dict:
     """
     Check if requester has sufficient permissions to do something on specific resource.
 

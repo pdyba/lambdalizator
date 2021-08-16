@@ -19,7 +19,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
     Mimics AWS Lambda behavior.
     """
 
-    done: bool = False
+    done: bool = False  # TODO: if possible move to __init__
 
     @property
     @abstractmethod
@@ -104,7 +104,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                 Event(
                     resource_path=route,
                     method=self.command,
-                    headers=self.headers,
+                    headers=self.headers,  # type: ignore
                     path_params=params,
                     query_params=query_params,
                     body=request_obj,

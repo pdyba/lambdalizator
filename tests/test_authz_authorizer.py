@@ -39,8 +39,11 @@ class TestAuthorizer:
         assert self.authz.permission == "permission_name"
 
     def test__repr__(self):
-        expected_repr = "Authorizer(auth_jwt=<jwt>, resource_name='test_resource', permission_name='permission_name')"
-        assert repr(self.authz) == expected_repr
+        assert repr(self.authz) == (
+            "Authorizer(auth_jwt=<jwt>, "
+            "resource_name='test_resource', "
+            "permission_name='permission_name')"
+        )
 
     def test__set_policy_w_scope(self):
         self.authz._set_policy(  # pylint: disable=protected-access

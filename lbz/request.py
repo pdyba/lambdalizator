@@ -40,7 +40,7 @@ class Request:
         self._is_base64_encoded = is_base64_encoded
         self._body = body
         self._json_body: Optional[dict] = None
-        self._raw_body: bytes = b""
+        self._raw_body: Optional[bytes] = None
 
     def __repr__(self) -> str:
         return f"<Request {self.method} >"
@@ -68,7 +68,7 @@ class Request:
         if content_type is None:
             return None
         if content_type.startswith("application/json"):
-            if not self._json_body:
+            if self._json_body is None:
                 try:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError as error:

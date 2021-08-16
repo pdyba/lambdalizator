@@ -108,7 +108,7 @@ class Resource:
     @staticmethod
     def get_guest_authorization() -> dict:
         """
-        Place to configure default authorization.
+        Place to configure default authorization. That will be used when Authorization Header is not in place.
         """
 
 

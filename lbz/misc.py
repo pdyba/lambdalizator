@@ -7,7 +7,7 @@ import logging.handlers
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
-from typing import Any, Callable, Hashable, Iterator, Optional, Union
+from typing import Any, Callable, Hashable, Iterator, Optional
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
@@ -55,7 +55,7 @@ class MultiDict(MutableMapping):
 
         self._dict = mapping
 
-    def __getitem__(self, k: str) -> Any:
+    def __getitem__(self, k: Hashable) -> Any:
         try:
             return self._dict[k][-1]
         except IndexError as error:
@@ -79,7 +79,7 @@ class MultiDict(MutableMapping):
     def __str__(self) -> str:
         return repr(self)
 
-    def getlist(self, k: str) -> list:
+    def getlist(self, k: Hashable) -> list:
         """
         Returns a list of all values for specific key.
         """
@@ -115,7 +115,7 @@ def error_catcher(function: Callable, default_return: Any = False) -> Callable:
     return wrapped
 
 
-def copy_without_keys(data: Union[dict, MultiDict], *keys: str) -> dict:
+def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
     """
     Clean up dict from unwanted keys.
     """
