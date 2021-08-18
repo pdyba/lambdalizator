@@ -109,11 +109,12 @@ class Resource:
     @staticmethod
     def get_guest_authorization() -> dict:
         """
-        Place to configure default authorization.
+        Place to configure default authorization. That will be used when Authorization Header is not in place.
         """
 
     def get_all_possible_authz(self) -> dict:
         return authz_collector.dump_authz(self.get_name(), guest_permissions=self.get_guest_authorization())
+
 
 class CORSResource(Resource):
     """
