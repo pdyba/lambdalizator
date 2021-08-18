@@ -80,7 +80,7 @@ class UnsupportedMethod(LambdaFWException):
 
     status_code = HTTPStatus.METHOD_NOT_ALLOWED.value
 
-    def __init__(self, method):
+    def __init__(self, method: str) -> None:
         super().__init__(message="Unsupported method: %s" % method)
 
 

@@ -5,7 +5,7 @@ import pytest
 from lbz.authz import Authorizer, has_permission, ALL, LIMITED_ALLOW
 from lbz.dev.test import Event
 from lbz.resource import Resource
-from tests import sample_private_key
+from tests import SAMPLE_PRIVATE_KEY
 
 
 class SampleResource(Resource):
@@ -46,7 +46,7 @@ class TestAuthorizationUtils:
         self, sample_event: Event, acl: dict, expected_result: bool
     ):
 
-        authorization = Authorizer.sign_authz(acl, sample_private_key)
+        authorization = Authorizer.sign_authz(acl, SAMPLE_PRIVATE_KEY)
         sample_event["headers"]["authorization"] = authorization
 
         assert has_permission(SampleResource(sample_event), "sample_function") is expected_result

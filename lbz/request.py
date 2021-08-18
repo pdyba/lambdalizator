@@ -18,22 +18,19 @@ logger = get_logger(__name__)
 class Request:
     """Represents request from API gateway."""
 
-    _json_body = None
-    _raw_body = b""
-
     def __init__(
         self,
         headers: CIMultiDict,
         uri_params: dict,
         method: str,
-        body: str,
+        body: Union[str, bytes],
         context: dict,
         stage_vars: dict,
         is_base64_encoded: bool,
-        query_params: dict = None,
-        user: User = None,
+        query_params: Optional[dict] = None,
+        user: Optional[User] = None,
     ):
-        self.query_params = MultiDict(query_params)
+        self.query_params = MultiDict(query_params or {})
         self.headers = headers
         self.uri_params = uri_params
         self.method = method
@@ -42,12 +39,14 @@ class Request:
         self.user = user
         self._is_base64_encoded = is_base64_encoded
         self._body = body
+        self._json_body: Optional[dict] = None
+        self._raw_body: Optional[bytes] = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Request {self.method} >"
 
     @staticmethod
-    def _decode_base64(encoded) -> bytes:
+    def _decode_base64(encoded: Union[str, bytes]) -> bytes:
         if not isinstance(encoded, bytes):
             encoded = encoded.encode("ascii")
         return base64.b64decode(encoded)
@@ -69,14 +68,13 @@ class Request:
         if content_type is None:
             return None
         if content_type.startswith("application/json"):
-            if isinstance(self._body, dict):
-                return self._body
             if self._json_body is None:
                 try:
                     self._json_body = json.loads(self.raw_body)
                 except ValueError as error:
-                    msg = f"The provided payload is invalid.\nPayload body:\n{self.raw_body}"
-                    raise BadRequestError(msg) from error
+                    raise BadRequestError(
+                        "Invalid payload.\nPayload body:\n {!r}".format(self.raw_body)
+                    ) from error
             return self._json_body
         logger.warning("Wrong headers: %s", self.headers)
         raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")

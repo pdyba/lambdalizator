@@ -94,7 +94,7 @@ class TestRequest:
         assert self.resp.raw_body == b"abcx"
 
     def test_json_body_dict(self):
-        self.resp._body = {"x": "abcx"}  # pylint: disable=protected-access
+        self.resp._body = '{"x": "abcx"}'  # pylint: disable=protected-access
         assert self.resp.json_body == {"x": "abcx"}
 
     def test_json_body_json(self):
@@ -126,11 +126,8 @@ class TestRequest:
             assert isinstance(getattr(self.resp.user, letter), str)
 
     def test_headers_are_case_insensitive(self):
-        assert (
-            self.resp.headers["content-type"]
-            == self.resp.headers["CoNtEnT-TyPe"]
-            == "application/json"
-        )
+        assert self.resp.headers["content-type"] == "application/json"
+        assert self.resp.headers["CoNtEnT-TyPe"] == "application/json"
 
     def test_to_dict(self):
         assert self.resp.to_dict() == {

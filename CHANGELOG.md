@@ -139,3 +139,15 @@ Released 2021-07-08
 Released 2021-07-18
 
 - Add pylint, with configuration at 10.00/10.00 score
+
+
+### Version 0.3.13
+Released 2021-08-01
+
+- Reworks Exceptions and adds missing ones to be compatible with all HTTP error codes.
+
+
+### Version 0.3.14
+Released 2021-08-10
+
+- Code quality improvements based on mypy type checking
