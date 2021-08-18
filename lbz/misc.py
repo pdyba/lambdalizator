@@ -35,7 +35,7 @@ class Singleton(type):
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:
         def _del(a_cls: Any) -> None:
             """Enables deletion of singletons"""
-            del Singleton._instances[a_cls._cls_name]
+            del Singleton._instances[a_cls._cls_name]  # pylint: disable=protected-access
 
         if cls not in cls._instances:
             cls._del = _del
@@ -83,7 +83,7 @@ class MultiDict(MutableMapping):
 
         self._dict = mapping
 
-    def __getitem__(self, k: str) -> Any:
+    def __getitem__(self, k: Hashable) -> Any:
         try:
             return self._dict[k][-1]
         except IndexError as error:
@@ -107,7 +107,7 @@ class MultiDict(MutableMapping):
     def __str__(self) -> str:
         return repr(self)
 
-    def getlist(self, k: str) -> list:
+    def getlist(self, k: Hashable) -> list:
         """
         Returns a list of all values for specific key.
         """
@@ -122,13 +122,14 @@ class MultiDict(MutableMapping):
             for value in values:
                 yield(key, value)
 
-    def clean_keys(self, keys: List[str]) -> object:
+    def clean_keys(self, keys: List[Hashable]) -> object:
         for key in keys:
             self.safe_delete(key)
         return self
 
-def copy_without_keys(data: dict, *keys: str) -> dict:
+def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
     """
     Clean up dict from unwanted keys.
     """
     return {key: value for key, value in data.items() if key not in keys}
+

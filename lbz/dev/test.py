@@ -1,6 +1,6 @@
 # coding=utf-8
 """Helper class for testing."""
-from typing import Union, Type
+from typing import Optional, Type
 
 from lbz.dev.misc import Event
 from lbz.misc import get_logger
@@ -72,10 +72,10 @@ class Client:
         self,
         path: str,
         method: str,
-        params: Union[dict, None],
-        query_params: Union[dict, None],
-        body: Union[dict, None],
-        headers: Union[dict, None],
+        params: Optional[dict],
+        query_params: Optional[dict],
+        body: Optional[dict],
+        headers: Optional[dict],
     ) -> Response:
         if query_params:
             for key, value in query_params.items():
