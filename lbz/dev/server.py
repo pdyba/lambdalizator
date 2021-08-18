@@ -13,6 +13,7 @@ from typing import Tuple, Union, Type
 
 from lbz.dev.misc import Event
 from lbz.resource import Resource
+from lbz.response import Response
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
@@ -59,7 +60,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                     return org_route, params
         raise ValueError
 
-    def _send_json(self, code: int, obj: dict, headers: dict = None) -> None:
+    def _send_json(self, code: int, obj: Union[str, dict], headers: dict = None) -> None:
         # Make sure only one response is sent
         if self.done:
             return

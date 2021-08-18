@@ -5,7 +5,7 @@ Authorization module.
 import warnings
 from functools import wraps
 from os import environ
-from typing import Callable, Union, Any, Dict
+from typing import Callable, Union, Any, Dict, Type
 
 from jose import jwt
 
