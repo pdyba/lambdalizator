@@ -13,7 +13,6 @@ from typing import Tuple, Union, Type
 
 from lbz.dev.misc import Event
 from lbz.resource import Resource
-from lbz.response import Response
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
@@ -21,12 +20,12 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
     Mimics AWS Lambda behavior.
     """
 
-    done: bool = False
+    done: bool = False  # TODO: if possible move to __init__
 
     @property
     @abstractmethod
     def cls(self) -> Type[Resource]:
-        """Resource base class"""
+        pass
 
     def _get_route_params(self, org_path: str) -> Tuple[str, Union[dict, None]]:
         """
@@ -60,7 +59,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                     return org_route, params
         raise ValueError
 
-    def _send_json(self, code: int, obj: Union[str, dict], headers: dict = None) -> None:
+    def _send_json(self, code: int, obj: dict, headers: dict = None) -> None:
         # Make sure only one response is sent
         if self.done:
             return
@@ -102,7 +101,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                 Event(
                     resource_path=route,
                     method=self.command,
-                    headers=self.headers,
+                    headers=self.headers,  # type: ignore
                     path_params=params,
                     query_params=query_params,
                     body=request_obj,

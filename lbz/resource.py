@@ -108,7 +108,7 @@ class Resource:
     @staticmethod
     def get_guest_authorization() -> dict:
         """
-        Place to configure default authorization.
+        Place to configure default authorization. That will be used when Authorization Header is not in place.
         """
 
 
@@ -146,7 +146,7 @@ class CORSResource(Resource):
             resp.headers.update(self.resp_headers())
         return resp
 
-    def _get_allowed_origins(self, origins: Union[List[str], str]) -> str:
+    def _get_allowed_origins(self, origins: List[str]) -> str:
         """
         Checks requests origins against allowed origins.
         """

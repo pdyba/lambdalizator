@@ -41,8 +41,11 @@ class TestAuthorizerSetupClass:
         assert self.authz.permission == "permission_name"
 
     def test__repr__(self):
-        expected_repr = "Authorizer(auth_jwt=<jwt>, resource_name='test_resource', permission_name='permission_name')"  # noqa: E501
-        assert repr(self.authz) == expected_repr
+        assert repr(self.authz) == (
+            "Authorizer(auth_jwt=<jwt>, "
+            "resource_name='test_resource', "
+            "permission_name='permission_name')"
+        )
 
     def test_validate_one_with_expired(self):
         expiration_negative = int((datetime.utcnow() - timedelta(seconds=1)).timestamp())

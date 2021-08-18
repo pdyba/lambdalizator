@@ -1,6 +1,6 @@
 # coding=utf-8
 """Helper class for testing."""
-from typing import Union, Type
+from typing import Optional, Type
 
 from lbz.dev.misc import Event
 from lbz.misc import get_logger
@@ -15,69 +15,67 @@ class Client:
     Client created for testing purposes.
     """
 
-    def __init__(
-        self, resource: Type[Resource]
-    ):  # here, you are expecting to get a class, not its instance
+    def __init__(self, resource: Type[Resource]):
         self.resource = resource
 
     def post(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "POST", params, query_params, body, headers)
+        return self._process(path, "POST", params, query_params, body, headers)
 
     def get(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "GET", params, query_params, body, headers)
+        return self._process(path, "GET", params, query_params, body, headers)
 
     def patch(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "PATCH", params, query_params, body, headers)
+        return self._process(path, "PATCH", params, query_params, body, headers)
 
     def put(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "PUT", params, query_params, body, headers)
+        return self._process(path, "PUT", params, query_params, body, headers)
 
     def delete(
         self,
-        resource: str,
+        path: str,
         params: dict = None,
         query_params: dict = None,
         body: dict = None,
         headers: dict = None,
     ) -> Response:
-        return self._process(resource, "DELETE", params, query_params, body, headers)
+        return self._process(path, "DELETE", params, query_params, body, headers)
 
     def _process(
         self,
         path: str,
         method: str,
-        params: Union[dict, None],
-        query_params: Union[dict, None],
-        body: Union[dict, None],
-        headers: Union[dict, None],
+        params: Optional[dict],
+        query_params: Optional[dict],
+        body: Optional[dict],
+        headers: Optional[dict],
     ) -> Response:
         if query_params:
             for key, value in query_params.items():

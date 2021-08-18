@@ -4,7 +4,6 @@ Dev misc tools.
 """
 import json
 import pathlib
-from typing import Any
 from uuid import uuid4
 
 from lbz.dev.event import EVENT_TEMPLATE
@@ -22,7 +21,7 @@ class Event(dict):
         body: dict = None,
         query_params: dict = None,
         path_params: dict = None,
-        headers: Any = None,
+        headers: dict = None,
     ) -> None:
         super().__init__(**json.loads(EVENT_TEMPLATE))
 

@@ -7,7 +7,7 @@ import logging.handlers
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
-from typing import Union, Any, Callable, Hashable, Iterator
+from typing import Any, Callable, Hashable, Iterator, Optional
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
@@ -17,7 +17,7 @@ class NestedDict(dict):
     Endless nested dict.
     """
 
-    def __getitem__(self, key: str) -> Union[Any, dict]:
+    def __getitem__(self, key: Hashable) -> Any:
         if key in self:
             return self.get(key)
         return self.setdefault(key, NestedDict())
@@ -33,9 +33,9 @@ class Singleton(type):
     _instances: dict = {}
 
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:
-        def _del(cls: Any) -> None:
+        def _del(a_cls: Any) -> None:
             """Enables deletion of singletons"""
-            del Singleton._instances[cls._cls_name]
+            del Singleton._instances[a_cls._cls_name]  # pylint: disable=protected-access
 
         if cls not in cls._instances:
             cls._del = _del
@@ -49,13 +49,13 @@ class MultiDict(MutableMapping):
     Advanced Multi Dictionary.
     """
 
-    def __init__(self, mapping: Union[dict, None]):
+    def __init__(self, mapping: Optional[dict]):
         if mapping is None:
             mapping = {}
 
         self._dict = mapping
 
-    def __getitem__(self, k: str) -> Any:
+    def __getitem__(self, k: Hashable) -> Any:
         try:
             return self._dict[k][-1]
         except IndexError as error:
@@ -79,7 +79,7 @@ class MultiDict(MutableMapping):
     def __str__(self) -> str:
         return repr(self)
 
-    def getlist(self, k: str) -> list:
+    def getlist(self, k: Hashable) -> list:
         """
         Returns a list of all values for specific key.
         """
@@ -96,7 +96,7 @@ def get_logger(name: str) -> logging.Logger:
 logger = get_logger(__name__)
 
 
-def error_catcher(function: Callable, default_return: Any = False) -> Any:
+def error_catcher(function: Callable, default_return: Any = False) -> Callable:
     """
     Universal Error Catcher
     """
@@ -115,7 +115,7 @@ def error_catcher(function: Callable, default_return: Any = False) -> Any:
     return wrapped
 
 
-def copy_without_keys(data: Union[dict, MultiDict], *keys: str) -> dict:
+def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
     """
     Clean up dict from unwanted keys.
     """

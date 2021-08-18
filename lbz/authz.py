@@ -2,12 +2,10 @@
 """
 Authorization module.
 """
-# TODO: standardize the naming convention
-# In some places, we are using permission and in other resource but it looks like sometimes they mean the same
 import warnings
 from functools import wraps
 from os import environ
-from typing import Callable, Union, Type, Any, Dict
+from typing import Callable, Union, Any, Dict
 
 from jose import jwt
 
@@ -109,6 +107,7 @@ class Authorizer:
                 self.denied_resource = resource
 
     def _check_resource(self, resource: Union[dict, str]) -> None:
+        # TODO: standardize the naming convention (resource != permission)
         self._deny_if_all(resource)
         if isinstance(resource, dict):
             for key, value in resource.items():
@@ -208,9 +207,9 @@ def authorization(permission_name: str = None) -> Callable:
     Wrapper for easy adding authorization requirement.
     """
 
-    def decorator(func: Callable) -> Any:
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapped(self: Union[Type[Resource], Resource], *args: Any, **kwargs: Any) -> Any:
+        def wrapped(self: Resource, *args: Any, **kwargs: Any) -> Any:
             restrictions = check_permission(self, permission_name or func.__name__)
             return func(self, *args, restrictions=restrictions, **kwargs)
 
