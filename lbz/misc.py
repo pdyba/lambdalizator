@@ -43,6 +43,7 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
+
 def get_logger(name: str) -> logging.Logger:
     """Shortcut for creating logger instance."""
     logger_obj = logging.getLogger(name)
@@ -114,22 +115,23 @@ class MultiDict(MutableMapping):
         return list(self._dict[k])
 
     @error_catcher
-    def safe_delete(self, key: str) -> None:
+    def safe_delete(self, key: Hashable) -> None:
         del self._dict[key]
 
-    def items(self):
+    def items(self) -> Iterator:  # type: ignore[override]
+        # override as Mapping.items method is expected to be returning  set and set looses order.
         for key, values in self._dict.items():
             for value in values:
-                yield(key, value)
+                yield key, value
 
     def clean_keys(self, keys: List[Hashable]) -> object:
         for key in keys:
             self.safe_delete(key)
         return self
 
+
 def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
     """
     Clean up dict from unwanted keys.
     """
     return {key: value for key, value in data.items() if key not in keys}
-

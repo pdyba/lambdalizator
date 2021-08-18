@@ -16,7 +16,7 @@ from lbz.exceptions import (
     UnsupportedMethod,
     ServerError,
 )
-from lbz.misc import get_logger, copy_without_keys
+from lbz.misc import get_logger
 from lbz.request import Request
 from lbz.response import Response
 from lbz.router import Router
@@ -208,5 +208,7 @@ class PaginatedCORSResource(CORSResource):
     @property
     def _pagination_uri(self) -> str:
         if query_params := self.request.query_params.clean_keys(["offset", "limit"]):
-            return f"{self.urn}?{urlencode(query_params)}&offset={{offset}}&limit={{limit}}"
+            # TODO: Make MultiDict be a Mapping not a object to remove type ignore below
+            encoded_params = urlencode(query_params)  # type: ignore
+            return f"{self.urn}?{encoded_params}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"
