@@ -1,13 +1,12 @@
 import warnings
 from os import environ
-from typing import Callable, Union, Any, Dict
+from typing import Union, Dict
 
 from jose import jwt
 
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning
 from lbz.jwt_utils import decode_jwt
 from lbz.misc import get_logger
-
 
 logger = get_logger(__name__)
 

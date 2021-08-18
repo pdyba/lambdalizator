@@ -53,6 +53,7 @@ def authorization(permission_name: str = None) -> Callable:
 
     def decorator(func: Callable) -> Callable:
         authz_collector.add_authz(permission_name or func.__name__)
+
         @wraps(func)
         def wrapped(self: Resource, *args: Any, **kwargs: Any) -> Any:
             restrictions = check_permission(self, permission_name or func.__name__)

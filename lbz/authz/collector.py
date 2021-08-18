@@ -9,10 +9,8 @@ class AuthCollector(metaclass=Singleton):
     def add_authz(self, permission: str) -> None:
         self.possible_authz.append(permission)
 
-    def dump_authz(self, resource:str, guest_permissions:dict) -> dict:
-        return {
-            resource: self.possible_authz,
-            "guest_permissions": guest_permissions
-        }
+    def dump_authz(self, resource: str, guest_permissions: dict) -> dict:
+        return {resource: self.possible_authz, "guest_permissions": guest_permissions}
+
 
 authz_collector = AuthCollector()
