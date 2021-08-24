@@ -2,6 +2,8 @@
 """
 Misc Helpers of Lambda Framework.
 """
+from __future__ import annotations
+
 import logging
 import logging.handlers
 from collections.abc import MutableMapping
@@ -42,35 +44,6 @@ class Singleton(type):
             cls._cls_name = cls
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
-
-
-def get_logger(name: str) -> logging.Logger:
-    """Shortcut for creating logger instance."""
-    logger_obj = logging.getLogger(name)
-    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
-    return logger_obj
-
-
-logger = get_logger(__name__)
-
-
-def error_catcher(function: Callable, default_return: Any = False) -> Callable:
-    """
-    Universal Error Catcher
-    """
-
-    @wraps(function)
-    def wrapped(*args: Any, **kwargs: Any) -> Any:
-        try:
-            return function(*args, **kwargs)
-        except Exception as error:  # pylint: disable=broad-except
-            if len(args) > 0 and hasattr(args[0], "logger"):
-                args[0].logger.exception(error)
-            else:
-                logger.exception(error)
-            return default_return
-
-    return wrapped
 
 
 class MultiDict(MutableMapping):
@@ -114,24 +87,42 @@ class MultiDict(MutableMapping):
         """
         return list(self._dict[k])
 
-    @error_catcher
-    def safe_delete(self, key: Hashable) -> None:
-        del self._dict[key]
-
-    def items(self) -> Iterator:  # type: ignore[override]
-        # override as Mapping.items method is expected to be returning  set and set looses order.
-        for key, values in self._dict.items():
-            for value in values:
-                yield key, value
-
-    def clean_keys(self, keys: List[Hashable]) -> object:
-        for key in keys:
-            self.safe_delete(key)
-        return self
+    def original_items(self, *keys_to_skip: Hashable) -> List[tuple]:
+        return [(key, values) for key, values in self._dict.items() if key not in keys_to_skip]
 
 
 def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
     """
     Clean up dict from unwanted keys.
     """
+    # TODO: to be deleted in 0.4
     return {key: value for key, value in data.items() if key not in keys}
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Shortcut for creating logger instance."""
+    logger_obj = logging.getLogger(name)
+    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
+    return logger_obj
+
+
+logger = get_logger(__name__)
+
+
+def error_catcher(function: Callable, default_return: Any = False) -> Callable:
+    """
+    Universal Error Catcher
+    """
+
+    @wraps(function)
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return function(*args, **kwargs)
+        except Exception as error:  # pylint: disable=broad-except
+            if len(args) > 0 and hasattr(args[0], "logger"):
+                args[0].logger.exception(error)
+            else:
+                logger.exception(error)
+            return default_return
+
+    return wrapped

@@ -207,8 +207,8 @@ class PaginatedCORSResource(CORSResource):
 
     @property
     def _pagination_uri(self) -> str:
-        if query_params := self.request.query_params.clean_keys(["offset", "limit"]):
+        if query_params := self.request.query_params.original_items("offset", "limit"):
             # TODO: Make MultiDict be a Mapping not a object to remove type ignore below
-            encoded_params = urlencode(query_params)  # type: ignore
+            encoded_params = urlencode(query_params, doseq=True)  # type: ignore
             return f"{self.urn}?{encoded_params}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"

@@ -355,6 +355,7 @@ class TestPagination:
             }
         )
         self.resource.request = req
+
         assert self.resource.get_pagination(total_items=100, offset=20, limit=10) == {
             "count": 100,
             "links": {
