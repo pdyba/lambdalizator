@@ -1,9 +1,9 @@
 from setuptools import setup
 
-with open("version") as file:
+with open("version", encoding="UTF-8") as file:
     version = file.read()
 
-with open("README.md") as file:
+with open("README.md", encoding="UTF-8") as file:
     long_description = file.read()
 
 setup(

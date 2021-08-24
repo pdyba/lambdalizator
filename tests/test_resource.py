@@ -27,25 +27,24 @@ from tests.fixtures.cognito_auth import env_mock
 
 # TODO: Use fixtures yielded from conftest.py
 req = Request(
+    body="",
     headers=CIMultiDict({"Content-Type": "application/json"}),
     uri_params={},
-    method="GET",
-    body="",
+    method="GET",  # pylint issue #214
+    query_params=None,
     context={},
     stage_vars={},
-    # pylint issue #214
     is_base64_encoded=False,
-    query_params=None,
     user=None,
 )
 
 event = Event(
     resource_path="/",
     method="GET",
+    body=req,  # pylint issue #214
     headers={},
     path_params={},
     query_params={},
-    body=req,
 )
 
 event_wrong_uri = Event(
