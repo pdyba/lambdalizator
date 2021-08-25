@@ -1,14 +1,9 @@
 from setuptools import setup
-
-with open("version") as file:
-    version = file.read()
-
-with open("README.md") as file:
-    long_description = file.read()
+import pathlib
 
 setup(
     name="lbz",
-    version=version,
+    version=pathlib.Path("version").read_text("utf-8"),
     author="Piotr Dyba",
     author_email="piotr.dyba@localbini.com",
     packages=["lbz", "lbz.dev"],
@@ -17,7 +12,7 @@ setup(
     license="LICENSE",
     description="AWS Lambda REST ToolBox",
     long_description_content_type="text/markdown",
-    long_description=long_description,
+    long_description=pathlib.Path("README.md").read_text("utf-8"),
     install_requires=["python-jose"],
     classifiers=[
         "Environment :: Web Environment",

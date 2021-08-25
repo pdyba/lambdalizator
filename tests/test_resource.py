@@ -27,25 +27,24 @@ from tests.fixtures.cognito_auth import env_mock
 
 # TODO: Use fixtures yielded from conftest.py
 req = Request(
+    body="",
     headers=CIMultiDict({"Content-Type": "application/json"}),
     uri_params={},
-    method="GET",
-    body="",
+    method="GET",  # pylint issue #214
+    query_params=None,
     context={},
     stage_vars={},
-    # pylint issue #214
     is_base64_encoded=False,
-    query_params=None,
     user=None,
 )
 
 event = Event(
     resource_path="/",
     method="GET",
+    body=req,  # pylint issue #214
     headers={},
     path_params={},
     query_params={},
-    body=req,
 )
 
 event_wrong_uri = Event(
@@ -346,6 +345,26 @@ class TestPagination:
             },
         }
 
+    def test_get_pagination_multifield_query_params(self):
+        expected_prefix = "/test/path?test=param&another=example&another=example2"
+        req.query_params = MultiDict(
+            {
+                "test": ["param"],
+                "another": ["example", "example2"],
+            }
+        )
+        self.resource.request = req
+
+        assert self.resource.get_pagination(total_items=100, offset=20, limit=10) == {
+            "count": 100,
+            "links": {
+                "current": f"{expected_prefix}&offset=20&limit=10",
+                "last": f"{expected_prefix}&offset=90&limit=10",
+                "next": f"{expected_prefix}&offset=30&limit=10",
+                "prev": f"{expected_prefix}&offset=10&limit=10",
+            },
+        }
+
     def test_no_prev_link_when_offset_minus_limit_lt_zero(self):
         links = self.resource.get_pagination(total_items=100, offset=10, limit=20)["links"]
         assert "prev" not in links
@@ -355,11 +374,11 @@ class TestPagination:
         assert "next" not in links
 
     def test_pagination_uri_with_existing_pagination_query_params(self):
-        self.resource.request.query_params = {"offset": "3", "limit": "42"}
+        self.resource.request.query_params = MultiDict({"offset": "3", "limit": "42"})
         expected = "/test/path?offset={offset}&limit={limit}"
         assert self.resource._pagination_uri == expected  # pylint: disable=protected-access
 
     def test_pagination_uri_without_query_params(self):
-        self.resource.request.query_params = {}
+        self.resource.request.query_params = MultiDict({})
         expected = "/test/path?offset={offset}&limit={limit}"
         assert self.resource._pagination_uri == expected  # pylint: disable=protected-access
