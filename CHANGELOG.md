@@ -151,3 +151,11 @@ Released 2021-08-01
 Released 2021-08-10
 
 - Code quality improvements based on mypy type checking
+
+
+### Version 0.3.15
+Released 2021-08-25
+
+- Bug fix for a query params in Paginated Resource
+
+

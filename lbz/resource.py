@@ -16,7 +16,7 @@ from lbz.exceptions import (
     UnsupportedMethod,
     ServerError,
 )
-from lbz.misc import get_logger, copy_without_keys
+from lbz.misc import get_logger
 from lbz.request import Request
 from lbz.response import Response
 from lbz.router import Router
@@ -207,6 +207,9 @@ class PaginatedCORSResource(CORSResource):
 
     @property
     def _pagination_uri(self) -> str:
-        if query_params := copy_without_keys(self.request.query_params, "offset", "limit"):
-            return f"{self.urn}?{urlencode(query_params)}&offset={{offset}}&limit={{limit}}"
+        if query_params := self.request.query_params.original_items(
+            keys_to_skip=["offset", "limit"]
+        ):
+            encoded_params = urlencode(query_params, doseq=True)  # type: ignore
+            return f"{self.urn}?{encoded_params}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"

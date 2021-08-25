@@ -13,7 +13,6 @@ def sample_request():
         uri_params={},
         method="GET",
         body="",
-        # pylint issue #214
         context={},
         stage_vars={},
         is_base64_encoded=False,
@@ -28,7 +27,6 @@ def sample_event():
         resource_path="/",
         method="GET",
         headers={},
-        # pylint issue #214
         path_params={},
         query_params={},
     )
