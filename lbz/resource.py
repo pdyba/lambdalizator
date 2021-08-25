@@ -207,7 +207,9 @@ class PaginatedCORSResource(CORSResource):
 
     @property
     def _pagination_uri(self) -> str:
-        if query_params := self.request.query_params.original_items(keys_to_skip=["offset", "limit"]):
+        if query_params := self.request.query_params.original_items(
+            keys_to_skip=["offset", "limit"]
+        ):
             encoded_params = urlencode(query_params, doseq=True)  # type: ignore
             return f"{self.urn}?{encoded_params}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"
