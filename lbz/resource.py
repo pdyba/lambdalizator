@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 from multidict import CIMultiDict
 
 from lbz.authentication import User
-from lbz.authz.collector import authz_collector
+from lbz.authz.collector import AuthzCollector
 from lbz.exceptions import (
     LambdaFWException,
     NotFound,
@@ -41,6 +41,7 @@ class Resource:
 
     def __init__(self, event: dict):
         self._load_configuration()
+        self._authz_collector = AuthzCollector()
         self.urn = event["path"]  # TODO: Variables should match corresponding event fields
         self.path = event.get("requestContext", {}).get("resourcePath")
         self.path_params = event.get("pathParameters") or {}  # DO NOT refactor
@@ -56,6 +57,8 @@ class Resource:
             is_base64_encoded=event.get("isBase64Encoded", False),
             query_params=event["multiValueQueryStringParameters"],
         )
+        self._authz_collector.set_resource(self.get_name())
+        self._authz_collector.set_guest_permissions(self.get_guest_authorization() or {})
 
     def __call__(self) -> Response:
         try:
@@ -113,9 +116,7 @@ class Resource:
         """
 
     def get_all_possible_authz(self) -> dict:
-        return authz_collector.dump_authz(
-            self.get_name(), guest_permissions=self.get_guest_authorization()
-        )
+        return self._authz_collector.dump()
 
 
 class CORSResource(Resource):

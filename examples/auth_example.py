@@ -14,7 +14,7 @@ from lbz.router import add_route
 class HelloWorldWithAuthorization(Resource):
     _name = "helloworld"
 
-    @authorization
+    @authorization()
     @add_route("/", method="GET")
     def list(self, restrictions=None):  # pylint: disable=unused-argument
         return Response({"message": f"Hello, {self.request.user.username} !"})
