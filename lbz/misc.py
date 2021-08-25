@@ -2,14 +2,12 @@
 """
 Misc Helpers of Lambda Framework.
 """
-from __future__ import annotations
-
 import logging
 import logging.handlers
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
-from typing import Any, Callable, Hashable, Iterator, Optional, List
+from typing import Any, Callable, Hashable, Iterator, Optional, List, Iterable
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
@@ -87,8 +85,16 @@ class MultiDict(MutableMapping):
         """
         return list(self._dict[k])
 
-    def original_items(self, *keys_to_skip: Hashable) -> List[tuple]:
+    def original_items(self, keys_to_skip: Iterable[Hashable] = None) -> List[tuple]:
+        keys_to_skip = keys_to_skip or []
         return [(key, values) for key, values in self._dict.items() if key not in keys_to_skip]
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Shortcut for creating logger instance."""
+    logger_obj = logging.getLogger(name)
+    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
+    return logger_obj
 
 
 def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
@@ -97,13 +103,6 @@ def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
     """
     # TODO: to be deleted in 0.4
     return {key: value for key, value in data.items() if key not in keys}
-
-
-def get_logger(name: str) -> logging.Logger:
-    """Shortcut for creating logger instance."""
-    logger_obj = logging.getLogger(name)
-    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
-    return logger_obj
 
 
 logger = get_logger(__name__)
