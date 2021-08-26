@@ -10,6 +10,7 @@ from jose import jwt
 from multidict import CIMultiDict
 
 from lbz.authentication import User
+from lbz.authz.collector import AuthzCollector
 from lbz.dev.misc import Event
 from lbz.exceptions import NotFound, ServerError
 from lbz.misc import MultiDict
@@ -72,6 +73,18 @@ class TestResource:
         assert self.res._router is not None  # pylint: disable=protected-access
         assert isinstance(self.res._router, Router)  # pylint: disable=protected-access
         assert self.res.request.user is None
+        assert isinstance(
+            self.res._authz_collector, AuthzCollector  # pylint: disable=protected-access
+        )
+
+    # def test_get_all_possible_authz(self):
+    # TODO: enable it with testing fixes
+    # assert self.res.get_authz_data() == {
+    #     "resource": {
+    #         "possible_permissions": {},
+    #         "guest_permissions": {},
+    #     }
+    # }
 
     @patch.object(Resource, "_get_user")
     def test___call__(self, get_user: MagicMock):

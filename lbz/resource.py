@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 from multidict import CIMultiDict
 
 from lbz.authentication import User
+from lbz.authz.collector import authz_collector
 from lbz.exceptions import (
     LambdaFWException,
     NotFound,
@@ -33,6 +34,7 @@ class Resource:
 
     _name: str = ""
     _router = Router()
+    _authz_collector = authz_collector
 
     @classmethod
     def get_name(cls) -> str:
@@ -55,6 +57,8 @@ class Resource:
             is_base64_encoded=event.get("isBase64Encoded", False),
             query_params=event["multiValueQueryStringParameters"],
         )
+        self._authz_collector.set_resource(self.get_name())
+        self._authz_collector.set_guest_permissions(self.get_guest_authorization())
 
     def __call__(self) -> Response:
         try:
@@ -110,6 +114,10 @@ class Resource:
         """
         Place to configure default authorization. That will be used when Authorization Header is not in place.
         """
+        return {}
+
+    def get_authz_data(self) -> dict:
+        return self._authz_collector.dump()
 
 
 class CORSResource(Resource):

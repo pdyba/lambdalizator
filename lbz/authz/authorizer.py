@@ -1,18 +1,12 @@
-# coding=utf-8
-"""
-Authorization module.
-"""
 import warnings
-from functools import wraps
 from os import environ
-from typing import Callable, Union, Any, Dict
+from typing import Union, Dict
 
 from jose import jwt
 
-from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
+from lbz.exceptions import PermissionDenied, SecurityRiskWarning
 from lbz.jwt_utils import decode_jwt
 from lbz.misc import get_logger
-from lbz.resource import Resource
 
 logger = get_logger(__name__)
 
@@ -167,53 +161,3 @@ class Authorizer:
             authz_data, private_key_jwk, algorithm="RS256", headers={"kid": private_key_jwk["kid"]}
         )
         return authz
-
-
-def check_permission(resource: Resource, permission_name: str) -> dict:
-    """
-    Check if requester has sufficient permissions to do something on specific resource.
-
-    Raises if not.
-    """
-    authorization_header = resource.request.headers.get("Authorization", "")
-    guest_authorization_policy = resource.get_guest_authorization()
-    if not authorization_header and not guest_authorization_policy:
-        raise Unauthorized("Authorization header missing or empty")
-
-    authorizer = Authorizer(
-        auth_jwt=authorization_header,
-        resource_name=resource.get_name(),
-        permission_name=permission_name,
-        policy_override=guest_authorization_policy,
-    )
-    authorizer.check_access()
-    return authorizer.restrictions
-
-
-def has_permission(resource: Resource, permission_name: str) -> bool:
-    """
-    Safe Check if requester has sufficient permissions to do something on specific resource.
-
-    Does not raise.
-    """
-    try:
-        check_permission(resource, permission_name)
-    except (Unauthorized, PermissionDenied):
-        return False
-    return True
-
-
-def authorization(permission_name: str = None) -> Callable:
-    """
-    Wrapper for easy adding authorization requirement.
-    """
-
-    def decorator(func: Callable) -> Callable:
-        @wraps(func)
-        def wrapped(self: Resource, *args: Any, **kwargs: Any) -> Any:
-            restrictions = check_permission(self, permission_name or func.__name__)
-            return func(self, *args, restrictions=restrictions, **kwargs)
-
-        return wrapped
-
-    return decorator
