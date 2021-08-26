@@ -31,6 +31,7 @@ def test_multi_dict():
     assert multi_dict["a"] == "c"
     assert multi_dict.get("a") == "c"
     assert multi_dict.getlist("a") == ["a", "b", "c"]
+    assert multi_dict.original_items() == [("a", ["a", "b", "c"])]
 
     del multi_dict["a"]
     assert multi_dict.get("a") is None
@@ -41,6 +42,7 @@ def test_multi_dict():
         assert letter == "b"
     assert len(multi_dict) == 1
     assert multi_dict.getlist("b") == ["abc"]
+    assert multi_dict.original_items() == [("b", ["abc"])]
 
 
 def test_multi_dict_init_empty():

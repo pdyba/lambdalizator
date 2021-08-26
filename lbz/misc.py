@@ -7,7 +7,7 @@ import logging.handlers
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
-from typing import Any, Callable, Hashable, Iterator, Optional
+from typing import Any, Callable, Hashable, Iterator, Optional, List, Iterable
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 
@@ -85,12 +85,24 @@ class MultiDict(MutableMapping):
         """
         return list(self._dict[k])
 
+    def original_items(self, keys_to_skip: Iterable[Hashable] = None) -> List[tuple]:
+        keys_to_skip = keys_to_skip or []
+        return [(key, values) for key, values in self._dict.items() if key not in keys_to_skip]
+
 
 def get_logger(name: str) -> logging.Logger:
     """Shortcut for creating logger instance."""
     logger_obj = logging.getLogger(name)
     logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
     return logger_obj
+
+
+def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
+    """
+    Clean up dict from unwanted keys.
+    """
+    # TODO: to be deleted in 0.4
+    return {key: value for key, value in data.items() if key not in keys}
 
 
 logger = get_logger(__name__)
@@ -113,10 +125,3 @@ def error_catcher(function: Callable, default_return: Any = False) -> Callable:
             return default_return
 
     return wrapped
-
-
-def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
-    """
-    Clean up dict from unwanted keys.
-    """
-    return {key: value for key, value in data.items() if key not in keys}

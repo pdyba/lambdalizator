@@ -14,12 +14,11 @@ from tests.utils import encode_token
 class TestRequestInit:
     def test__init__(self):
         req = Request(
-            headers=CIMultiDict(),
             uri_params={},
             method="",
-            # pylint issue #214
             body="",
             context={},
+            headers=CIMultiDict(),  # pylint issue #214
             stage_vars={},
             query_params=None,
             is_base64_encoded=False,
@@ -54,12 +53,11 @@ class TestRequest:
     def setup_method(self):
         # pylint: disable=attribute-defined-outside-init
         self.resp = Request(
-            headers=CIMultiDict({"Content-Type": "application/json"}),
-            uri_params={},
-            # pylint issue #214
             method="GET",
+            uri_params={},
             body="",
             context={},
+            headers=CIMultiDict({"Content-Type": "application/json"}),  # pylint issue #214
             stage_vars={},
             is_base64_encoded=False,
             query_params=None,

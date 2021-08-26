@@ -152,8 +152,19 @@ Released 2021-08-10
 
 - Code quality improvements based on mypy type checking
 
+
 ### Version 0.3.15
-Released 2021-08-10
+Released 2021-08-24
+
+- Bug fix for a query params in Paginated Resource
+
+### Version 0.3.16
+Released 2021-08-26
+
+- Adds Authorization Collector
+
+### Version 0.3.17
+Released 2021-08-30
 
 - Code quality improvements, brings coverage to 99%
 - Adds more functional test for DevServer
