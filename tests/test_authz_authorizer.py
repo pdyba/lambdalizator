@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from lbz.authz import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
+from lbz.authz.authorizer import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
 from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
 
@@ -76,7 +76,7 @@ class TestAuthorizerSetupMethod:
 
     @staticmethod
     def _mocked_make_authorizer(token_payload: dict) -> Authorizer:
-        with patch("lbz.authz.decode_jwt", lambda _: token_payload):
+        with patch("lbz.authz.authorizer.decode_jwt", lambda _: token_payload):
             return Authorizer("xx", "test_resource", "permission_name")
 
     def setup_method(self):

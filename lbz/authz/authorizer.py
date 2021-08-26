@@ -1,6 +1,6 @@
 import warnings
 from os import environ
-from typing import Union, Dict
+from typing import Union, Dict, Any
 
 from jose import jwt
 

@@ -1,7 +1,4 @@
 # coding=utf-8
-from multiprocessing import Process
-from time import sleep
-
 import pytest
 import requests
 
@@ -37,11 +34,12 @@ def run(server, cls):
 class TestServerRunning:
     def setup_class(self):
         # pylint: disable=attribute-defined-outside-init
-        self.proc = Process(target=run, args=(MyDevServer, ServerTester))
-        self.proc.daemon = True
+        self.proc = MyDevServer(acls=ServerTester)
         self.proc.start()
-        sleep(0.4)
         self.url = "http://localhost:8000"
+
+    def teardown_class(self):
+        self.proc.stop()
 
     @pytest.mark.parametrize("method", ["GET", "POST", "OPTIONS", "DELETE", "PATCH", "PUT"])
     def test_methods(self, method):
