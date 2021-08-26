@@ -6,7 +6,7 @@ from functools import wraps
 from typing import Callable, Any
 
 from lbz.authz.authorizer import Authorizer
-from lbz.authz.collector import AuthzCollector
+from lbz.authz.collector import authz_collector
 from lbz.exceptions import PermissionDenied, Unauthorized
 from lbz.resource import Resource
 
@@ -43,9 +43,6 @@ def has_permission(resource: Resource, permission_name: str) -> bool:
     except (Unauthorized, PermissionDenied):
         return False
     return True
-
-
-authz_collector = AuthzCollector()
 
 
 def authorization(permission_name: str = None) -> Callable:

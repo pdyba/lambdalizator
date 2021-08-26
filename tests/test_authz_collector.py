@@ -14,15 +14,15 @@ class TestAuthzCollector:
         assert self.azc == az_2
 
     def test__init__(self) -> None:
-        assert self.azc.possible_permissions == []
-        assert self.azc.resource == ""
+        assert self.azc.possible_permissions == {}
+        assert self.azc.resource_name == ""
         assert self.azc.guest_permissions == {}
 
     def test_set_resource(self) -> None:
         test_resource = "test_resource"
         self.azc.set_resource(test_resource)
 
-        assert self.azc.resource == test_resource
+        assert self.azc.resource_name == test_resource
 
     def test_set_guest_permissions(self) -> None:
         guest_permissions = {"allow": "*"}
@@ -34,7 +34,7 @@ class TestAuthzCollector:
         some_permission = "some_permission"
         self.azc.add_authz(some_permission)
 
-        assert self.azc.possible_permissions == [some_permission]
+        assert self.azc.possible_permissions == {some_permission: None}
 
     def test_dump(self) -> None:
         test_resource = "x_resource"
@@ -46,7 +46,7 @@ class TestAuthzCollector:
 
         assert self.azc.dump() == {
             test_resource: {
-                "possible_permissions": [some_permission],
+                "possible_permissions": {some_permission: None},
                 "guest_permissions": guest_permissions,
             }
         }
