@@ -15,7 +15,7 @@ from lbz.router import add_route
 # TODO: Check why in some tests there are two responses - its not affecting actual runtime
 
 
-class HelloWorld(Resource):
+class SimpleTestResource(Resource):
     @add_route("/", method="GET")
     def list(self):
         return Response({"message": "HelloWorld"})
@@ -39,7 +39,7 @@ def test_my_dev_server_no_cls_raises():
 
 
 class MyLambdaDevHandlerHelloWorld(MyLambdaDevHandler):
-    cls = HelloWorld
+    cls = SimpleTestResource
 
 
 class MockedHandler(MyLambdaDevHandler):

@@ -4,12 +4,12 @@ from unittest.mock import patch
 from lbz.dev.misc import Event
 from lbz.dev.test import Client
 from lbz.response import Response
-from .test_dev_server import HelloWorld
+from .test_dev_server import SimpleTestResource
 
 
 class TestTestClient:
     def setup_class(self) -> None:
-        self.client = Client(HelloWorld)  # pylint: disable=attribute-defined-outside-init
+        self.client = Client(SimpleTestResource)  # pylint: disable=attribute-defined-outside-init
 
     def test_get(self) -> None:
         resp = self.client.get("/")

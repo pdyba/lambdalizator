@@ -87,14 +87,13 @@ class TestResourceInit:
             self.res._authz_collector, AuthzCollector  # pylint: disable=protected-access
         )
 
-    # def test_get_all_possible_authz(self):
-    # TODO: enable it with testing fixes
-    # assert self.res.get_authz_data() == {
-    #     "resource": {
-    #         "possible_permissions": {},
-    #         "guest_permissions": {},
-    #     }
-    # }
+    def test_get_all_possible_authz(self):
+        assert self.res.get_authz_data() == {
+            "resource": {
+                "possible_permissions": {},
+                "guest_permissions": {},
+            }
+        }
 
     def test___repr__(self):
         self.res.urn = "/foo/id-12345/bar"
