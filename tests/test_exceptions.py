@@ -113,6 +113,7 @@ def test_custom_exception(custom_exception):
     assert issubclass(custom_exception, LambdaFWException)
     assert exp.message == msg.strip()
     assert exp.status_code == int(code)
+    assert str(exp) == f"[{exp.status_code}] {exp.message}"
 
 
 def test_security_warning():

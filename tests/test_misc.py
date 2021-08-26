@@ -10,6 +10,7 @@ def test_nested_dict():
     nest = NestedDict()
     nest["a"]["b"]["c"]["d"]["e"] = "z"
     assert nest == {"a": {"b": {"c": {"d": {"e": "z"}}}}}
+    assert nest["a"]["b"]["c"]["d"]["e"] == "z"
 
 
 def test_singleton():

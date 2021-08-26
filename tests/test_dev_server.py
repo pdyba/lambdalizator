@@ -7,30 +7,9 @@ from unittest.mock import patch, MagicMock, call
 import pytest
 
 from lbz.dev.server import MyDevServer, MyLambdaDevHandler
-from lbz.resource import Resource
-from lbz.response import Response
-from lbz.router import add_route
-
+from tests.sample_test_resources import SimpleTestResource
 
 # TODO: Check why in some tests there are two responses - its not affecting actual runtime
-
-
-class SimpleTestResource(Resource):
-    @add_route("/", method="GET")
-    def list(self):
-        return Response({"message": "HelloWorld"})
-
-    @add_route("/txt", method="GET")
-    def txt(self):
-        return Response("HelloWorld")
-
-    @add_route("/p", method="POST")
-    def upload(self):
-        return Response({"message": "uploaded"})
-
-    @add_route("/t/{id}", method="GET")
-    def get(self):
-        return Response({"message": "HelloWorld"})
 
 
 def test_my_dev_server_no_cls_raises():

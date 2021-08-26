@@ -97,14 +97,6 @@ def get_logger(name: str) -> logging.Logger:
     return logger_obj
 
 
-def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
-    """
-    Clean up dict from unwanted keys.
-    """
-    # TODO: to be deleted in 0.4
-    return {key: value for key, value in data.items() if key not in keys}
-
-
 logger = get_logger(__name__)
 
 

@@ -2,7 +2,8 @@
 
 import pytest
 
-from lbz.authz import Authorizer, has_permission, ALL, LIMITED_ALLOW
+from lbz.authz.authorizer import Authorizer, ALL, LIMITED_ALLOW
+from lbz.authz.decorators import has_permission
 from lbz.dev.test import Event
 from lbz.resource import Resource
 from tests import SAMPLE_PRIVATE_KEY

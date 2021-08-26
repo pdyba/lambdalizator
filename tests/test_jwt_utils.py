@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 from jose import jwt
 
-from lbz.authz import Authorizer
+from lbz.authz.authorizer import Authorizer
 from lbz.exceptions import Unauthorized
 from lbz.jwt_utils import get_matching_jwk, decode_jwt
 from tests import SAMPLE_PUBLIC_KEY, SAMPLE_PRIVATE_KEY

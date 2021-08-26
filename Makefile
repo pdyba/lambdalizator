@@ -5,11 +5,11 @@ black-check:
 	black . --line-length 99 --check
 
 test:
-	coverage run --include 'lbz/*' -m pytest "tests"
+	coverage run --include 'lbz/*' -m pytest "tests" -vv
 	coverage report --skip-covered -m
 
 real-coverage:
-	for file in $$(find lbz -type f \( -name "*.py" -and ! -name "*_.py" \)); do       \
+	for file in $$(find lbz -type f \( -name "*.py" -and ! -name "*_.py" -and ! -name "event.py" \)); do       \
 		atest="test$${file/lbz\//_}"; \
 		echo $$file; \
 		echo "tests/$${atest/\//_}"; \

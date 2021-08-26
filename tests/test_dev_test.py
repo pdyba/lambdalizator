@@ -4,7 +4,7 @@ from unittest.mock import patch
 from lbz.dev.misc import Event
 from lbz.dev.test import Client
 from lbz.response import Response
-from .test_dev_server import SimpleTestResource
+from tests.sample_test_resources import SimpleTestResource
 
 
 class TestTestClient:

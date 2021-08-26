@@ -5,23 +5,25 @@ from multidict import CIMultiDict
 from lbz.dev.misc import Event
 from lbz.request import Request
 
+req = Request(
+    body="",
+    headers=CIMultiDict({"Content-Type": "application/json"}),
+    uri_params={},
+    method="GET",  # pylint issue #214
+    query_params=None,
+    context={},
+    stage_vars={},
+    is_base64_encoded=False,
+    user=None,
+)
 
-@pytest.fixture
+
+@pytest.fixture(autouse=True)
 def sample_request():
-    return Request(
-        headers=CIMultiDict({"Content-Type": "application/json"}),
-        uri_params={},
-        method="GET",
-        body="",
-        context={},
-        stage_vars={},
-        is_base64_encoded=False,
-        query_params=None,
-        user=None,
-    )
+    return req
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def sample_event():
     return Event(
         resource_path="/",
@@ -29,4 +31,5 @@ def sample_event():
         headers={},
         path_params={},
         query_params={},
+        body=req,
     )
