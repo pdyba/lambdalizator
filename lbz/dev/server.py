@@ -26,7 +26,9 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
     @property
     @abstractmethod
     def cls(self) -> Type[Resource]:
-        pass
+        """
+        DevServer needs to inherit a Resource.
+        """
 
     def _get_route_params(self, org_path: str) -> Tuple[str, Union[dict, None]]:
         """

@@ -47,14 +47,6 @@ class TestResourceInit:
             self.res._authz_collector, AuthzCollector  # pylint: disable=protected-access
         )
 
-    def test_get_all_possible_authz(self):
-        assert self.res.get_authz_data() == {
-            "resource": {
-                "possible_permissions": {},
-                "guest_permissions": {},
-            }
-        }
-
     def test___repr__(self):
         self.res.urn = "/foo/id-12345/bar"
         assert str(self.res) == "<Resource GET @ /foo/id-12345/bar >"
@@ -180,6 +172,22 @@ class TestResource:
             pass
 
         assert XResource.get_name() == "xresource"
+
+    def test_get_all_possible_authz(self, sample_event):
+        azc = AuthzCollector()
+        azc.clean()
+
+        class XResource(Resource):
+            _name = "test_auth_collector"
+
+        # import pdb; pdb.set_trace()
+        res = XResource(sample_event)
+        assert res.get_authz_data() == {
+            "test_auth_collector": {
+                "possible_permissions": {},
+                "guest_permissions": {},
+            }
+        }
 
 
 class TestResourceAuthentication:

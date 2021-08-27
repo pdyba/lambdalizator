@@ -18,27 +18,31 @@ from tests.fixtures.cognito_auth import env_mock
 @patch.dict(environ, env_mock)
 class TestAuthorizationDecorator:
     @pytest.fixture(autouse=True)
-    def setup_method(self, sample_event):
+    def setup_method(self, sample_event) -> None:
         class XResource(Resource):
             @add_route("/")
             @authorization("perm-name")
-            def handler(self, restrictions):
+            def handler(self, restrictions) -> None:
                 assert restrictions == {"allow": "*", "deny": None}
                 return Response("x")
 
         self.res = XResource  # pylint: disable=attribute-defined-outside-init
         self.event = sample_event  # pylint: disable=attribute-defined-outside-init
 
-    def test_success(self, *_args):
+    def teardown_method(self) -> None:
+        self.res._authz_collector.clean()  # pylint: disable=protected-access
+        del self.res
+
+    def test_success(self, *_args) -> None:
         auth_header = Authorizer.sign_authz({"allow": "*", "deny": {}}, SAMPLE_PRIVATE_KEY)
         resp = self.res({**self.event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 
-    def test_no_auth_header(self, *_args):
+    def test_no_auth_header(self, *_args) -> None:
         resp = self.res({**self.event, "headers": {}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
-    def test_no_auth_header_guest_in_place(self, *_args):
+    def test_no_auth_header_guest_in_place(self, *_args) -> None:
         class XResource(self.res):
             @staticmethod
             def get_guest_authorization() -> dict:
@@ -50,7 +54,7 @@ class TestAuthorizationDecorator:
         resp = XResource({**self.event, "headers": {}})()
         assert resp.status_code == 200
 
-    def test_different_permission_name_ok(self, *_args):
+    def test_different_permission_name_ok(self, *_args) -> None:
         auth_header = Authorizer.sign_authz(
             {"allow": {"xresource": {"perm-name": {"allow": "*"}}}, "deny": {}},
             SAMPLE_PRIVATE_KEY,
@@ -58,7 +62,7 @@ class TestAuthorizationDecorator:
         resp = self.res({**self.event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 
-    def test_different_permission_name_forbidden(self, *_args):
+    def test_different_permission_name_forbidden(self, *_args) -> None:
         auth_header = Authorizer.sign_authz(
             {"allow": {"xresource": {"handler": {"allow": "*"}}}, "deny": {}},
             SAMPLE_PRIVATE_KEY,
@@ -66,13 +70,13 @@ class TestAuthorizationDecorator:
         resp = self.res({**self.event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.FORBIDDEN
 
-    def test_different_class_name_success(self, *_args):
+    def test_different_class_name_success(self, *_args) -> None:
         class XResource(Resource):
             _name = "test_res"
 
             @add_route("/")
             @authorization()
-            def handler(self, restrictions):
+            def handler(self, restrictions) -> None:
                 assert restrictions == {"allow": "*", "deny": None}
                 return Response("x")
 
@@ -90,12 +94,12 @@ class TestAuthorizationDecorator:
 
 class TestCheckPermissionHasPermission:
     @pytest.fixture(autouse=True)
-    def setup_method(self, sample_event):
+    def setup_method(self, sample_event) -> None:
         class XResource(Resource):
             _name = "test_res"
 
             @add_route("/")
-            def handler(self):
+            def handler(self) -> None:
                 return Response("x")
 
         auth_header = Authorizer.sign_authz(
@@ -108,13 +112,13 @@ class TestCheckPermissionHasPermission:
             {**sample_event}
         )
 
-    def test_check_permission(self):
+    def test_check_permission(self) -> None:
         assert check_permission(self.res, "handler") == {"allow": "*", "deny": None}
         with pytest.raises(PermissionDenied):
             check_permission(self.res, "garbage")
         with pytest.raises(Unauthorized):
             check_permission(self.res_no_auth, "handler")
 
-    def test_has_permission(self):
+    def test_has_permission(self) -> None:
         assert has_permission(self.res, "handler")
         assert not has_permission(self.res, "garbage")

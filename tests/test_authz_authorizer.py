@@ -1,7 +1,7 @@
 # coding=utf-8
 from copy import deepcopy
 from datetime import datetime, timedelta
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock, call
 
 import pytest
 
@@ -83,6 +83,10 @@ class TestAuthorizerSetupMethod:
         # pylint: disable=attribute-defined-outside-init
         self.authz = self._mocked_make_authorizer(self.token_payload)
 
+    def test_wrong_jwt_authz_payload_raises_permission_denied(self):
+        with pytest.raises(PermissionDenied):
+            self._mocked_make_authorizer({})
+
     def test_check_deny_res(self):
         self.authz.deny = {"test_resource": ALL}
         with pytest.raises(PermissionDenied):
@@ -98,6 +102,25 @@ class TestAuthorizerSetupMethod:
         with pytest.raises(PermissionDenied):
             self.authz._check_deny()  # pylint: disable=protected-access
         assert self.authz.outcome == DENY
+
+    def test_check_access_check_deny(self):
+        authz = self._mocked_make_authorizer({**self.token_payload, "deny": {ALL: ALL}})
+        with pytest.raises(PermissionDenied):
+            authz.check_access()
+
+    def test_check_access_outcome_deny(self):
+        authz = self._mocked_make_authorizer({**self.token_payload, "allow": {ALL: None}})
+        with pytest.raises(PermissionDenied):
+            authz.check_access()
+
+    def test__check_resource(self):
+        with patch.object(self.authz, "_deny_if_all", new_callable=MagicMock()) as mocked_deny:
+            self.authz._check_resource({"res": "xxx"})
+            mocked_deny.assert_has_calls([
+                call({"res": "xxx"}),
+                call("res"),
+                call("xxx"),
+            ])
 
     def test_validate_allow_all(self):
         self.authz.check_access()

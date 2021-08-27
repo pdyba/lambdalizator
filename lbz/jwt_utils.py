@@ -7,7 +7,7 @@ from os import environ as env
 from typing import List
 
 from jose import jwt
-from jose.exceptions import JWTError, JWTClaimsError, ExpiredSignatureError
+from jose.exceptions import JWTError, ExpiredSignatureError
 
 from lbz.exceptions import Unauthorized
 from lbz.misc import get_logger
@@ -24,7 +24,7 @@ if allowed_audiences_str := env.get("ALLOWED_AUDIENCES"):
 
 if any("kid" not in public_key for public_key in PUBLIC_KEYS):
     raise ValueError("One of the provided public keys doesn't have the 'kid' field")
-
+# line above is blocking us from getting 100% coverage
 
 def get_matching_jwk(auth_jwt_token: str) -> dict:
     """
@@ -57,8 +57,6 @@ def decode_jwt(auth_jwt_token: str) -> dict:
         try:
             decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
             return decoded_jwt
-        except JWTClaimsError:
-            pass
         except ExpiredSignatureError as error:
             raise Unauthorized("Your token has expired. Please refresh it.") from error
         except JWTError as error:
