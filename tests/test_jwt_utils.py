@@ -78,7 +78,9 @@ class TestDecodeJWT:
 class TestDecodeJWTMissingAudiences:
     @patch.object(jwt, "decode")
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_missing_audiences(self, get_matching_jwk_mock: MagicMock, decode_mock: MagicMock) -> None:
+    def test_missing_audiences(
+        self, get_matching_jwk_mock: MagicMock, decode_mock: MagicMock
+    ) -> None:
         with pytest.raises(Unauthorized):
             decode_jwt("x")
         get_matching_jwk_mock.assert_called_once_with("x")
