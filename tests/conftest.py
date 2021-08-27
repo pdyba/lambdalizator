@@ -28,12 +28,12 @@ req = Request(
 
 
 @pytest.fixture(autouse=True)
-def sample_request() -> None:
+def sample_request() -> Request:
     return req
 
 
 @pytest.fixture(autouse=True)
-def sample_event() -> None:
+def sample_event() -> Event:
     return Event(
         resource_path="/",
         method="GET",
@@ -44,7 +44,7 @@ def sample_event() -> None:
     )
 
 
-def _base_auth_payload() -> None:
+def _base_auth_payload() -> dict:
     return {
         "allow": {"*": "*"},
         "deny": {},
@@ -55,7 +55,7 @@ def _base_auth_payload() -> None:
 
 
 @pytest.fixture(autouse=True)
-def base_auth_payload() -> None:
+def base_auth_payload() -> dict:
     return _base_auth_payload()
 
 
@@ -66,7 +66,7 @@ AUTH_HEADER = Authorizer.sign_authz(
 
 
 @pytest.fixture(autouse=True)
-def auth_header() -> None:
+def auth_header() -> str:
     return AUTH_HEADER
 
 
@@ -91,20 +91,20 @@ with patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY]), patch(
 
 
 @pytest.fixture(autouse=True)
-def user_token() -> None:
+def user_token() -> str:
     return TOKEN
 
 
 @pytest.fixture(autouse=True)
-def user_username() -> None:
+def user_username() -> str:
     return USERNAME
 
 
 @pytest.fixture(autouse=True)
-def user_cogniot() -> None:
+def user_cogniot() -> dict:
     return COGNITO_USER
 
 
 @pytest.fixture(autouse=True)
-def user() -> None:
+def user() -> User:
     return USER

@@ -1,5 +1,6 @@
 # coding=utf-8
 import json
+from typing import Callable
 
 from lbz.misc import NestedDict
 from lbz.router import Router
@@ -12,7 +13,7 @@ class TestRouter:
         self.router = Router()
         self.router.add_route("/", "GET", "x")
 
-    def teardown_method(self, _test_method) -> None:
+    def teardown_method(self, _test_method: Callable) -> None:
         # pylint: disable= attribute-defined-outside-init
         self.router._del()  # pylint: disable=protected-access
         self.router = None

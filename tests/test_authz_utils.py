@@ -49,7 +49,7 @@ class TestAuthorizationUtils:
         acl: dict,
         expected_result: bool,
         base_auth_payload,
-    ):
+    ) -> None:
         sample_event["headers"]["authorization"] = "dont_care"
 
         with patch("lbz.authz.authorizer.decode_jwt", lambda _: {**base_auth_payload, **acl}):
