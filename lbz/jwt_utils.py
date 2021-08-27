@@ -26,6 +26,7 @@ if any("kid" not in public_key for public_key in PUBLIC_KEYS):
     raise ValueError("One of the provided public keys doesn't have the 'kid' field")
 # line above is blocking us from getting 100% coverage
 
+
 def get_matching_jwk(auth_jwt_token: str) -> dict:
     """
     Checks provided JWT token against allowed tokens.

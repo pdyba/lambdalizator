@@ -8,38 +8,24 @@ import pytest
 from lbz.authentication import User
 from lbz.exceptions import Unauthorized
 from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
-from tests.utils import encode_token
+from tests.utils import encode_token, allowed_audiences
 
-allowed_audiences = [str(uuid4()), str(uuid4())]
+
 
 
 @patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY])
 @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences)
 class TestAuthentication:
-    def setup_class(self):
-        # pylint: disable=attribute-defined-outside-init
+    @pytest.fixture(autouse=True)
+    def setup_class(self, user_token):
         with patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY]), patch(
-            "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
+                "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
         ):
-            self.cognito_user = {
-                "cognito:username": str(uuid4()),
-                "custom:id": str(uuid4()),
-                "email": f"{str(uuid4())}@{str(uuid4())}.com",
-                "custom:1": str(uuid4()),
-                "custom:2": str(uuid4()),
-                "custom:3": str(uuid4()),
-                "custom:4": str(uuid4()),
-                "custom:5": str(uuid4()),
-                "aud": allowed_audiences[0],
-            }
-            self.id_token = encode_token(self.cognito_user)
-            self.pool_id = str(uuid4)
+            self.id_token = user_token
             self.sample_user = User(self.id_token)
 
-    def test__repr__username(self):
-        username = str(uuid4())
-        sample_user = User(encode_token({"cognito:username": username}))
-        assert sample_user.__repr__() == f"User username={username}"
+    def test__repr__username(self, user_username):
+        assert self.sample_user.__repr__() == f"User username={user_username}"
 
         sample_user_2 = User(encode_token({"type": "x"}))
         assert sample_user_2.__repr__() == "User"
@@ -62,8 +48,8 @@ class TestAuthentication:
         ):
             User(self.id_token)
 
-    def test_loading_user_parses_user_attributes(self):
-        parsed = self.cognito_user.copy()
+    def test_loading_user_parses_user_attributes(self, user_cogniot):
+        parsed = user_cogniot.copy()
         del parsed["aud"]
         for key, expected_value in parsed.items():
             value = self.sample_user.__getattribute__(

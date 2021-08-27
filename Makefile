@@ -5,7 +5,7 @@ black-check:
 	black . --line-length 99 --check
 
 test:
-	coverage run --include 'lbz/*' -m pytest "tests" -vv
+	coverage run --include 'lbz/*' -m pytest "tests"
 	coverage report --skip-covered -m
 
 real-coverage:

@@ -12,18 +12,10 @@ from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
 
 # pylint: disable=too-many-public-methods
 class TestAuthorizerSetupClass:
-    def setup_class(self):
+    @pytest.fixture(autouse=True)
+    def setup_class(self, base_auth_payload):
         # pylint: disable=attribute-defined-outside-init
-        self.iat = int(datetime.utcnow().timestamp())
-        self.exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
-        self.iss = "test-issuer"
-        self.token_payload = {
-            "allow": {ALL: ALL},
-            "deny": {},
-            "exp": self.exp,
-            "iat": self.iat,
-            "iss": self.iss,
-        }
+        self.token_payload = base_auth_payload
         self.authz = self._make_authorizer(self.token_payload)
 
     @staticmethod
@@ -61,26 +53,15 @@ class TestAuthorizerSetupClass:
 
 # pylint: disable=too-many-public-methods
 class TestAuthorizerSetupMethod:
-    def setup_class(self):
-        # pylint: disable=attribute-defined-outside-init
-        self.iat = int(datetime.utcnow().timestamp())
-        self.exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
-        self.iss = "test-issuer"
-        self.token_payload = {
-            "allow": {ALL: ALL},
-            "deny": {},
-            "exp": self.exp,
-            "iat": self.iat,
-            "iss": self.iss,
-        }
-
     @staticmethod
     def _mocked_make_authorizer(token_payload: dict) -> Authorizer:
         with patch("lbz.authz.authorizer.decode_jwt", lambda _: token_payload):
             return Authorizer("xx", "test_resource", "permission_name")
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def setup_method(self, base_auth_payload):
         # pylint: disable=attribute-defined-outside-init
+        self.token_payload = base_auth_payload
         self.authz = self._mocked_make_authorizer(self.token_payload)
 
     def test_wrong_jwt_authz_payload_raises_permission_denied(self):
@@ -116,11 +97,13 @@ class TestAuthorizerSetupMethod:
     def test__check_resource(self):
         with patch.object(self.authz, "_deny_if_all", new_callable=MagicMock()) as mocked_deny:
             self.authz._check_resource({"res": "xxx"})
-            mocked_deny.assert_has_calls([
-                call({"res": "xxx"}),
-                call("res"),
-                call("xxx"),
-            ])
+            mocked_deny.assert_has_calls(
+                [
+                    call({"res": "xxx"}),
+                    call("res"),
+                    call("xxx"),
+                ]
+            )
 
     def test_validate_allow_all(self):
         self.authz.check_access()
