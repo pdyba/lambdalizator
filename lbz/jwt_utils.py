@@ -7,7 +7,7 @@ from os import environ as env
 from typing import List
 
 from jose import jwt
-from jose.exceptions import JWTError, ExpiredSignatureError
+from jose.exceptions import JWTError, JWTClaimsError, ExpiredSignatureError
 
 from lbz.exceptions import Unauthorized
 from lbz.misc import get_logger
@@ -57,6 +57,8 @@ def decode_jwt(auth_jwt_token: str) -> dict:
         try:
             decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
             return decoded_jwt
+        except JWTClaimsError:
+            pass  # TODO: Check why pass (test_nth_cognito_client_validated_as_audience)
         except ExpiredSignatureError as error:
             raise Unauthorized("Your token has expired. Please refresh it.") from error
         except JWTError as error:
