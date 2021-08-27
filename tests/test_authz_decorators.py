@@ -27,8 +27,9 @@ class TestAuthorizationDecorator:
                 return Response("x")
 
         self.res = XResource  # pylint: disable=attribute-defined-outside-init
-        self.res_instance = self.res({**sample_event, "headers": {"authorization": auth_header}})
-        self.res_no_auth = self.res(sample_event)
+        event = {**sample_event, "headers": {"authorization": auth_header}}
+        self.res_instance = self.res(event)  # pylint: disable=attribute-defined-outside-init
+        self.res_no_auth = self.res(sample_event)  # pylint: disable=attribute-defined-outside-init
 
     def teardown_method(self) -> None:
         self.res._authz_collector.clean()  # pylint: disable=protected-access

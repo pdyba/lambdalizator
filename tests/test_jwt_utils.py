@@ -19,17 +19,17 @@ ALLOWED_AUDIENCES = [str(uuid4()), str(uuid4())]
 
 class TestGetMatchingJWK:
     @patch.object(jwt, "get_unverified_header", return_value=SAMPLE_PUBLIC_KEY)
-    def test_get_matching_key(self, get_unverified_header_mock: MagicMock):
+    def test_get_matching_key(self, get_unverified_header_mock: MagicMock) -> None:
         assert get_matching_jwk("x") == SAMPLE_PUBLIC_KEY
         get_unverified_header_mock.assert_called_once()
 
     @patch.object(jwt, "get_unverified_header", return_value=BAD_PUBLICK_KEY)
-    def test_get_matching_key_fail(self, _get_unverified_header_mock: MagicMock):
+    def test_get_matching_key_fail(self, _get_unverified_header_mock: MagicMock) -> None:
         with pytest.raises(Unauthorized):
             get_matching_jwk("x")
 
     @patch.object(jwt, "get_unverified_header", return_value={})
-    def test_get_matching_missing_key(self, _get_unverified_header_mock: MagicMock):
+    def test_get_matching_missing_key(self, _get_unverified_header_mock: MagicMock) -> None:
         with pytest.raises(Unauthorized):
             get_matching_jwk("x")
 
@@ -38,12 +38,12 @@ class TestGetMatchingJWK:
 @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", ALLOWED_AUDIENCES)
 class TestDecodeJWT:
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_missing_public_keys(self, get_matching_jwk_mock: MagicMock):
+    def test_missing_public_keys(self, get_matching_jwk_mock: MagicMock) -> None:
         with pytest.raises(Unauthorized):
             decode_jwt("x")
         get_matching_jwk_mock.assert_called_once_with("x")
 
-    def test_proper_jwt(self):
+    def test_proper_jwt(self) -> None:
         iat = int(datetime.utcnow().timestamp())
         exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
         token_payload = {
@@ -55,7 +55,7 @@ class TestDecodeJWT:
         decoded_jwt_data = decode_jwt(jwt_token)
         assert decoded_jwt_data == token_payload
 
-    def test_expired_jwt(self):
+    def test_expired_jwt(self) -> None:
         iat = int((datetime.utcnow() - timedelta(hours=12)).timestamp())
         exp = int((datetime.utcnow() - timedelta(hours=6)).timestamp())
         token_payload = {
@@ -68,7 +68,7 @@ class TestDecodeJWT:
             decode_jwt(jwt_token)
 
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_other_exception(self, _get_matching_jwk_mock: MagicMock):
+    def test_other_exception(self, _get_matching_jwk_mock: MagicMock) -> None:
         with pytest.raises(RuntimeError):
             decode_jwt({"a"})
 
@@ -78,7 +78,7 @@ class TestDecodeJWT:
 class TestDecodeJWTMissingAudiences:
     @patch.object(jwt, "decode")
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_missing_audiences(self, get_matching_jwk_mock: MagicMock, decode_mock: MagicMock):
+    def test_missing_audiences(self, get_matching_jwk_mock: MagicMock, decode_mock: MagicMock) -> None:
         with pytest.raises(Unauthorized):
             decode_jwt("x")
         get_matching_jwk_mock.assert_called_once_with("x")
@@ -87,6 +87,6 @@ class TestDecodeJWTMissingAudiences:
 
 @patch("lbz.jwt_utils.PUBLIC_KEYS", [])
 class TestDecodeJWTMissingKEy:
-    def test_missing_public_keys(self):
+    def test_missing_public_keys(self) -> None:
         with pytest.raises(RuntimeError):
             decode_jwt("x")

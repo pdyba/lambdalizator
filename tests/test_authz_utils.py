@@ -8,6 +8,7 @@ from lbz.dev.test import Event
 from lbz.resource import Resource
 from unittest.mock import patch
 
+
 class SampleResource(Resource):
     _name = "sample_resource"
 
@@ -52,4 +53,6 @@ class TestAuthorizationUtils:
         sample_event["headers"]["authorization"] = "dont_care"
 
         with patch("lbz.authz.authorizer.decode_jwt", lambda _: {**base_auth_payload, **acl}):
-            assert has_permission(SampleResource(sample_event), "sample_function") is expected_result
+            assert (
+                has_permission(SampleResource(sample_event), "sample_function") is expected_result
+            )

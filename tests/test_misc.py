@@ -6,14 +6,14 @@ import pytest
 from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger
 
 
-def test_nested_dict():
+def test_nested_dict() -> None:
     nest = NestedDict()
     nest["a"]["b"]["c"]["d"]["e"] = "z"
     assert nest == {"a": {"b": {"c": {"d": {"e": "z"}}}}}
     assert nest["a"]["b"]["c"]["d"]["e"] == "z"
 
 
-def test_singleton():
+def test_singleton() -> None:
     class AClass(metaclass=Singleton):
         pass
 
@@ -26,7 +26,7 @@ def test_singleton():
     assert Singleton._instances.get(AClass) is None  # pylint: disable=protected-access
 
 
-def test_multi_dict():
+def test_multi_dict() -> None:
     assert issubclass(MultiDict, MutableMapping)
     multi_dict = MultiDict({"a": ["a", "b", "c"]})
     assert multi_dict["a"] == "c"
@@ -46,18 +46,18 @@ def test_multi_dict():
     assert multi_dict.original_items() == [("b", ["abc"])]
 
 
-def test_multi_dict_init_empty():
+def test_multi_dict_init_empty() -> None:
     multi_dict = MultiDict(None)
     assert multi_dict._dict == {}  # pylint: disable=protected-access
 
 
-def test_multi_dict_index_error():
+def test_multi_dict_index_error() -> None:
     multi_dict = MultiDict({"a": []})
     with pytest.raises(KeyError):
         multi_dict["a"]  # pylint: disable=pointless-statement
 
 
-def test_get_logger(caplog):
+def test_get_logger(caplog) -> None:
     a_loger = get_logger("a")
     b_loger = get_logger("b")
     assert a_loger != b_loger
@@ -69,9 +69,9 @@ def test_get_logger(caplog):
         assert "ZeroDivisionError" in caplog.text
 
 
-def test_error_catcher(caplog):
+def test_error_catcher(caplog) -> None:
     @error_catcher
-    def zero_division():
+    def zero_division() -> None:
         return 2 / 0
 
     zero_division()
@@ -79,12 +79,12 @@ def test_error_catcher(caplog):
     assert "ZeroDivisionError" in caplog.text
 
 
-def test_error_catcher_class(caplog):
+def test_error_catcher_class(caplog) -> None:
     class AClass:
         logger = get_logger("xxxxx")
 
         @error_catcher
-        def zero_division(self):
+        def zero_division(self) -> None:
             return 2 / 0
 
     AClass().zero_division()

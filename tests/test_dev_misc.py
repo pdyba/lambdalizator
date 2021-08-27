@@ -6,15 +6,15 @@ import pytest
 from lbz.dev.misc import EVENT_TEMPLATE, Event
 
 
-def hash_string(string):
+def hash_string(string) -> None:
     return sha1(string.encode("UTF-8")).hexdigest()
 
 
-def test_event_base():
+def test_event_base() -> None:
     assert hash_string(EVENT_TEMPLATE) == "fe0ffbaaf59a43ccf384a99076675b1fcefcd9b2"
 
 
-def test_event():
+def test_event() -> None:
     event = Event(
         resource_path="/",
         method="GET",
@@ -39,7 +39,7 @@ def test_event():
     assert str(event) == "<Fake Event GET @ / body: {'test': 1}>"
 
 
-def test_eq_():
+def test_eq_() -> None:
     event_1 = Event(
         resource_path="/x",
         method="POST",
@@ -59,7 +59,7 @@ def test_eq_():
     assert event_1 == event_2
 
 
-def test_eq_raises():
+def test_eq_raises() -> None:
     event_1 = Event(
         resource_path="/v",
         method="GET",

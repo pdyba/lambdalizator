@@ -28,12 +28,12 @@ req = Request(
 
 
 @pytest.fixture(autouse=True)
-def sample_request():
+def sample_request() -> None:
     return req
 
 
 @pytest.fixture(autouse=True)
-def sample_event():
+def sample_event() -> None:
     return Event(
         resource_path="/",
         method="GET",
@@ -44,7 +44,7 @@ def sample_event():
     )
 
 
-def _base_auth_payload():
+def _base_auth_payload() -> None:
     return {
         "allow": {"*": "*"},
         "deny": {},
@@ -55,23 +55,24 @@ def _base_auth_payload():
 
 
 @pytest.fixture(autouse=True)
-def base_auth_payload():
+def base_auth_payload() -> None:
     return _base_auth_payload()
 
 
-a_header = Authorizer.sign_authz(
+AUTH_HEADER = Authorizer.sign_authz(
     {**_base_auth_payload(), "allow": {"test_res": {"perm-name": {"allow": "*"}}}, "deny": {}},
-    SAMPLE_PRIVATE_KEY
+    SAMPLE_PRIVATE_KEY,
 )
 
+
 @pytest.fixture(autouse=True)
-def auth_header():
-    return a_header
+def auth_header() -> None:
+    return AUTH_HEADER
 
 
-username = str(uuid4())
-cognito_user = {
-    "cognito:username": username,
+USERNAME = str(uuid4())
+COGNITO_USER = {
+    "cognito:username": USERNAME,
     "custom:id": str(uuid4()),
     "email": f"{str(uuid4())}@{str(uuid4())}.com",
     "custom:1": str(uuid4()),
@@ -81,29 +82,29 @@ cognito_user = {
     "custom:5": str(uuid4()),
     "aud": allowed_audiences[0],
 }
-token = encode_token(cognito_user)
+TOKEN = encode_token(COGNITO_USER)
 
 with patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY]), patch(
-        "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
+    "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
 ):
-    def_user = User(token)
+    USER = User(TOKEN)
 
 
 @pytest.fixture(autouse=True)
-def user_token():
-    return token
+def user_token() -> None:
+    return TOKEN
 
 
 @pytest.fixture(autouse=True)
-def user_username():
-    return username
+def user_username() -> None:
+    return USERNAME
 
 
 @pytest.fixture(autouse=True)
-def user_cogniot():
-    return cognito_user
+def user_cogniot() -> None:
+    return COGNITO_USER
 
 
 @pytest.fixture(autouse=True)
-def user():
-    return def_user
+def user() -> None:
+    return USER

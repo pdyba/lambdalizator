@@ -18,7 +18,7 @@ class TestAuthzCollector:
         assert self.azc.resource_name == ""
         assert self.azc.guest_permissions == {}
 
-    def test__repr__(self):
+    def test__repr__(self) -> None:
         assert str(self.azc) == "<AuthzCollector resource_name=>"
 
     def test_set_resource(self) -> None:

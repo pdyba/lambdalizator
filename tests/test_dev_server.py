@@ -12,7 +12,7 @@ from tests.sample_test_resources import SimpleTestResource
 # TODO: Check why in some tests there are two responses - its not affecting actual runtime
 
 
-def test_my_dev_server_no_cls_raises():
+def test_my_dev_server_no_cls_raises() -> None:
     with pytest.raises(TypeError):
         MyLambdaDevHandler.cls()  # pylint: disable=no-value-for-parameter
 
@@ -26,12 +26,12 @@ class MockedHandler(MyLambdaDevHandler):
 
 
 class MyClass:
-    def __init__(self):
+    def __init__(self) -> None:
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcp_socket.connect("0.0.0.0", "8888")
 
 
-def test_my_lambda_dev_handler():
+def test_my_lambda_dev_handler() -> None:
     with patch("socket.socket") as msocket:
         msocket.makefile = lambda a, b: io.BytesIO(b"GET / HTTP/1.1\r\n")
         msocket.rfile.close = lambda: 0
@@ -59,7 +59,7 @@ def test_my_lambda_dev_handler():
 @pytest.mark.parametrize(
     "method", ["do_GET", "do_PATCH", "do_POST", "do_PUT", "do_DELETE", "do_OPTIONS"]
 )
-def test_handle_request(method):
+def test_handle_request(method) -> None:
     with patch("socket.socket") as msocket:
         msocket.makefile = lambda a, b: io.BytesIO(b"GET / HTTP/1.1\r\n")
         msocket.rfile.close = lambda: 0
@@ -69,7 +69,7 @@ def test_handle_request(method):
             mock_handler.assert_called_once()
 
 
-def test_handle_favicon():
+def test_handle_favicon() -> None:
     with patch("socket.socket") as msocket:
         msocket.makefile = lambda a, b: io.BytesIO(b"GET /favicon.ico HTTP/1.1\r\n")
         msocket.rfile.close = lambda: 0
@@ -77,7 +77,7 @@ def test_handle_favicon():
     assert handler.handle_request() is None
 
 
-def test_handle_txt():
+def test_handle_txt() -> None:
     with patch.object(MyLambdaDevHandler, "_send_json") as mocked_send:
         with patch("socket.socket") as msocket:
             msocket.makefile = lambda a, b: io.BytesIO(b"GET /txt HTTP/1.1\r\n")
@@ -96,7 +96,7 @@ def test_handle_txt():
         )
 
 
-def test_handle_json():
+def test_handle_json() -> None:
     byte_string = (
         b'POST /p HTTP/1.1\r\nContent-Length: 8\r\nContent-Type: application/json\r\n\r\n{"a": 1}'
     )
@@ -118,7 +118,7 @@ def test_handle_json():
         )
 
 
-def test_my_dev_server():
+def test_my_dev_server() -> None:
     dev_serv = MyDevServer(MyLambdaDevHandlerHelloWorld)
     assert dev_serv.server_address == ("localhost", 8000)
     assert dev_serv.port == 8000
@@ -126,7 +126,7 @@ def test_my_dev_server():
     assert issubclass(dev_serv.my_handler, MyLambdaDevHandler)
 
 
-def test_my_dev_server_run():
+def test_my_dev_server_run() -> None:
     dev_serv = MyDevServer(MyLambdaDevHandlerHelloWorld)
     dev_serv.start()
     assert dev_serv.is_alive()

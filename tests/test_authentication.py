@@ -11,44 +11,44 @@ from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token, allowed_audiences
 
 
-
-
 @patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY])
 @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences)
 class TestAuthentication:
     @pytest.fixture(autouse=True)
-    def setup_class(self, user_token):
+    def setup_class(self, user_token) -> None:
         with patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY]), patch(
-                "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
+            "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
         ):
-            self.id_token = user_token
-            self.sample_user = User(self.id_token)
+            self.id_token = user_token  # pylint: disable=attribute-defined-outside-init
+            self.sample_user = User(  # pylint: disable=attribute-defined-outside-init
+                self.id_token
+            )
 
-    def test__repr__username(self, user_username):
+    def test__repr__username(self, user_username) -> None:
         assert self.sample_user.__repr__() == f"User username={user_username}"
 
         sample_user_2 = User(encode_token({"type": "x"}))
         assert sample_user_2.__repr__() == "User"
 
-    def test_decoding_user(self):
+    def test_decoding_user(self) -> None:
         assert User(self.id_token)
 
-    def test_decoding_user_raises_unauthorized_when_invalid_token(self):
+    def test_decoding_user_raises_unauthorized_when_invalid_token(self) -> None:
         with pytest.raises(Unauthorized):
             User(self.id_token + "?")
 
-    def test_decoding_user_raises_unauthorized_when_invalid_audience(self):
+    def test_decoding_user_raises_unauthorized_when_invalid_audience(self) -> None:
         with pytest.raises(Unauthorized), patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [str(uuid4())]):
             User(self.id_token)
 
-    def test_decoding_user_raises_unauthorized_when_invalid_public_key(self):
+    def test_decoding_user_raises_unauthorized_when_invalid_public_key(self) -> None:
         with pytest.raises(Unauthorized), patch(
             "lbz.jwt_utils.PUBLIC_KEYS",
             [{**SAMPLE_PUBLIC_KEY.copy(), "n": str(uuid4())}],
         ):
             User(self.id_token)
 
-    def test_loading_user_parses_user_attributes(self, user_cogniot):
+    def test_loading_user_parses_user_attributes(self, user_cogniot) -> None:
         parsed = user_cogniot.copy()
         del parsed["aud"]
         for key, expected_value in parsed.items():
@@ -57,7 +57,7 @@ class TestAuthentication:
             )
             assert value == expected_value
 
-    def test_loading_user_does_not_parse_standard_claims(self):
+    def test_loading_user_does_not_parse_standard_claims(self) -> None:
         current_ts = int(time.time())
         standard_claims = {
             "sub": str(uuid4()),
@@ -80,12 +80,12 @@ class TestAuthentication:
         for key in standard_claims:
             assert not hasattr(user, key)
 
-    def test_user_raises_when_more_attributes_than_1000(self):
+    def test_user_raises_when_more_attributes_than_1000(self) -> None:
         with pytest.raises(RuntimeError):
             cognito_user = {str(uuid4()): str(uuid4()) for i in range(1001)}
             User(encode_token(cognito_user))
 
-    def test_nth_cognito_client_validated_as_audience(self):
+    def test_nth_cognito_client_validated_as_audience(self) -> None:
         test_allowed_audiences = [str(uuid4()) for _ in range(10)]
         with patch("lbz.jwt_utils.ALLOWED_AUDIENCES", test_allowed_audiences):
             assert User(encode_token({"aud": test_allowed_audiences[9]}))
