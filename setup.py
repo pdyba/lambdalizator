@@ -6,7 +6,7 @@ setup(
     version=pathlib.Path("version").read_text("utf-8"),
     author="Piotr Dyba",
     author_email="piotr.dyba@localbini.com",
-    packages=["lbz", "lbz.dev"],
+    packages=["lbz", "lbz.dev", "lbz.authz"],
     scripts=[],
     url="https://github.com/pdyba/lambdalizator",
     license="LICENSE",
