@@ -1,4 +1,4 @@
-from lbz.authz.collector import AuthzCollector
+from lbz.collector import AuthzCollector
 
 
 class TestAuthzCollector:

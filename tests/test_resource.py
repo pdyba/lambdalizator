@@ -10,7 +10,7 @@ from jose import jwt
 from multidict import CIMultiDict
 
 from lbz.authentication import User
-from lbz.authz.collector import AuthzCollector
+from lbz.collector import AuthzCollector
 from lbz.dev.misc import Event
 from lbz.exceptions import NotFound, ServerError
 from lbz.misc import MultiDict

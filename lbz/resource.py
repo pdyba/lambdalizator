@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 from multidict import CIMultiDict
 
 from lbz.authentication import User
-from lbz.authz.collector import authz_collector
+from lbz.collector import authz_collector
 from lbz.exceptions import (
     LambdaFWException,
     NotFound,
