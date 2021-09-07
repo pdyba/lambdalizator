@@ -1,6 +1,6 @@
 import warnings
 from os import environ
-from typing import Union, Dict
+from typing import Union, Dict, Any
 
 from jose import jwt
 
@@ -55,7 +55,7 @@ class Authorizer:
 
         if EXPIRATION_KEY not in policy:
             warnings.warn(
-                f"The auth token doesn't have the '{EXPIRATION_KEY}' field - it will be mandatory"
+                f"The auth token doesn't have the '{EXPIRATION_KEY}' field - it will be mandatory "
                 f"in the next version of Lambdalizator",
                 DeprecationWarning,
             )
@@ -132,8 +132,7 @@ class Authorizer:
         ):
             return
         if d_domain := self.allow.get(self.resource):
-            if self._allow_if_allow_all(d_domain):
-                return
+            self._allow_if_allow_all(d_domain)
             if resource_to_check := d_domain.get(self.permission):
                 self.outcome = ALLOW
                 effective_permissions = self._get_effective_permissions(resource_to_check)
@@ -148,7 +147,7 @@ class Authorizer:
         return {"allow": self.allowed_resource, "deny": self.denied_resource}
 
     @staticmethod
-    def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
+    def sign_authz(authz_data: dict, private_key_jwk: dict) -> Union[str, Any]:
         """
         Signs authorization in JWT format.
         """

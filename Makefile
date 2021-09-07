@@ -6,7 +6,16 @@ black-check:
 
 test:
 	coverage run --include 'lbz/*' -m pytest "tests"
-	coverage report --skip-covered
+	coverage report --skip-covered -m
+
+real-coverage:
+	for file in $$(find lbz -type f \( -name "*.py" -and ! -name "*_.py" -and ! -name "event.py" \)); do       \
+		atest="test$${file/lbz\//_}"; \
+		echo $$file; \
+		echo "tests/$${atest/\//_}"; \
+		coverage run --include $$file -m pytest "tests/$${atest/\//_}"; \
+		coverage report --skip-covered -m; \
+	done
 
 build:
 	python setup.py sdist bdist_wheel

@@ -1,4 +1,6 @@
 # coding=utf-8
+import pytest
+
 from lbz.exceptions import (
     BadGateway,
     BadRequestError,
@@ -43,17 +45,16 @@ from lbz.exceptions import (
     VariantAlsoNegotiates,
 )
 from lbz.response import Response
-import pytest
 
 
-def test_lambda_fw_exception():
+def test_lambda_fw_exception() -> None:
     exp = LambdaFWException(message="Nope")
     assert exp.message == "Nope"
     assert exp.status_code == 500
     assert isinstance(exp.get_response(request_id=""), Response)
 
 
-def test_unsupported_method():
+def test_unsupported_method() -> None:
     exp = UnsupportedMethod("GET")
     assert exp.message == "Unsupported method: GET"
     assert exp.status_code == 405
@@ -102,7 +103,7 @@ def test_unsupported_method():
         VariantAlsoNegotiates,
     ],
 )
-def test_custom_exception(custom_exception):
+def test_custom_exception(custom_exception) -> None:
     exp = custom_exception()
     try:
         code, msg = exp.__doc__.split(" - ")
@@ -112,8 +113,9 @@ def test_custom_exception(custom_exception):
     assert issubclass(custom_exception, LambdaFWException)
     assert exp.message == msg.strip()
     assert exp.status_code == int(code)
+    assert str(exp) == f"[{exp.status_code}] {exp.message}"
 
 
-def test_security_warning():
+def test_security_warning() -> None:
     warn = SecurityRiskWarning()
     assert isinstance(warn, Warning)

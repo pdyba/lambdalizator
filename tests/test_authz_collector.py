@@ -18,6 +18,9 @@ class TestAuthzCollector:
         assert self.azc.resource_name == ""
         assert self.azc.guest_permissions == {}
 
+    def test__repr__(self) -> None:
+        assert str(self.azc) == "<AuthzCollector resource_name=>"
+
     def test_set_resource(self) -> None:
         test_resource = "test_resource"
         self.azc.set_resource(test_resource)
@@ -50,3 +53,13 @@ class TestAuthzCollector:
                 "guest_permissions": guest_permissions,
             }
         }
+
+    def test_clean(self) -> None:
+        some_permission = "some_permission"
+        self.azc.add_authz(some_permission)
+
+        assert self.azc.possible_permissions == {some_permission: None}
+
+        self.azc.clean()
+
+        assert self.azc.possible_permissions == {}

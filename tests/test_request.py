@@ -1,18 +1,15 @@
 # coding=utf-8
-from uuid import uuid4
 
 import pytest
 from multidict import CIMultiDict
 
-from lbz.authentication import User
 from lbz.exceptions import BadRequestError
 from lbz.misc import MultiDict
 from lbz.request import Request
-from tests.utils import encode_token
 
 
 class TestRequestInit:
-    def test__init__(self):
+    def test__init__(self) -> None:
         req = Request(
             uri_params={},
             method="",
@@ -37,19 +34,10 @@ class TestRequestInit:
 
 
 class TestRequest:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def setup_method(self, user) -> None:
         # pylint: disable=attribute-defined-outside-init
-        self.cognito_user = {
-            "cognito:username": str(uuid4()),
-            "email": f"{str(uuid4())}@{str(uuid4())}.com",
-            "custom:a": str(uuid4()),
-            "custom:b": str(uuid4()),
-            "custom:c": str(uuid4()),
-            "custom:d": str(uuid4()),
-            "custom:e": str(uuid4()),
-        }
-        self.id_token = encode_token(self.cognito_user)
-        self.resp = Request(
+        self.request = Request(
             method="GET",
             uri_params={},
             body="",
@@ -58,82 +46,82 @@ class TestRequest:
             stage_vars={},
             is_base64_encoded=False,
             query_params=None,
-            user=User(self.id_token),
+            user=user,
         )
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         # pylint: disable= attribute-defined-outside-init
-        self.resp = None
+        self.request = None
 
-    def test___repr__(self):
-        assert str(self.resp) == f"<Request {self.resp.method} >"
+    def test___repr__(self) -> None:
+        assert str(self.request) == f"<Request {self.request.method} >"
 
-    def test__decode_base64_bytes(self):
+    def test__decode_base64_bytes(self) -> None:
         encoded = b"asdasdsd"
         output = Request._decode_base64(encoded)  # pylint: disable=protected-access
         assert output == b"j\xc7Z\xb1\xdb\x1d"
 
-    def test__decode_base64_str(self):
+    def test__decode_base64_str(self) -> None:
         encoded = "asdasdsd"
         output = Request._decode_base64(encoded)  # pylint: disable=protected-access
         assert output == b"j\xc7Z\xb1\xdb\x1d"
 
-    def test_raw_body_base64(self):
-        self.resp._body = b"asdasdsd"  # pylint: disable=protected-access
-        self.resp._is_base64_encoded = True  # pylint: disable=protected-access
-        assert self.resp.raw_body == b"j\xc7Z\xb1\xdb\x1d"
+    def test_raw_body_base64(self) -> None:
+        self.request._body = b"asdasdsd"  # pylint: disable=protected-access
+        self.request._is_base64_encoded = True  # pylint: disable=protected-access
+        assert self.request.raw_body == b"j\xc7Z\xb1\xdb\x1d"
 
-    def test_raw_body_bytes(self):
-        self.resp._body = b"asdasdsd"  # pylint: disable=protected-access
-        assert self.resp.raw_body == b"asdasdsd"
+    def test_raw_body_bytes(self) -> None:
+        self.request._body = b"asdasdsd"  # pylint: disable=protected-access
+        assert self.request.raw_body == b"asdasdsd"
 
-    def test_raw_body_str(self):
-        self.resp._body = "abcx"  # pylint: disable=protected-access
-        assert self.resp.raw_body == b"abcx"
+    def test_raw_body_str(self) -> None:
+        self.request._body = "abcx"  # pylint: disable=protected-access
+        assert self.request.raw_body == b"abcx"
 
-    def test_json_body_dict(self):
-        self.resp._body = '{"x": "abcx"}'  # pylint: disable=protected-access
-        assert self.resp.json_body == {"x": "abcx"}
+    def test_json_body_dict(self) -> None:
+        self.request._body = '{"x": "abcx"}'  # pylint: disable=protected-access
+        assert self.request.json_body == {"x": "abcx"}
 
-    def test_json_body_json(self):
-        self.resp._json_body = None  # pylint: disable=protected-access
-        self.resp._body = '{"x": "abcx"}'  # pylint: disable=protected-access
-        assert self.resp.json_body == {"x": "abcx"}
-        assert self.resp._json_body == {"x": "abcx"}  # pylint: disable=protected-access
+    def test_json_body_json(self) -> None:
+        self.request._json_body = None  # pylint: disable=protected-access
+        self.request._body = '{"x": "abcx"}'  # pylint: disable=protected-access
+        assert self.request.json_body == {"x": "abcx"}
+        assert self.request._json_body == {"x": "abcx"}  # pylint: disable=protected-access
 
-    def test_json_body_bad_json(self):
-        self.resp._json_body = None  # pylint: disable=protected-access
-        self.resp._body = '{"x": abcx}'  # pylint: disable=protected-access
+    def test_json_body_bad_json(self) -> None:
+        self.request._json_body = None  # pylint: disable=protected-access
+        self.request._body = '{"x": abcx}'  # pylint: disable=protected-access
         with pytest.raises(BadRequestError):
-            self.resp.json_body  # pylint: disable=pointless-statement
+            self.request.json_body  # pylint: disable=pointless-statement
 
-    def test_json_body_bad_content_type(self):
-        self.resp.headers = {"Content-Type": "application/dzejson"}
+    def test_json_body_bad_content_type(self) -> None:
+        self.request.headers = {"Content-Type": "application/dzejson"}
         with pytest.raises(BadRequestError) as err:
-            self.resp.json_body  # pylint: disable=pointless-statement
+            self.request.json_body  # pylint: disable=pointless-statement
             assert err.message.startswith("Content-Type header is missing or wrong")
 
-    def test_json_body_none_when_no_content_type(self):
-        self.resp.headers = {}
-        assert self.resp.json_body is None
+    def test_json_body_none_when_no_content_type(self) -> None:
+        self.request.headers = {}
+        assert self.request.json_body is None
 
-    def test_accessing_user_attributes(self):
-        assert isinstance(self.resp.user.username, str)
-        assert isinstance(self.resp.user.email, str)
-        for letter in ("a", "b", "c", "d", "e"):
-            assert isinstance(getattr(self.resp.user, letter), str)
+    def test_accessing_user_attributes(self) -> None:
+        assert isinstance(self.request.user.username, str)
+        assert isinstance(self.request.user.email, str)
+        for letter in ("1", "2", "3", "4", "5"):
+            assert isinstance(getattr(self.request.user, letter), str)
 
-    def test_headers_are_case_insensitive(self):
-        assert self.resp.headers["content-type"] == "application/json"
-        assert self.resp.headers["CoNtEnT-TyPe"] == "application/json"
+    def test_headers_are_case_insensitive(self) -> None:
+        assert self.request.headers["content-type"] == "application/json"
+        assert self.request.headers["CoNtEnT-TyPe"] == "application/json"
 
-    def test_to_dict(self):
-        assert self.resp.to_dict() == {
+    def test_to_dict(self) -> None:
+        assert self.request.to_dict() == {
             "context": {},
             "headers": {"Content-Type": "application/json"},
             "method": "GET",
             "query_params": {},
             "stage_vars": {},
             "uri_params": {},
-            "user": f"User username={self.resp.user.username}",
+            "user": f"User username={self.request.user.username}",
         }

@@ -2,10 +2,11 @@
 
 import pytest
 
-from lbz.authz import Authorizer, has_permission, ALL, LIMITED_ALLOW
+from lbz.authz.authorizer import ALL, LIMITED_ALLOW
+from lbz.authz.decorators import has_permission
 from lbz.dev.test import Event
 from lbz.resource import Resource
-from tests import SAMPLE_PRIVATE_KEY
+from unittest.mock import patch
 
 
 class SampleResource(Resource):
@@ -43,10 +44,15 @@ class TestAuthorizationUtils:
         ],
     )
     def test__has_permission__informs_if_request_user_has_access_to_permission(
-        self, sample_event: Event, acl: dict, expected_result: bool
-    ):
+        self,
+        sample_event: Event,
+        acl: dict,
+        expected_result: bool,
+        base_auth_payload,
+    ) -> None:
+        sample_event["headers"]["authorization"] = "dont_care"
 
-        authorization = Authorizer.sign_authz(acl, SAMPLE_PRIVATE_KEY)
-        sample_event["headers"]["authorization"] = authorization
-
-        assert has_permission(SampleResource(sample_event), "sample_function") is expected_result
+        with patch("lbz.authz.authorizer.decode_jwt", lambda _: {**base_auth_payload, **acl}):
+            assert (
+                has_permission(SampleResource(sample_event), "sample_function") is expected_result
+            )

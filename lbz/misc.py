@@ -17,7 +17,7 @@ class NestedDict(dict):
     Endless nested dict.
     """
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: Hashable) -> Any:
         if key in self:
             return self.get(key)
         return self.setdefault(key, NestedDict())
@@ -95,14 +95,6 @@ def get_logger(name: str) -> logging.Logger:
     logger_obj = logging.getLogger(name)
     logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
     return logger_obj
-
-
-def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
-    """
-    Clean up dict from unwanted keys.
-    """
-    # TODO: to be deleted in 0.4
-    return {key: value for key, value in data.items() if key not in keys}
 
 
 logger = get_logger(__name__)

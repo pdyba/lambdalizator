@@ -29,7 +29,8 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
         policy_override=guest_authorization_policy,
     )
     authorizer.check_access()
-    return authorizer.restrictions
+    restrictions: dict = authorizer.restrictions
+    return restrictions
 
 
 def has_permission(resource: Resource, permission_name: str) -> bool:

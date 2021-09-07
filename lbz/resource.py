@@ -117,7 +117,8 @@ class Resource:
         return {}
 
     def get_authz_data(self) -> dict:
-        return self._authz_collector.dump()
+        dump: dict = self._authz_collector.dump()
+        return dump
 
 
 class CORSResource(Resource):
