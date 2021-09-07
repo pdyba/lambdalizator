@@ -159,3 +159,20 @@ Released 2021-08-25
 - Bug fix for a query params in Paginated Resource
 
 
+### Version 0.3.16
+**Should be skipped**
+Released 2021-08-26
+
+ - Adds Authorization Collector
+
+### Version 0.3.17
+**Should be skipped**
+Released 2021-09-07
+
+- fixes lack of authz package in final release
+
+### Version 0.3.18
+Released 2021-09-07
+
+- fixes circular import issue for DevServer introduced in 0.3.16
+- fixes guest policy overwriting proper policy in authz
