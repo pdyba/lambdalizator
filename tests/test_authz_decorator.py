@@ -154,7 +154,7 @@ class TestAuthorizationDecorator:
         class XResource(Resource):
             @add_route("/")
             @authorization()
-            def handler(self, restrictions):
+            def handler(self, _restrictions):
                 return Response("x")
 
             @staticmethod
