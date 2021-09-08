@@ -148,3 +148,19 @@ class TestAuthorizationDecorator:
 
         res = XResource({**event})
         assert check_permission(res, "handler") == {"allow": "*", "deny": None}
+
+    @patch.dict(environ, env_mock)
+    def test_authorization_header_takes_priority_over_guest_policy_when_both_present(self, *_args):
+        class XResource(Resource):
+            @add_route("/")
+            @authorization()
+            def handler(self, restrictions):
+                return Response("x")
+
+            @staticmethod
+            def get_guest_authorization() -> dict:
+                return {"allow": {}, "deny": {}}
+
+        auth_header = Authorizer.sign_authz({"allow": "*", "deny": {}}, SAMPLE_PRIVATE_KEY)
+        resp = XResource({**event, "headers": {"authorization": auth_header}})()
+        assert resp.status_code == 200
