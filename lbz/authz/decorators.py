@@ -6,7 +6,7 @@ from functools import wraps
 from typing import Callable, Any
 
 from lbz.authz.authorizer import Authorizer
-from lbz.authz.collector import authz_collector
+from lbz.collector import authz_collector
 from lbz.exceptions import PermissionDenied, Unauthorized
 from lbz.resource import Resource
 
@@ -17,10 +17,10 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
 
     Raises if not.
     """
-    authorization_header = resource.request.headers.get("Authorization", "")
-    guest_authorization_policy = resource.get_guest_authorization()
-    if not authorization_header and not guest_authorization_policy:
-        raise Unauthorized("Authorization header missing or empty")
+    guest_authorization_policy = None
+    if not (authorization_header := resource.request.headers.get("Authorization", "")):
+        if not (guest_authorization_policy := resource.get_guest_authorization()):
+            raise Unauthorized("Authorization header missing or empty")
 
     authorizer = Authorizer(
         auth_jwt=authorization_header,

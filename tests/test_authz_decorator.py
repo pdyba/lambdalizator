@@ -3,7 +3,11 @@ from http import HTTPStatus
 from os import environ
 from unittest.mock import patch
 
-from lbz.authz import Authorizer, authorization
+import pytest
+
+from lbz.authz.authorizer import Authorizer
+from lbz.authz.decorators import authorization, check_permission
+from lbz.exceptions import PermissionDenied, Unauthorized
 from lbz.resource import Resource
 from lbz.response import Response
 from lbz.router import add_route
@@ -100,3 +104,64 @@ class TestAuthorizationDecorator:
         auth_header = Authorizer.sign_authz({"allow": {"x": "*"}, "deny": {}}, SAMPLE_PRIVATE_KEY)
         resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.FORBIDDEN
+
+    def test_check_permission(self) -> None:
+        # TODO: split into 3 test cases with improved testing (PR 40)
+        class XResource(Resource):
+            _name = "test_res"
+
+            @add_route("/")
+            @authorization()
+            def handler(self, restrictions):
+                assert restrictions == {"allow": "*", "deny": None}
+                return Response("x")
+
+            def diff_perm(self):
+                pass
+
+        auth_header = Authorizer.sign_authz(
+            {"allow": {"test_res": {"handler": {"allow": "*"}}}, "deny": {}},
+            SAMPLE_PRIVATE_KEY,
+        )
+        res = XResource({**event, "headers": {"authorization": auth_header}})
+
+        assert check_permission(res, "handler") == {"allow": "*", "deny": None}
+        with pytest.raises(PermissionDenied):
+            check_permission(res, "garbage")
+
+        res = XResource({**event})
+        with pytest.raises(Unauthorized):
+            check_permission(res, "diff_perm")
+
+    def test_check_permission_guest_policy(self) -> None:
+        class XResource(Resource):
+            _name = "test_res"
+
+            @add_route("/")
+            @authorization()
+            def handler(self, restrictions):
+                assert restrictions == {"allow": "*", "deny": None}
+                return Response("x")
+
+            def get_guest_authorization(self) -> dict:
+                return {"allow": {"*": "*"}, "deny": {}}
+
+        res = XResource({**event})
+        assert check_permission(res, "handler") == {"allow": "*", "deny": None}
+
+    @patch.dict(environ, env_mock)
+    def test_authorization_header_takes_priority_over_guest_policy_when_both_present(self, *_args):
+        class XResource(Resource):
+            @add_route("/")
+            @authorization()
+            def handler(self, restrictions):
+                assert restrictions == {"allow": "*", "deny": None}
+                return Response("x")
+
+            @staticmethod
+            def get_guest_authorization() -> dict:
+                return {"allow": {}, "deny": {}}
+
+        auth_header = Authorizer.sign_authz({"allow": "*", "deny": {}}, SAMPLE_PRIVATE_KEY)
+        resp = XResource({**event, "headers": {"authorization": auth_header}})()
+        assert resp.status_code == 200
