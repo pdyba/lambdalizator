@@ -160,19 +160,9 @@ Released 2021-08-25
 
 
 ### Version 0.3.16
-**Should be skipped**
-Released 2021-08-26
+Released 2021-09-12
 
- - Adds Authorization Collector
-
-### Version 0.3.17
-**Should be skipped**
-Released 2021-09-07
-
-- fixes lack of authz package in final release
-
-### Version 0.3.18
-Released 2021-09-07
-
-- fixes circular import issue for DevServer introduced in 0.3.16
+- Adds Authorization Collector
 - fixes guest policy overwriting proper policy in authz
+- improves test runtime
+- restores support for dicts in request class
