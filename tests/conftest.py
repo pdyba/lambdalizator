@@ -1,4 +1,5 @@
 # coding=utf-8
+# pylint: disable=redefined-outer-name
 from datetime import datetime, timedelta
 from unittest.mock import patch
 from uuid import uuid4
@@ -14,33 +15,31 @@ from tests import SAMPLE_PRIVATE_KEY
 from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token, allowed_audiences
 
-req = Request(
-    method="GET",
-    body="",
-    headers=CIMultiDict({"Content-Type": "application/json"}),
-    user=None,
-    uri_params={},
-    context={},
-    query_params=None,
-    stage_vars={},
-    is_base64_encoded=False,
-)
-
 
 @pytest.fixture()
 def sample_request() -> Request:
-    return req
+    return Request(
+        method="GET",
+        body="",
+        headers=CIMultiDict({"Content-Type": "application/json"}),
+        user=None,
+        uri_params={},
+        context={},
+        query_params=None,
+        stage_vars={},
+        is_base64_encoded=False,
+    )
 
 
 @pytest.fixture()
-def sample_event() -> Event:
+def sample_event(sample_request) -> Event:
     return Event(
         resource_path="/",
         method="GET",
         headers={},
         path_params={},
         query_params={},
-        body=req.to_dict(),
+        body=sample_request.to_dict(),
     )
 
 
@@ -54,57 +53,47 @@ def _base_auth_payload() -> dict:
     }
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def base_auth_payload() -> dict:
     return _base_auth_payload()
 
 
-AUTH_HEADER = Authorizer.sign_authz(
-    {**_base_auth_payload(), "allow": {"test_res": {"perm-name": {"allow": "*"}}}, "deny": {}},
-    SAMPLE_PRIVATE_KEY,
-)
-
-
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def auth_header() -> str:
-    return AUTH_HEADER
+    return Authorizer.sign_authz(
+        {**_base_auth_payload(), "allow": {"test_res": {"perm-name": {"allow": "*"}}}, "deny": {}},
+        SAMPLE_PRIVATE_KEY,
+    )
 
 
-USERNAME = str(uuid4())
-COGNITO_USER = {
-    "cognito:username": USERNAME,
-    "custom:id": str(uuid4()),
-    "email": f"{str(uuid4())}@{str(uuid4())}.com",
-    "custom:1": str(uuid4()),
-    "custom:2": str(uuid4()),
-    "custom:3": str(uuid4()),
-    "custom:4": str(uuid4()),
-    "custom:5": str(uuid4()),
-    "aud": allowed_audiences[0],
-}
-TOKEN = encode_token(COGNITO_USER)
-
-with patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY]), patch(
-    "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
-):
-    USER = User(TOKEN)
-
-
-@pytest.fixture()
-def user_token() -> str:
-    return TOKEN
-
-
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def user_username() -> str:
-    return USERNAME
+    return str(uuid4())
 
 
-@pytest.fixture()
-def user_cogniot() -> dict:
-    return COGNITO_USER
+@pytest.fixture(scope="session")
+def user_cognito(user_username) -> dict:
+    return {
+        "cognito:username": user_username,
+        "custom:id": str(uuid4()),
+        "email": f"{str(uuid4())}@{str(uuid4())}.com",
+        "custom:1": str(uuid4()),
+        "custom:2": str(uuid4()),
+        "custom:3": str(uuid4()),
+        "custom:4": str(uuid4()),
+        "custom:5": str(uuid4()),
+        "aud": allowed_audiences[0],
+    }
 
 
-@pytest.fixture()
-def user() -> User:
-    return USER
+@pytest.fixture(scope="session")
+def user_token(user_cognito) -> str:
+    return encode_token(user_cognito)
+
+
+@pytest.fixture(scope="session")
+def user(user_token) -> User:
+    with patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY]), patch(
+        "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
+    ):
+        return User(user_token)
