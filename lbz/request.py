@@ -23,7 +23,7 @@ class Request:
         headers: CIMultiDict,
         uri_params: dict,
         method: str,
-        body: Union[str, bytes],
+        body: Union[str, bytes, dict],
         context: dict,
         stage_vars: dict,
         is_base64_encoded: bool,
@@ -40,7 +40,7 @@ class Request:
         self._is_base64_encoded = is_base64_encoded
         self._body = body
         self._json_body: Optional[dict] = None
-        self._raw_body: Optional[bytes] = None
+        self._raw_body: Optional[Union[bytes, dict]] = None
 
     def __repr__(self) -> str:
         return f"<Request {self.method} >"
@@ -52,11 +52,11 @@ class Request:
         return base64.b64decode(encoded)
 
     @property
-    def raw_body(self) -> Union[bytes, str]:
+    def raw_body(self) -> Union[bytes, str, dict]:
         if not self._raw_body and self._body is not None:
-            if self._is_base64_encoded:
+            if self._is_base64_encoded and isinstance(self._body, bytes):
                 self._raw_body = self._decode_base64(self._body)
-            elif not isinstance(self._body, bytes):
+            elif isinstance(self._body, str):
                 self._raw_body = self._body.encode("utf-8")
             else:
                 self._raw_body = self._body
@@ -68,12 +68,14 @@ class Request:
         if content_type is None:
             return None
         if content_type.startswith("application/json"):
+            if isinstance(self._body, dict):
+                return self._body
             if self._json_body is None:
                 try:
-                    self._json_body = json.loads(self.raw_body)
+                    self._json_body = json.loads(self._body)
                 except ValueError as error:
                     raise BadRequestError(
-                        "Invalid payload.\nPayload body:\n {!r}".format(self.raw_body)
+                        "Invalid payload.\nPayload body:\n {!r}".format(self._body)
                     ) from error
             return self._json_body
         logger.warning("Wrong headers: %s", self.headers)
