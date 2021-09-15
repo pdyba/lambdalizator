@@ -4,7 +4,7 @@ Request standardisation module.
 """
 import base64
 import json
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 from multidict import CIMultiDict
 
@@ -54,7 +54,7 @@ class Request:
     @property
     def raw_body(self) -> Union[bytes, str, dict]:
         if not self._raw_body and self._body is not None:
-            if self._is_base64_encoded and isinstance(self._body, bytes):
+            if self._is_base64_encoded and isinstance(self._body, (bytes, str)):
                 self._raw_body = self._decode_base64(self._body)
             elif isinstance(self._body, str):
                 self._raw_body = self._body.encode("utf-8")
@@ -62,24 +62,32 @@ class Request:
                 self._raw_body = self._body
         return self._raw_body
 
+    @staticmethod
+    def _safe_json_loads(payload: Union[str, bytes]) -> Optional[Any]:
+        try:
+            return json.loads(payload)
+        except ValueError as error:
+            raise BadRequestError(
+                "Invalid payload.\nPayload body:\n {!r}".format(payload)
+            ) from error
+
     @property
     def json_body(self) -> Optional[dict]:
-        content_type = self.headers.get("Content-Type")
-        if content_type is None:
-            return None
-        if content_type.startswith("application/json"):
-            if isinstance(self._body, dict):
-                return self._body
-            if self._json_body is None:
-                try:
-                    self._json_body = json.loads(self._body)
-                except ValueError as error:
+        if self._json_body is None:
+            if isinstance(self.raw_body, dict):
+                self._json_body = self.raw_body
+            else:
+                content_type = self.headers.get("Content-Type")
+                if content_type is None:
+                    return None
+                if content_type.startswith("application/json"):
+                    self._json_body = self._safe_json_loads(self.raw_body)
+                else:
+                    logger.warning("Wrong headers: %s", self.headers)
                     raise BadRequestError(
-                        "Invalid payload.\nPayload body:\n {!r}".format(self._body)
-                    ) from error
-            return self._json_body
-        logger.warning("Wrong headers: %s", self.headers)
-        raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
+                        f"Content-Type header is missing or wrong: {content_type}"
+                    )
+        return self._json_body
 
     def to_dict(self) -> dict:
         copied = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
