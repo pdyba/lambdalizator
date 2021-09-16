@@ -13,7 +13,7 @@ from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
 # pylint: disable=too-many-public-methods
 class TestAuthorizerSetupClass:
     @staticmethod
-    def _make_authorizer(token_payload: dict=None, jwt=None) -> Authorizer:
+    def _make_authorizer(token_payload: dict = None, jwt=None) -> Authorizer:
         if token_payload:
             jwt = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
         return Authorizer(jwt, "test_resource", "permission_name")
@@ -39,7 +39,8 @@ class TestAuthorizerSetupClass:
     def test_validate_one_with_expired(self, full_access_authz_payload) -> None:
         expiration_negative = int((datetime.utcnow() - timedelta(seconds=1)).timestamp())
         with pytest.raises(Unauthorized):
-            self._make_authorizer(token_payload={
+            self._make_authorizer(
+                token_payload={
                     **full_access_authz_payload,
                     "allow": {"test_resource": {"permission_name": {"allow": ALL}}},
                     "exp": expiration_negative,
@@ -53,7 +54,6 @@ class TestAuthorizerSetupMethod:
     def _make_mocked_authorizer(token_payload: dict) -> Authorizer:
         with patch("lbz.authz.authorizer.decode_jwt", lambda _: token_payload):
             return Authorizer("xx", "test_resource", "permission_name")
-
 
     def test_wrong_jwt_authz_payload_raises_permission_denied(self) -> None:
         with pytest.raises(PermissionDenied):
@@ -246,7 +246,7 @@ class TestAuthorizerSetupMethod:
         assert authorizer.outcome == LIMITED_ALLOW
         assert authorizer.restrictions == restrictions
 
-    def test_missing_ref(self,full_access_authz_payload) -> None:
+    def test_missing_ref(self, full_access_authz_payload) -> None:
         authorizer = self._make_mocked_authorizer(
             {
                 **full_access_authz_payload,

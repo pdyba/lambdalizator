@@ -37,7 +37,7 @@ def sample_request() -> Request:
 
 
 @pytest.fixture()
-def sample_event(sample_request) -> Event:  # pylint: disable=redefined-outer-name
+def sample_event() -> Event:  # pylint: disable=redefined-outer-name
     return Event(
         resource_path="/",
         method="GET",
@@ -46,8 +46,6 @@ def sample_event(sample_request) -> Event:  # pylint: disable=redefined-outer-na
         query_params={},
         body={},
     )
-
-
 
 
 @pytest.fixture(scope="session")
@@ -60,8 +58,11 @@ def full_access_authz_payload() -> dict:
         "iss": "test-issuer",
     }
 
+
 @pytest.fixture(scope="session")
-def full_access_auth_header(full_access_authz_payload) -> str:
+def full_access_auth_header(
+    full_access_authz_payload,  # pylint: disable=redefined-outer-name
+) -> str:
     return Authorizer.sign_authz(
         full_access_authz_payload,
         SAMPLE_PRIVATE_KEY,
@@ -69,12 +70,17 @@ def full_access_auth_header(full_access_authz_payload) -> str:
 
 
 @pytest.fixture(scope="session")
-def limited_access_auth_header(full_access_authz_payload) -> str:
+def limited_access_auth_header(
+    full_access_authz_payload,  # pylint: disable=redefined-outer-name
+) -> str:
     return Authorizer.sign_authz(
-        {**full_access_authz_payload, "allow": {"test_res": {"perm-name": {"allow": "*"}}}, "deny": {}},
+        {
+            **full_access_authz_payload,
+            "allow": {"test_res": {"perm-name": {"allow": "*"}}},
+            "deny": {},
+        },
         SAMPLE_PRIVATE_KEY,
     )
-
 
 
 @pytest.fixture(scope="session")
