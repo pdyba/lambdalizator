@@ -37,7 +37,7 @@ def sample_request() -> Request:
 
 
 @pytest.fixture()
-def sample_event() -> Event:  # pylint: disable=redefined-outer-name
+def sample_event() -> Event:
     return Event(
         resource_path="/",
         method="GET",

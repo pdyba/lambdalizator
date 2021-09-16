@@ -11,7 +11,7 @@ from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
 
 
 # pylint: disable=too-many-public-methods
-class TestAuthorizerSetupClass:
+class TestAuthorizerWithoutMockingJWT:
     @staticmethod
     def _make_authorizer(token_payload: dict = None, jwt=None) -> Authorizer:
         if token_payload:
@@ -37,19 +37,18 @@ class TestAuthorizerSetupClass:
         )
 
     def test_validate_one_with_expired(self, full_access_authz_payload) -> None:
-        expiration_negative = int((datetime.utcnow() - timedelta(seconds=1)).timestamp())
+        expired_timestamp = int((datetime.utcnow() - timedelta(seconds=1)).timestamp())
         with pytest.raises(Unauthorized):
             self._make_authorizer(
                 token_payload={
                     **full_access_authz_payload,
-                    "allow": {"test_resource": {"permission_name": {"allow": ALL}}},
-                    "exp": expiration_negative,
+                    "exp": expired_timestamp,
                 }
             )
 
 
 # pylint: disable=too-many-public-methods
-class TestAuthorizerSetupMethod:
+class TestAuthorizerWithMockedJWT:
     @staticmethod
     def _make_mocked_authorizer(token_payload: dict) -> Authorizer:
         with patch("lbz.authz.authorizer.decode_jwt", lambda _: token_payload):
@@ -113,7 +112,7 @@ class TestAuthorizerSetupMethod:
             authz._check_allow_and_set_resources()  # pylint: disable=protected-access
             assert authz.outcome == ALLOW
 
-    def test_check_allow_domain(self, full_access_authz_payload) -> None:
+    def test_check_allow_resource(self, full_access_authz_payload) -> None:
         authz = self._make_mocked_authorizer(full_access_authz_payload)
         authz.allow = {"test_resource": ALL}
         authz._check_allow_and_set_resources()  # pylint: disable=protected-access
@@ -156,7 +155,6 @@ class TestAuthorizerSetupMethod:
         authz._set_policy(  # pylint: disable=protected-access
             "",
             {
-                **full_access_authz_payload,
                 "allow": "Lambda",
                 "deny": "Lambda",
             },
@@ -262,11 +260,11 @@ class TestAuthorizerSetupMethod:
         assert token == EXPECTED_TOKEN
 
     def test_sign_authz_not_a_dict_error(self) -> None:
-        with pytest.raises(ValueError):
-            Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, "")
+        with pytest.raises(ValueError) as execinfo:
+            Authorizer.sign_authz({}, private_key_jwk="")
+            assert str(execinfo.value) == "private_key_jwk must be a jwk dict"
 
     def test_sign_authz_no_kid_error(self) -> None:
-        prive_key = deepcopy(SAMPLE_PRIVATE_KEY)
-        del prive_key["kid"]
-        with pytest.raises(ValueError):
-            Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, prive_key)
+        with pytest.raises(ValueError) as execinfo:
+            Authorizer.sign_authz({}, private_key_jwk={})
+            assert str(execinfo.value) == "private_key_jwk must have the 'kid' field"
