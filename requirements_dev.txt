@@ -4,5 +4,5 @@ pytest-cov
 coverage
 black
 flake8
-pylint
+pylint<2.11
 mypy
