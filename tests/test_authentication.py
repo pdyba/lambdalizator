@@ -23,14 +23,14 @@ class TestAuthentication:
         ):
             self.cognito_user = {
                 "cognito:username": str(uuid4()),
-                "custom:id": str(uuid4()),
                 "email": f"{str(uuid4())}@{str(uuid4())}.com",
+                "custom:id": str(uuid4()),
                 "custom:1": str(uuid4()),
                 "custom:2": str(uuid4()),
+                "aud": allowed_audiences[0],  # moved due pylint and minimising scope of PR
                 "custom:3": str(uuid4()),
                 "custom:4": str(uuid4()),
                 "custom:5": str(uuid4()),
-                "aud": allowed_audiences[0],
             }
             self.id_token = encode_token(self.cognito_user)
             self.pool_id = str(uuid4)
