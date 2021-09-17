@@ -1,7 +1,7 @@
 # coding=utf-8
 from datetime import datetime, timedelta
 from typing import List
-from unittest.mock import patch
+import os
 from uuid import uuid4
 
 import pytest
@@ -12,17 +12,17 @@ from lbz.authz.authorizer import Authorizer
 from lbz.dev.misc import Event
 from lbz.request import Request
 from tests import SAMPLE_PRIVATE_KEY
-from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token
 
 
 @pytest.fixture(scope="session")
 def allowed_audiences() -> List[str]:
-    return [str(uuid4()), str(uuid4())]
+    return os.environ["ALLOWED_AUDIENCES"].split(",")
 
 
 @pytest.fixture()
 def sample_request() -> Request:
+    # TODO: change to simple factory / parametrise it
     return Request(
         method="GET",
         body="",
@@ -84,14 +84,15 @@ def limited_access_auth_header(
 
 
 @pytest.fixture(scope="session")
-def user_username() -> str:
+def username() -> str:
     return str(uuid4())
 
 
 @pytest.fixture(scope="session")
-def user_cognito(user_username, allowed_audiences) -> dict:  # pylint: disable=redefined-outer-name
+def user_cognito(username) -> dict:  # pylint: disable=redefined-outer-name
+
     return {
-        "cognito:username": user_username,
+        "cognito:username": username,
         "custom:id": str(uuid4()),
         "email": f"{str(uuid4())}@{str(uuid4())}.com",
         "custom:1": str(uuid4()),
@@ -99,7 +100,7 @@ def user_cognito(user_username, allowed_audiences) -> dict:  # pylint: disable=r
         "custom:3": str(uuid4()),
         "custom:4": str(uuid4()),
         "custom:5": str(uuid4()),
-        "aud": allowed_audiences[0],
+        "aud": os.environ["ALLOWED_AUDIENCES"].split(",")[0],
     }
 
 
@@ -109,11 +110,8 @@ def user_token(user_cognito) -> str:  # pylint: disable=redefined-outer-name
 
 
 @pytest.fixture(scope="session")
-def user(user_token, allowed_audiences) -> User:  # pylint: disable=redefined-outer-name
-    with patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY]), patch(
-        "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
-    ):
-        return User(user_token)
+def user(user_token) -> User:  # pylint: disable=redefined-outer-name
+    return User(user_token)
 
 
 @pytest.fixture()

@@ -53,7 +53,7 @@ class Request:
 
     @property
     def raw_body(self) -> Optional[Union[bytes, dict]]:
-        if not self._raw_body and self._body is not None:
+        if self._raw_body is None and self._body is not None:
             if self._is_base64_encoded and isinstance(self._body, (bytes, str)):
                 self._raw_body = self._decode_base64(self._body)
             elif isinstance(self._body, str):
@@ -78,15 +78,13 @@ class Request:
             if content_type is None:
                 return None
             if content_type.startswith("application/json"):
-                if isinstance(self.raw_body, dict):
+                if isinstance(self.raw_body, dict) or self.raw_body is None:
                     self._json_body = self.raw_body
                 else:
                     self._json_body = self._safe_json_loads(self.raw_body)
             else:
                 logger.warning("Wrong headers: %s", self.headers)
-                raise BadRequestError(
-                    f"Content-Type header is missing or wrong: {content_type}"
-                )
+                raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
         return self._json_body
 
     def to_dict(self) -> dict:

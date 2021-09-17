@@ -47,10 +47,6 @@ class TestRequestGeneral:
         output = Request._decode_base64(encoded)  # pylint: disable=protected-access
         assert output == b"j\xc7Z\xb1\xdb\x1d"
 
-    def test_json_body_none_when_no_content_type(self, sample_request):
-        sample_request.headers = {}
-        assert sample_request.json_body is None
-
     def test_accessing_user_attributes(self, sample_request_with_user):
         assert isinstance(sample_request_with_user.user.username, str)
         assert isinstance(sample_request_with_user.user.email, str)
@@ -63,8 +59,13 @@ class TestRequestGeneral:
 
 
 class TestRequestRawBody:
-    def test_raw_body_base64(self, sample_request):
+    def test_raw_body_base64_bytes(self, sample_request):
         sample_request._body = b"asdasdsd"  # pylint: disable=protected-access
+        sample_request._is_base64_encoded = True  # pylint: disable=protected-access
+        assert sample_request.raw_body == b"j\xc7Z\xb1\xdb\x1d"
+
+    def test_raw_body_base64_str(self, sample_request):
+        sample_request._body = "asdasdsd"  # pylint: disable=protected-access
         sample_request._is_base64_encoded = True  # pylint: disable=protected-access
         assert sample_request.raw_body == b"j\xc7Z\xb1\xdb\x1d"
 
@@ -89,8 +90,8 @@ class TestRequestJsonBody:
         assert sample_request._json_body == {"x": "t2"}  # pylint: disable=protected-access
 
     def test_json_body_base64_json(self, sample_request):
-        sample_request._is_base64_encoded = True
-        sample_request._body = "eyJ4IjogImFiY3gifQ==".encode()  # pylint: disable=protected-access
+        sample_request._is_base64_encoded = True  # pylint: disable=protected-access
+        sample_request._body = b"eyJ4IjogImFiY3gifQ=="  # pylint: disable=protected-access
         assert sample_request.json_body == {"x": "abcx"}
         assert sample_request._json_body == {"x": "abcx"}  # pylint: disable=protected-access
 
@@ -105,6 +106,14 @@ class TestRequestJsonBody:
         with pytest.raises(BadRequestError) as err:
             sample_request.json_body  # pylint: disable=pointless-statement
             assert err.message.startswith("Content-Type header is missing or wrong")
+
+    def test_json_body_none_when_no_content_type(self, sample_request):
+        sample_request.headers = {}
+        assert sample_request.json_body is None
+
+    def test_json_body_none_as_body(self, sample_request):
+        sample_request._body = None  # pylint: disable=protected-access
+        assert sample_request.json_body is None
 
 
 class TestRequestToDict:
