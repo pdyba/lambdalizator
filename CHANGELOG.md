@@ -159,8 +159,8 @@ Released 2021-08-25
 - Bug fix for a query params in Paginated Resource
 
 
-### Version 0.3.16
-Released 2021-09-12
+### Version 0.4.0
+Released 2021-09-21
 
 - Adds Authorization Collector
 - fixes guest policy overwriting proper policy in authz
