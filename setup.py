@@ -7,6 +7,7 @@ setup(
     author="Piotr Dyba",
     author_email="piotr.dyba@localbini.com",
     packages=["lbz", "lbz.dev", "lbz.authz"],
+    package_data={"lbz": ["py.typed"]},
     scripts=[],
     url="https://github.com/pdyba/lambdalizator",
     license="LICENSE",
