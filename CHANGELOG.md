@@ -166,3 +166,10 @@ Released 2021-09-21
 - fixes guest policy overwriting proper policy in authz
 - improves test runtime
 - restores support for dicts in request class
+
+
+### Version 0.4.2
+Released 2021-10-09
+
+Extends JWT validation cases
+Adds JWT utils tests.

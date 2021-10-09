@@ -90,7 +90,6 @@ def username() -> str:
 
 @pytest.fixture(scope="session")
 def user_cognito(username) -> dict:  # pylint: disable=redefined-outer-name
-
     return {
         "cognito:username": username,
         "custom:id": str(uuid4()),
