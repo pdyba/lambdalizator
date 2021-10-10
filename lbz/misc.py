@@ -134,4 +134,4 @@ def deep_update(dict_to_update: dict, update_data: dict) -> None:
 
 
 def is_in_debug_mode() -> bool:
-    return environ.get("LBZ_DEBUG_MODE") == "True"
+    return environ.get("LBZ_DEBUG_MODE", "").lower() == "true"

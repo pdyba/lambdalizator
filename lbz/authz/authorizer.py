@@ -29,7 +29,6 @@ class Authorizer:
         auth_jwt: str,
         resource_name: str,
         permission_name: str,
-        policy_override: dict = None,
         base_permission_policy: dict = None,
     ):
         self.outcome = DENY
@@ -40,7 +39,7 @@ class Authorizer:
         self.refs: Dict[str, dict] = {}
         self.allow: dict = {}
         self.deny: dict = {}
-        self._set_policy(auth_jwt, policy_override, base_permission_policy)
+        self._set_policy(auth_jwt, base_permission_policy)
 
     def __repr__(self) -> str:
         return (
@@ -49,12 +48,10 @@ class Authorizer:
         )
 
     def _set_policy(
-        self, auth_jwt: str = "", policy_override: dict = None, base_permission_policy: dict = None
+        self, auth_jwt: str = "", base_permission_policy: dict = None
     ) -> None:
         policy = base_permission_policy if base_permission_policy else {}
-        if policy_override:
-            policy = policy_override
-        elif auth_jwt:
+        if auth_jwt:
             deep_update(policy, decode_jwt(auth_jwt))
         self.refs = policy.get("refs", {})
         try:

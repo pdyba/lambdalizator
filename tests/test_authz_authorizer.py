@@ -173,7 +173,7 @@ class TestAuthorizerWithMockedJWT:
         authz = self._make_mocked_authorizer(full_access_authz_payload)
         authz._set_policy(  # pylint: disable=protected-access
             "",
-            policy_override={
+            {
                 **full_access_authz_payload,
                 "allow": "Lambda",
                 "deny": "Lambda",

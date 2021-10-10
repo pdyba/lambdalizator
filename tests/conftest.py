@@ -5,6 +5,7 @@ from typing import List
 from uuid import uuid4
 
 import pytest
+from _pytest.fixtures import SubRequest
 from multidict import CIMultiDict
 
 from lbz.authentication import User
@@ -155,8 +156,9 @@ def sample_event_with_full_access_auth_header(
 
 @pytest.fixture()
 def sample_event_with_limited_access_auth_header(
-    limited_access_auth_header, request  # pylint: disable=redefined-outer-name
+    limited_access_auth_header, request: SubRequest  # pylint: disable=redefined-outer-name
 ) -> Event:
+    # https://docs.pytest.org/en/latest/example/parametrize.html#apply-indirect-on-particular-arguments
     return Event(
         resource_path=request.param.get("path", "/"),
         method="GET",
