@@ -17,16 +17,16 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
 
     Raises if not.
     """
-    guest_authorization_policy = None
+    base_permission_policy = resource.get_guest_authorization()
     if not (authorization_header := resource.request.headers.get("Authorization", "")):
-        if not (guest_authorization_policy := resource.get_guest_authorization()):
+        if not base_permission_policy:
             raise Unauthorized("Authorization header missing or empty")
 
     authorizer = Authorizer(
         auth_jwt=authorization_header,
         resource_name=resource.get_name(),
         permission_name=permission_name,
-        policy_override=guest_authorization_policy,
+        base_permission_policy=base_permission_policy,
     )
     authorizer.check_access()
     return authorizer.restrictions

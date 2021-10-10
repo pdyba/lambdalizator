@@ -48,6 +48,23 @@ event = Event(
     query_params={},
 )
 
+event_get_allow = Event(
+    resource_path="/allow",
+    method="GET",
+    body=req,  # pylint issue #214
+    headers={},
+    path_params={},
+    query_params={},
+)
+event_get_deny = Event(
+    resource_path="/deny",
+    method="GET",
+    body=req,  # pylint issue #214
+    headers={},
+    path_params={},
+    query_params={},
+)
+
 event_wrong_uri = Event(
     resource_path="/xxxs/asdasd/xxx",
     method="GET",

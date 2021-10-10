@@ -6,7 +6,7 @@ from jose import jwt
 
 from lbz.exceptions import PermissionDenied, SecurityRiskWarning
 from lbz.jwt_utils import decode_jwt
-from lbz.misc import get_logger
+from lbz.misc import get_logger, deep_update
 
 logger = get_logger(__name__)
 
@@ -26,7 +26,12 @@ class Authorizer:
     """
 
     def __init__(
-        self, auth_jwt: str, resource_name: str, permission_name: str, policy_override: dict = None
+        self,
+        auth_jwt: str,
+        resource_name: str,
+        permission_name: str,
+        policy_override: dict = None,
+        base_permission_policy: dict = None,
     ):
         self.outcome = DENY
         self.allowed_resource: Union[str, dict, None] = None
@@ -36,7 +41,7 @@ class Authorizer:
         self.refs: Dict[str, dict] = {}
         self.allow: dict = {}
         self.deny: dict = {}
-        self._set_policy(auth_jwt, policy_override)
+        self._set_policy(auth_jwt, policy_override, base_permission_policy)
 
     def __repr__(self) -> str:
         return (
@@ -44,8 +49,14 @@ class Authorizer:
             f"permission_name='{self.permission}')"
         )
 
-    def _set_policy(self, auth_jwt: str, policy_override: dict = None) -> None:
-        policy = policy_override if policy_override else decode_jwt(auth_jwt)
+    def _set_policy(
+        self, auth_jwt: str = "", policy_override: dict = None, base_permission_policy: dict = None
+    ) -> None:
+        policy = base_permission_policy if base_permission_policy else {}
+        if policy_override:
+            policy = policy_override
+        elif auth_jwt:
+            deep_update(policy, decode_jwt(auth_jwt))
         self.refs = policy.get("refs", {})
         try:
             self.allow = policy["allow"]

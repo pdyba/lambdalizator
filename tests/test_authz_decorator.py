@@ -13,7 +13,7 @@ from lbz.response import Response
 from lbz.router import add_route
 from tests import SAMPLE_PRIVATE_KEY
 from tests.fixtures.cognito_auth import env_mock
-from tests.test_resource import event
+from tests.test_resource import event, event_get_allow, event_get_deny
 
 
 class TestAuthorizationDecorator:
@@ -69,6 +69,25 @@ class TestAuthorizationDecorator:
                 assert restrictions == {"allow": "self", "deny": None}
                 return Response("x")
 
+            @add_route("/deny")
+            @authorization()
+            def get_deny(self, restrictions):  # pylint: disable=unused-argument
+                return Response("y")
+
+            @add_route("/allow")
+            @authorization()
+            def get_allow(self, restrictions):  # pylint: disable=unused-argument
+                return Response("z")
+
+            @staticmethod
+            def get_guest_authorization() -> dict:
+                return {
+                    "allow": {
+                        "xresource": {"get_allow": {"allow": "*"}},
+                        "deny": {"xresource": {"get_deny": "*"}},
+                    }
+                }
+
         auth_header = Authorizer.sign_authz(
             {"allow": {"xresource": {"perm-name": {"allow": "self"}}}, "deny": {}},
             SAMPLE_PRIVATE_KEY,
@@ -76,6 +95,11 @@ class TestAuthorizationDecorator:
         resp = XResource({**event, "headers": {"authorization": auth_header}})()
         assert resp.status_code == HTTPStatus.OK
 
+        resp = XResource({**event_get_allow, "headers": {"authorization": auth_header}})()
+        assert resp.status_code == HTTPStatus.OK
+
+        resp = XResource({**event_get_deny, "headers": {"authorization": auth_header}})()
+        assert resp.status_code == HTTPStatus.FORBIDDEN
         auth_header = Authorizer.sign_authz(
             {"allow": {"xresource": {"handler": {"allow": "*"}}}, "deny": {}},
             SAMPLE_PRIVATE_KEY,
