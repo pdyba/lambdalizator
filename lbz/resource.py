@@ -17,10 +17,11 @@ from lbz.exceptions import (
     UnsupportedMethod,
     ServerError,
 )
-from lbz.misc import get_logger
+from lbz.misc import get_logger, is_in_debug_mode
 from lbz.request import Request
 from lbz.response import Response
 from lbz.router import Router
+
 
 ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
 
@@ -74,7 +75,9 @@ class Resource:
             response: Response = endpoint(**self.path_params)
             return response
         except LambdaFWException as err:
-            if 500 <= err.status_code < 600:
+            if is_in_debug_mode():
+                logger.exception(err)
+            elif 500 <= err.status_code < 600:
                 logger.exception(err)
             else:
                 logger.warning(err)

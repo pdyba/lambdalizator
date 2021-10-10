@@ -2,6 +2,7 @@
 """
 Development Server.
 """
+from os import environ
 import json
 import logging
 import urllib.parse
@@ -12,6 +13,9 @@ from typing import Tuple, Union, Type
 
 from lbz.dev.misc import Event
 from lbz.resource import Resource
+
+if not environ.get("LBZ_DEBUG_MODE"):
+    environ["LBZ_DEBUG_MODE"] = "True"
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):

@@ -2,51 +2,43 @@
 
 import pytest
 
-from lbz.authz import Authorizer, has_permission, ALL, LIMITED_ALLOW
-from lbz.dev.test import Event
-from lbz.resource import Resource
-from tests import SAMPLE_PRIVATE_KEY
+from lbz.exceptions import PermissionDenied, Unauthorized
+from lbz.authz.utils import has_permission, check_permission
 
 
-class SampleResource(Resource):
-    _name = "sample_resource"
-
-
-class TestAuthorizationUtils:
+class TestAuthorizationDecorator:
     @pytest.mark.parametrize(
-        "acl, expected_result",
-        [
-            (
-                {"allow": {ALL: ALL}, "deny": {}},
-                True,
-            ),
-            (
-                {
-                    "allow": {"sample_resource": {"sample_function": {"allow": LIMITED_ALLOW}}},
-                    "deny": {},
-                },
-                True,
-            ),
-            (
-                {
-                    "allow": {ALL: ALL},
-                    "deny": {"sample_resource": {"sample_function": {"deny": ALL}}},
-                },
-                False,
-            ),
-            (
-                {
-                    "allow": {"unknown_function": ALL},
-                },
-                False,
-            ),
-        ],
+        "sample_event_with_limited_access_auth_header",
+        [{"path": "/"}],
+        indirect=True,
     )
-    def test__has_permission__informs_if_request_user_has_access_to_permission(
-        self, sample_event: Event, acl: dict, expected_result: bool
-    ):
+    def test_check_permission(
+        self, sample_event_with_limited_access_auth_header, sample_resoruce_with_authorization
+    ) -> None:
+        res_instance = sample_resoruce_with_authorization(
+            sample_event_with_limited_access_auth_header
+        )
+        assert check_permission(res_instance, "perm-name") == {"allow": "*", "deny": None}
+        with pytest.raises(PermissionDenied):
+            check_permission(res_instance, "garbage")
 
-        authorization = Authorizer.sign_authz(acl, SAMPLE_PRIVATE_KEY)
-        sample_event["headers"]["authorization"] = authorization
+    def test_check_permission_unathorised(
+        self, sample_event, sample_resoruce_with_authorization
+    ) -> None:
+        res_instance = sample_resoruce_with_authorization(sample_event)
+        with pytest.raises(Unauthorized):
+            check_permission(res_instance, "perm-name")
 
-        assert has_permission(SampleResource(sample_event), "sample_function") is expected_result
+    @pytest.mark.parametrize(
+        "sample_event_with_limited_access_auth_header",
+        [{"path": "/garbage"}],
+        indirect=True,
+    )
+    def test_has_permission(
+        self, sample_event_with_limited_access_auth_header, sample_resoruce_with_authorization
+    ) -> None:
+        res_instance = sample_resoruce_with_authorization(
+            sample_event_with_limited_access_auth_header
+        )
+        assert has_permission(res_instance, "perm-name")
+        assert not has_permission(res_instance, "garbage")

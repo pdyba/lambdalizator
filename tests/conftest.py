@@ -1,7 +1,7 @@
 # coding=utf-8
+import os
 from datetime import datetime, timedelta
 from typing import List
-import os
 from uuid import uuid4
 
 import pytest
@@ -9,8 +9,13 @@ from multidict import CIMultiDict
 
 from lbz.authentication import User
 from lbz.authz.authorizer import Authorizer
+from lbz.authz.decorators import authorization
+from lbz.collector import authz_collector
 from lbz.dev.misc import Event
 from lbz.request import Request
+from lbz.resource import Resource
+from lbz.response import Response
+from lbz.router import add_route
 from tests import SAMPLE_PRIVATE_KEY
 from tests.utils import encode_token
 
@@ -18,6 +23,12 @@ from tests.utils import encode_token
 @pytest.fixture(scope="session")
 def allowed_audiences() -> List[str]:
     return os.environ["ALLOWED_AUDIENCES"].split(",")
+
+
+@pytest.fixture(autouse=True)
+def clear_authz_collector():
+    yield
+    authz_collector.clean()
 
 
 @pytest.fixture()
@@ -126,3 +137,50 @@ def sample_request_with_user(user) -> Request:  # pylint: disable=redefined-oute
         is_base64_encoded=False,
         uri_params={},
     )
+
+
+@pytest.fixture()
+def sample_event_with_full_access_auth_header(
+    full_access_auth_header,  # pylint: disable=redefined-outer-name
+) -> Event:
+    return Event(
+        resource_path="/",
+        method="GET",
+        headers={"authorization": full_access_auth_header},
+        path_params={},
+        query_params={},
+        body={},
+    )
+
+
+@pytest.fixture()
+def sample_event_with_limited_access_auth_header(
+    limited_access_auth_header, request  # pylint: disable=redefined-outer-name
+) -> Event:
+    return Event(
+        resource_path=request.param.get("path", "/"),
+        method="GET",
+        headers={"authorization": limited_access_auth_header},
+        path_params={},
+        query_params={},
+        body={},
+    )
+
+
+@pytest.fixture()
+def sample_resoruce_with_authorization() -> Resource:
+    class XResource(Resource):
+        _name = "test_res"
+
+        @add_route("/")
+        @authorization("perm-name")
+        def handler(self, restrictions) -> None:
+            assert restrictions == {"allow": "*", "deny": None}
+            return Response("x")
+
+        @add_route("/garbage")
+        @authorization()
+        def garbage(self, restrictions) -> None:  # pylint: disable=unused-argument
+            return Response("x")
+
+    return XResource

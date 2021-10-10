@@ -4,8 +4,8 @@ from unittest.mock import patch, MagicMock, call
 
 import pytest
 
-from lbz.authz.authorizer import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
-from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
+from lbz.authz.authorizer import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW, EXPIRATION_KEY
+from lbz.exceptions import PermissionDenied, SecurityError, Unauthorized
 from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
 
 
@@ -74,8 +74,14 @@ class TestAuthorizerWithMockedJWT:
             authz._check_deny()  # pylint: disable=protected-access
         assert authz.outcome == DENY
 
-    def test__check_access__outcome_deny_bcs_deny_all(self) -> None:
-        authz = self._make_mocked_authorizer({"allow": {}, "deny": {ALL: ALL}})
+    def test__check_access__outcome_deny_bcs_deny_all(self, full_access_authz_payload) -> None:
+        authz = self._make_mocked_authorizer(
+            {
+                **full_access_authz_payload,
+                "allow": {},
+                "deny": {ALL: ALL},
+            }
+        )
         with pytest.raises(PermissionDenied):
             authz.check_access()
 
@@ -167,7 +173,8 @@ class TestAuthorizerWithMockedJWT:
         authz = self._make_mocked_authorizer(full_access_authz_payload)
         authz._set_policy(  # pylint: disable=protected-access
             "",
-            {
+            policy_override={
+                **full_access_authz_payload,
                 "allow": "Lambda",
                 "deny": "Lambda",
             },
@@ -201,7 +208,7 @@ class TestAuthorizerWithMockedJWT:
 
     def test_wrong_iss(self, full_access_authz_payload) -> None:
         with pytest.raises(PermissionDenied):
-            self._make_mocked_authorizer({**full_access_authz_payload, "iss": "test2"})
+            self._make_mocked_authorizer({**full_access_authz_payload, "iss": "test2x"})
 
     def test_validate_one(self, full_access_authz_payload) -> None:
         authorizer = self._make_mocked_authorizer(
@@ -214,13 +221,19 @@ class TestAuthorizerWithMockedJWT:
         assert authorizer.outcome == ALLOW
         assert authorizer.restrictions == {"allow": "*", "deny": None}
 
-    def test_validate_one_deprecation(self) -> None:
-        with pytest.warns(DeprecationWarning):
+    def test_validate_one_missing_iss_exceptio(self) -> None:
+        with pytest.raises(SecurityError, match=f"'{EXPIRATION_KEY}'"):
             self._make_mocked_authorizer({"allow": "*", "deny": {}})
-        with pytest.warns(SecurityRiskWarning):
-            authorizer = self._make_mocked_authorizer({"allow": "*", "deny": {}})
-        authorizer.check_access()
-        assert authorizer.outcome == ALLOW
+
+    def test_validate_one_missing_exp_exceptio(self) -> None:
+        with pytest.raises(SecurityError, match="'iss'"):
+            self._make_mocked_authorizer(
+                {
+                    "allow": "*",
+                    "deny": {},
+                    "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
+                }
+            )
 
     def test_validate_one_scope(self, full_access_authz_payload) -> None:
         authorizer = self._make_mocked_authorizer(

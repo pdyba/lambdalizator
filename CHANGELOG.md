@@ -174,7 +174,9 @@ Released 2021-09-24
 - Packaging Type Information \(PEP 561\)
 
 
-### Version 0.4.3
+### Version 0.5.0
 Released 2021-10-09
 
 - Adds Authorization Inheritance from guest_permissions
+- Makes iss and EXPIRATION_KEY fields mandatory when authorizing.
+- Adds Debug Mode

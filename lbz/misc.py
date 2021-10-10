@@ -131,3 +131,7 @@ def deep_update(dict_to_update: dict, update_data: dict) -> None:
                 deep_update(dict_to_update[key], value)
                 continue
         dict_to_update[key] = copy.deepcopy(value)
+
+
+def is_in_debug_mode() -> bool:
+    return environ.get("LBZ_DEBUG_MODE") == "True"

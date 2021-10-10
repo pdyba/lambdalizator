@@ -1,17 +1,16 @@
-import warnings
 from os import environ
 from typing import Union, Dict
 
 from jose import jwt
 
-from lbz.exceptions import PermissionDenied, SecurityRiskWarning
+from lbz.exceptions import PermissionDenied, SecurityError
 from lbz.jwt_utils import decode_jwt
 from lbz.misc import get_logger, deep_update
 
 logger = get_logger(__name__)
 
 EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
-ALLOWED_ISS = environ.get("ALLOWED_ISS")
+ALLOWED_ISS = environ.get("ALLOWED_ISS", "")
 
 RESTRICTED = ["*", "self"]
 ALL = "*"
@@ -65,20 +64,11 @@ class Authorizer:
             raise PermissionDenied("Invalid policy in the authorization token") from error
 
         if EXPIRATION_KEY not in policy:
-            warnings.warn(
-                f"The auth token doesn't have the '{EXPIRATION_KEY}' field - it will be mandatory"
-                f"in the next version of Lambdalizator",
-                DeprecationWarning,
-            )
-
-        issuer = policy.get("iss")
-        if not issuer:
-            warnings.warn(
-                "The auth token doesn't have the 'iss' field - consider adding it to increase"
-                "the security of your application",
-                SecurityRiskWarning,
-            )
-        elif issuer != ALLOWED_ISS:
+            raise SecurityError(f"The auth token doesn't have the '{EXPIRATION_KEY}' field.")
+        if "iss" not in policy:
+            raise SecurityError("The auth token doesn't have the 'iss' field.")
+        issuer = policy["iss"]
+        if not issuer or issuer not in ALLOWED_ISS:
             raise PermissionDenied(f"{issuer} is not an allowed token issuer")
 
     def _raise_permission_denied(self) -> None:
