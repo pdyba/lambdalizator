@@ -60,6 +60,7 @@ def decode_jwt(auth_jwt_token: str) -> dict:
             return decoded_jwt
         except JWTClaimsError as error:
             if idx == len(ALLOWED_AUDIENCES) - 1:
+                logger.warning(error.args[0])
                 raise Unauthorized() from error
         except ExpiredSignatureError as error:
             raise Unauthorized("Your token has expired. Please refresh it.") from error
