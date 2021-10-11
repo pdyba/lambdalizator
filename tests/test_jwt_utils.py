@@ -34,7 +34,7 @@ class TestGetMatchingJWK:
 class TestDecodeJWT:
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
     def test_missing_public_keys(self, get_matching_jwk_mock: MagicMock) -> None:
-        with pytest.raises(Unauthorized, match=r"\[401\] Not enough segments"):
+        with pytest.raises(Unauthorized):
             decode_jwt("x")
         get_matching_jwk_mock.assert_called_once_with("x")
 
@@ -81,7 +81,7 @@ class TestDecodeJWTAudiencesMissMatch:
         exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
         token_payload = {"exp": exp, "iat": iat, "iss": "test-issuer", "aud": "test"}
         jwt_token = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
-        with pytest.raises(Unauthorized, match="Invalid audience"):
+        with pytest.raises(Unauthorized):
             decode_jwt(jwt_token)
 
 

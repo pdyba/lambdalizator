@@ -41,7 +41,8 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
         )
         raise Unauthorized
     except (JWTError, KeyError) as error:
-        raise Unauthorized(error.args[0]) from error
+        logger.warning(error.args[0])
+        raise Unauthorized from error
 
 
 def decode_jwt(auth_jwt_token: str) -> dict:
@@ -59,11 +60,11 @@ def decode_jwt(auth_jwt_token: str) -> dict:
             return decoded_jwt
         except JWTClaimsError as error:
             if idx == len(ALLOWED_AUDIENCES) - 1:
-                raise Unauthorized(error.args[0]) from error
+                raise Unauthorized() from error
         except ExpiredSignatureError as error:
             raise Unauthorized("Your token has expired. Please refresh it.") from error
         except JWTError as error:
-            raise Unauthorized(error.args[0]) from error
+            raise Unauthorized() from error
         except Exception as ex:
             msg = f"An error occurred during decoding the token.\nToken body:\n{auth_jwt_token}"
             raise RuntimeError(msg) from ex
