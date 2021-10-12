@@ -29,7 +29,9 @@ class TestGetMatchingJWK:
 
 class TestDecodeJWT:
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_missing_public_keys(self, get_matching_jwk_mock: MagicMock, caplog) -> None:
+    def test_missing_public_keys(
+        self, get_matching_jwk_mock: MagicMock, caplog: pytest.LogCaptureFixture
+    ) -> None:
         with pytest.raises(Unauthorized):
             decode_jwt("x")
         get_matching_jwk_mock.assert_called_once_with("x")
@@ -65,7 +67,10 @@ class TestDecodeJWT:
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
     @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [])
     def test_empty_allowed_audiences(
-        self, get_matching_jwk_mock: MagicMock, decode_mock: MagicMock, caplog
+        self,
+        get_matching_jwk_mock: MagicMock,
+        decode_mock: MagicMock,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
         with pytest.raises(Unauthorized):
             decode_jwt("x")
@@ -73,7 +78,7 @@ class TestDecodeJWT:
         decode_mock.assert_not_called()
         assert "Failed decoding JWT for unknown reason" in caplog.text
 
-    def test_missing_correct_audiences(self, caplog) -> None:
+    def test_missing_correct_audiences(self, caplog: pytest.LogCaptureFixture) -> None:
         iat = int(datetime.utcnow().timestamp())
         exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
         token_payload = {"exp": exp, "iat": iat, "iss": "test-issuer", "aud": "test"}

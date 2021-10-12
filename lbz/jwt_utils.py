@@ -63,16 +63,12 @@ def decode_jwt(auth_jwt_token: str) -> dict:
             return decoded_jwt
         except JWTClaimsError as error:
             if idx == len(ALLOWED_AUDIENCES):
-                logger.warning(
-                    "Failed decoding JWT with any of JWK - details: %s", error.args[0]
-                )
+                logger.warning("Failed decoding JWT with any of JWK - details: %s", error.args[0])
                 raise Unauthorized() from error
         except ExpiredSignatureError as error:
             raise Unauthorized("Your token has expired. Please refresh it.") from error
         except JWTError as error:
-            logger.warning(
-                "Failed decoding JWT with following details: %s", error.args[0]
-            )
+            logger.warning("Failed decoding JWT with following details: %s", error.args[0])
             raise Unauthorized() from error
         except Exception as ex:
             msg = f"An error occurred during decoding the token.\nToken body:\n{auth_jwt_token}"
