@@ -78,7 +78,7 @@ class TestAuthorizerWithMockedJWT:
         authz = self._make_mocked_authorizer(
             {
                 **full_access_authz_payload,
-                "allow": {},
+                "allow": {},  # this is to overwrite allow but keep iss/aud etc.
                 "deny": {ALL: ALL},
             }
         )
@@ -173,7 +173,7 @@ class TestAuthorizerWithMockedJWT:
         authz = self._make_mocked_authorizer(full_access_authz_payload)
         authz._set_policy(  # pylint: disable=protected-access
             "",
-            {
+            base_permission_policy={
                 **full_access_authz_payload,
                 "allow": "Lambda",
                 "deny": "Lambda",
@@ -208,7 +208,7 @@ class TestAuthorizerWithMockedJWT:
 
     def test_wrong_iss(self, full_access_authz_payload) -> None:
         with pytest.raises(PermissionDenied):
-            self._make_mocked_authorizer({**full_access_authz_payload, "iss": "test2x"})
+            self._make_mocked_authorizer({**full_access_authz_payload, "iss": "test2"})
 
     def test_validate_one(self, full_access_authz_payload) -> None:
         authorizer = self._make_mocked_authorizer(

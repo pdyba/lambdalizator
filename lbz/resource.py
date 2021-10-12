@@ -75,12 +75,10 @@ class Resource:
             response: Response = endpoint(**self.path_params)
             return response
         except LambdaFWException as err:
-            if is_in_debug_mode():
-                logger.exception(err)
-            elif 500 <= err.status_code < 600:
+            if 500 <= err.status_code < 600:
                 logger.exception(err)
             else:
-                logger.warning(err)
+                logger.warning(err, exc_info=is_in_debug_mode())
             return err.get_response(self.request.context["requestId"])
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)

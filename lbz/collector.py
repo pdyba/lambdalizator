@@ -29,6 +29,8 @@ class AuthzCollector(metaclass=Singleton):
 
     def clean(self) -> None:
         self.possible_permissions = {}
+        self.resource_name = ""
+        self.guest_permissions = {}
 
 
 authz_collector = AuthzCollector()

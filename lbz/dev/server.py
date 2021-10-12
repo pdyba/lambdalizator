@@ -14,8 +14,8 @@ from typing import Tuple, Union, Type
 from lbz.dev.misc import Event
 from lbz.resource import Resource
 
-if not environ.get("LBZ_DEBUG_MODE"):
-    environ["LBZ_DEBUG_MODE"] = "True"
+if environ.get("LBZ_DEBUG_MODE") is None:
+    environ["LBZ_DEBUG_MODE"] = "true"
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):

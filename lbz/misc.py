@@ -121,10 +121,7 @@ def error_catcher(function: Callable, default_return: Any = False) -> Callable:
 
 
 def deep_update(dict_to_update: dict, update_data: dict) -> None:
-    """Recursively updates keys in the first dict with the data in the second dict.
-
-    Main purpose - handling PATCH requests in APIs
-    """
+    """Recursively updates keys in the first dict with the data in the second dict."""
     for key, value in update_data.items():
         if key in dict_to_update:
             if isinstance(value, dict):

@@ -8,7 +8,7 @@ from lbz.response import Response
 
 
 class SecurityError(Exception):
-    """Request was did not match security requirements expected by server."""
+    """Request did not match security requirements expected by server."""
 
 
 class LambdaFWException(Exception):

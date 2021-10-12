@@ -5,6 +5,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from lbz.authz.decorators import authorization
+from lbz.dev.misc import Event
 from lbz.resource import Resource
 
 
@@ -21,10 +22,10 @@ class TestAuthorizationDecorator:
         mocked_authzc_ollector.add_authz.assert_called_once()
 
     def test_root_permissions_success(
-        self, sample_resoruce_with_authorization, sample_event_with_full_access_auth_header
+        self, sample_resoruce_with_authorization, full_access_auth_header
     ) -> None:
         res_instance = sample_resoruce_with_authorization(
-            sample_event_with_full_access_auth_header
+            Event("/", "GET", headers={"authorization": full_access_auth_header})
         )
         assert res_instance().status_code == HTTPStatus.OK
 

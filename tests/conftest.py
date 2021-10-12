@@ -1,7 +1,7 @@
 # coding=utf-8
 import os
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Type
 from uuid import uuid4
 
 import pytest
@@ -141,20 +141,6 @@ def sample_request_with_user(user) -> Request:  # pylint: disable=redefined-oute
 
 
 @pytest.fixture()
-def sample_event_with_full_access_auth_header(
-    full_access_auth_header,  # pylint: disable=redefined-outer-name
-) -> Event:
-    return Event(
-        resource_path="/",
-        method="GET",
-        headers={"authorization": full_access_auth_header},
-        path_params={},
-        query_params={},
-        body={},
-    )
-
-
-@pytest.fixture()
 def sample_event_with_limited_access_auth_header(
     limited_access_auth_header, request: SubRequest  # pylint: disable=redefined-outer-name
 ) -> Event:
@@ -170,19 +156,21 @@ def sample_event_with_limited_access_auth_header(
 
 
 @pytest.fixture()
-def sample_resoruce_with_authorization() -> Resource:
+def sample_resoruce_with_authorization() -> Type[Resource]:
+    """Be crefull when doing any changes in this fixture"""
+
     class XResource(Resource):
         _name = "test_res"
 
         @add_route("/")
         @authorization("perm-name")
-        def handler(self, restrictions) -> None:
+        def handler(self, restrictions) -> Response:
             assert restrictions == {"allow": "*", "deny": None}
             return Response("x")
 
         @add_route("/garbage")
         @authorization()
-        def garbage(self, restrictions) -> None:  # pylint: disable=unused-argument
+        def garbage(self, restrictions) -> Response:  # pylint: disable=unused-argument
             return Response("x")
 
     return XResource

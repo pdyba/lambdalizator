@@ -47,11 +47,9 @@ class Authorizer:
             f"permission_name='{self.permission}')"
         )
 
-    def _set_policy(
-        self, auth_jwt: str = "", base_permission_policy: dict = None
-    ) -> None:
-        policy = base_permission_policy if base_permission_policy else {}
-        if auth_jwt:
+    def _set_policy(self, auth_jwt: str = None, base_permission_policy: dict = None) -> None:
+        policy = base_permission_policy or {}
+        if auth_jwt is not None and auth_jwt:
             deep_update(policy, decode_jwt(auth_jwt))
         self.refs = policy.get("refs", {})
         try:

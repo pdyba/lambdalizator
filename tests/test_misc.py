@@ -1,7 +1,7 @@
 # coding=utf-8
 from collections.abc import MutableMapping
 
-from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger
+from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger, deep_update
 
 
 def test_nested_dict():
@@ -77,3 +77,66 @@ def test_error_catcher_class(caplog):
     assert "xxxxx" in caplog.text
     assert "Traceback" in caplog.text
     assert "ZeroDivisionError" in caplog.text
+
+
+def test__deep_update__does_nothing_if_empty_data_given():
+    dict_to_update = {"test1": "data1"}
+    update_data: dict = {}
+
+    deep_update(dict_to_update, update_data)
+
+    assert dict_to_update == {"test1": "data1"}
+
+
+def test__deep_update__does_recursive_updates_based_on_given_data():
+    dict_to_update = {
+        "test1": "data1",
+        "array": ["data2", "data3"],
+        "dict": {
+            "test4": "data4",
+            "test5": "data5",
+            "nested_dict": {
+                "test6": "data6",
+                "nested_array": ["data7"],
+            },
+        },
+    }
+    update_data = {
+        "array": ["overwritten"],
+        "dict": {
+            "test5": "overwritten",
+            "nested_dict": {
+                "nested_array": [],
+            },
+            "test7": "added",
+        },
+        "test8": "added",
+    }
+
+    deep_update(dict_to_update, update_data)
+
+    assert dict_to_update == {
+        "test1": "data1",
+        "array": ["overwritten"],
+        "dict": {
+            "test4": "data4",
+            "test5": "overwritten",
+            "nested_dict": {
+                "test6": "data6",
+                "nested_array": [],
+            },
+            "test7": "added",
+        },
+        "test8": "added",
+    }
+
+
+def test__deep_update__creates_copy_of_updated_data():
+    dict_to_update: dict = {}
+    update_data = {"array": [], "dict": {"nested_dict": {}}}
+
+    deep_update(dict_to_update, update_data)
+    update_data["array"].append("post_update_data")
+    update_data["dict"]["nested_dict"]["new_key"] = "post_update_data"
+
+    assert dict_to_update == {"array": [], "dict": {"nested_dict": {}}}
