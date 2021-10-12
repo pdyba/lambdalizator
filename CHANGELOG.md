@@ -178,5 +178,5 @@ Released 2021-09-24
 ### Version 0.4.2
 Released 2021-10-09
 
-Extends JWT validation cases.
-Adds JWT utils tests.
+- Extends JWT validation cases.
+- Adds JWT utils tests.

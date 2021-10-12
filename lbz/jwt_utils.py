@@ -40,8 +40,11 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
             "The key with id=%s was not found in the environment variable.", kid_from_jwt_header
         )
         raise Unauthorized
-    except (JWTError, KeyError) as error:
-        logger.warning(error.args[0])
+    except JWTError as error:
+        logger.warning("Error finding matching JWK %s", error.args[0])
+        raise Unauthorized from error
+    except KeyError as error:
+        logger.warning("The key %s was not found in the JWK.", error.args[0])
         raise Unauthorized from error
 
 
@@ -54,20 +57,25 @@ def decode_jwt(auth_jwt_token: str) -> dict:
         raise RuntimeError(msg)
 
     jwk = get_matching_jwk(auth_jwt_token)
-    for idx, aud in enumerate(ALLOWED_AUDIENCES or []):
+    for idx, aud in enumerate(ALLOWED_AUDIENCES or [], start=1):
         try:
             decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
             return decoded_jwt
         except JWTClaimsError as error:
-            if idx == len(ALLOWED_AUDIENCES) - 1:
-                logger.warning(error.args[0])
+            if idx == len(ALLOWED_AUDIENCES):
+                logger.warning(
+                    "Failed decoding JWT with any of JWK - details: %s", error.args[0]
+                )
                 raise Unauthorized() from error
         except ExpiredSignatureError as error:
             raise Unauthorized("Your token has expired. Please refresh it.") from error
         except JWTError as error:
+            logger.warning(
+                "Failed decoding JWT with following details: %s", error.args[0]
+            )
             raise Unauthorized() from error
         except Exception as ex:
             msg = f"An error occurred during decoding the token.\nToken body:\n{auth_jwt_token}"
             raise RuntimeError(msg) from ex
-
+    logger.warning("Failed decoding JWT for unknown reason.")
     raise Unauthorized

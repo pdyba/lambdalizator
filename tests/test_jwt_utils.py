@@ -9,10 +9,6 @@ from lbz.exceptions import Unauthorized
 from lbz.jwt_utils import get_matching_jwk, decode_jwt
 from tests import SAMPLE_PUBLIC_KEY, SAMPLE_PRIVATE_KEY
 
-BAD_PUBLIC_KEY = {
-    "kid": "wrong-key",
-}
-
 
 class TestGetMatchingJWK:
     @patch.object(jwt, "get_unverified_header", return_value=SAMPLE_PUBLIC_KEY)
@@ -20,23 +16,24 @@ class TestGetMatchingJWK:
         assert get_matching_jwk("x") == SAMPLE_PUBLIC_KEY
         get_unverified_header_mock.assert_called_once()
 
-    @patch.object(jwt, "get_unverified_header", return_value=BAD_PUBLIC_KEY)
+    @patch.object(jwt, "get_unverified_header", return_value={"kid": "wrong-key"})
     def test_get_matching_key_fail(self, _get_unverified_header_mock: MagicMock) -> None:
         with pytest.raises(Unauthorized):
             get_matching_jwk("x")
 
-    @patch.object(jwt, "get_unverified_header", return_value={})
-    def test_get_matching_missing_key(self, _get_unverified_header_mock: MagicMock) -> None:
+    @patch.object(jwt, "get_unverified_header", MagicMock(return_value={}))
+    def test_get_matching_missing_key(self) -> None:
         with pytest.raises(Unauthorized):
             get_matching_jwk("x")
 
 
 class TestDecodeJWT:
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_missing_public_keys(self, get_matching_jwk_mock: MagicMock) -> None:
+    def test_missing_public_keys(self, get_matching_jwk_mock: MagicMock, caplog) -> None:
         with pytest.raises(Unauthorized):
             decode_jwt("x")
         get_matching_jwk_mock.assert_called_once_with("x")
+        assert "Failed decoding JWT with following details" in caplog.text
 
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
     def test_invalid_type(self, get_matching_jwk_mock: MagicMock) -> None:
@@ -45,7 +42,9 @@ class TestDecodeJWT:
             decode_jwt({"a"})
         get_matching_jwk_mock.assert_called_once_with({"a"})
 
-    def test_proper_jwt(self, full_access_authz_payload, full_access_auth_header) -> None:
+    def test_proper_jwt(
+        self, full_access_authz_payload: dict, full_access_auth_header: str
+    ) -> None:
         decoded_jwt_data = decode_jwt(full_access_auth_header)
         assert decoded_jwt_data == full_access_authz_payload
 
@@ -56,37 +55,34 @@ class TestDecodeJWT:
             "exp": exp,
             "iat": iat,
             "iss": "test-issuer",
+            "aud": "test-audience",
         }
         jwt_token = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
         with pytest.raises(Unauthorized, match="Your token has expired. Please refresh it."):
             decode_jwt(jwt_token)
 
-
-@patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [])
-class TestDecodeJWTMissingAudiences:
     @patch.object(jwt, "decode")
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_missing_audiences(
-        self, get_matching_jwk_mock: MagicMock, decode_mock: MagicMock
+    @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [])
+    def test_empty_allowed_audiences(
+        self, get_matching_jwk_mock: MagicMock, decode_mock: MagicMock, caplog
     ) -> None:
         with pytest.raises(Unauthorized):
             decode_jwt("x")
         get_matching_jwk_mock.assert_called_once_with("x")
         decode_mock.assert_not_called()
+        assert "Failed decoding JWT for unknown reason" in caplog.text
 
-
-class TestDecodeJWTAudiencesMissMatch:
-    def test_missing_audiences(self) -> None:
+    def test_missing_correct_audiences(self, caplog) -> None:
         iat = int(datetime.utcnow().timestamp())
         exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
         token_payload = {"exp": exp, "iat": iat, "iss": "test-issuer", "aud": "test"}
         jwt_token = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
         with pytest.raises(Unauthorized):
             decode_jwt(jwt_token)
+        assert "Failed decoding JWT with any of JWK - details" in caplog.text
 
-
-@patch("lbz.jwt_utils.PUBLIC_KEYS", [])
-class TestDecodeJWTMissingKEy:
-    def test_missing_public_keys(self) -> None:
+    @patch("lbz.jwt_utils.PUBLIC_KEYS", [])
+    def test_empty_public_keys(self) -> None:
         with pytest.raises(RuntimeError):
             decode_jwt("x")
