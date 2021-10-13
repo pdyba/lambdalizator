@@ -29,7 +29,7 @@ class TestGetMatchingJWK:
 
 class TestDecodeJWT:
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_missing_public_keys(
+    def test_did_not_find_matching_jwk(
         self, get_matching_jwk_mock: MagicMock, caplog: pytest.LogCaptureFixture
     ) -> None:
         with pytest.raises(Unauthorized):
