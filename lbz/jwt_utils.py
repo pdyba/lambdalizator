@@ -47,7 +47,7 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
         logger.warning("Error finding matching JWK %r", error)
         raise Unauthorized from error
     except KeyError as error:
-        logger.warning("The key %r was not found in the JWK.", error)
+        logger.warning("The key %s was not found in the JWK.", error.args[0])
         raise Unauthorized from error
 
 
