@@ -14,7 +14,7 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
     Raises if not.
     """
     base_permission_policy = resource.get_guest_authorization()
-    if not (authorization_header := resource.request.headers.get("Authorization", "")):
+    if (authorization_header := resource.request.headers.get("Authorization")) is None:
         if not base_permission_policy:
             raise Unauthorized("Authorization header missing or empty")
 

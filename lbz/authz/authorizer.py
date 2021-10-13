@@ -1,16 +1,13 @@
-from os import environ
-from typing import Union, Dict
+from typing import Union, Dict, Optional
 
 from jose import jwt
 
-from lbz.exceptions import PermissionDenied, SecurityError
+from lbz.exceptions import PermissionDenied
 from lbz.jwt_utils import decode_jwt
 from lbz.misc import get_logger, deep_update
 
 logger = get_logger(__name__)
 
-EXPIRATION_KEY = environ.get("EXPIRATION_KEY", "exp")
-ALLOWED_ISS = environ.get("ALLOWED_ISS", "")
 
 RESTRICTED = ["*", "self"]
 ALL = "*"
@@ -26,7 +23,7 @@ class Authorizer:
 
     def __init__(
         self,
-        auth_jwt: str,
+        auth_jwt: Optional[str],
         resource_name: str,
         permission_name: str,
         base_permission_policy: dict = None,
@@ -49,7 +46,7 @@ class Authorizer:
 
     def _set_policy(self, auth_jwt: str = None, base_permission_policy: dict = None) -> None:
         policy = base_permission_policy or {}
-        if auth_jwt is not None and auth_jwt:
+        if auth_jwt is not None:
             deep_update(policy, decode_jwt(auth_jwt))
         self.refs = policy.get("refs", {})
         try:
@@ -57,14 +54,6 @@ class Authorizer:
             self.deny = policy["deny"]
         except KeyError as error:
             raise PermissionDenied("Invalid policy in the authorization token") from error
-
-        if EXPIRATION_KEY not in policy:
-            raise SecurityError(f"The auth token doesn't have the '{EXPIRATION_KEY}' field.")
-        if "iss" not in policy:
-            raise SecurityError("The auth token doesn't have the 'iss' field.")
-        issuer = policy["iss"]
-        if not issuer or issuer not in ALLOWED_ISS:
-            raise PermissionDenied(f"{issuer} is not an allowed token issuer")
 
     def _raise_permission_denied(self) -> None:
         logger.debug("You don't have permission to %s on %s", self.permission, self.resource)

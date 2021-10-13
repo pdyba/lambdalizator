@@ -50,3 +50,21 @@ class TestAuthzCollector:
                 "guest_permissions": guest_permissions,
             }
         }
+
+    def test_clean(self) -> None:
+        guest_permissions = {"allow": "*"}
+        self.azc.set_guest_permissions(guest_permissions)
+        test_resource = "test_resource"
+        self.azc.set_resource(test_resource)
+        some_permission = "some_permission"
+        self.azc.add_authz(some_permission)
+
+        assert self.azc.possible_permissions == {some_permission: None}
+        assert self.azc.resource_name == test_resource
+        assert self.azc.guest_permissions == guest_permissions
+
+        self.azc.clean()
+
+        assert self.azc.possible_permissions == {}
+        assert self.azc.resource_name == ""
+        assert self.azc.guest_permissions == {}

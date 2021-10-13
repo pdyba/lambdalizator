@@ -1,5 +1,7 @@
 # coding=utf-8
+import os
 import time
+from datetime import datetime, timedelta
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -7,38 +9,39 @@ import pytest
 
 from lbz.authentication import User
 from lbz.exceptions import Unauthorized
+from lbz.jwt_utils import ALLOWED_ISS
 from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token
 
 allowed_audiences = [str(uuid4()), str(uuid4())]
 
 
-@patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY])
-@patch("lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences)
 class TestAuthentication:
     def setup_class(self):
         # pylint: disable=attribute-defined-outside-init
-        with patch("lbz.jwt_utils.PUBLIC_KEYS", [SAMPLE_PUBLIC_KEY]), patch(
-            "lbz.jwt_utils.ALLOWED_AUDIENCES", allowed_audiences
-        ):
-            self.cognito_user = {
-                "cognito:username": str(uuid4()),
-                "email": f"{str(uuid4())}@{str(uuid4())}.com",
-                "custom:id": str(uuid4()),
-                "custom:1": str(uuid4()),
-                "custom:2": str(uuid4()),
-                "aud": allowed_audiences[0],  # moved due pylint and minimising scope of PR
-                "custom:3": str(uuid4()),
-                "custom:4": str(uuid4()),
-                "custom:5": str(uuid4()),
-            }
-            self.id_token = encode_token(self.cognito_user)
-            self.pool_id = str(uuid4)
-            self.sample_user = User(self.id_token)
+        self.cognito_user = {
+            "cognito:username": str(uuid4()),
+            "email": f"{str(uuid4())}@{str(uuid4())}.com",
+            "custom:id": str(uuid4()),
+            "custom:1": str(uuid4()),
+            "custom:2": str(uuid4()),
+            "aud": os.environ["ALLOWED_AUDIENCES"].split(",")[
+                0
+            ],  # moved due pylint and minimising scope of PR
+            "iss": ALLOWED_ISS,
+            "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
+            "iat": int(datetime.utcnow().timestamp()),
+            "custom:3": str(uuid4()),
+            "custom:4": str(uuid4()),
+            "custom:5": str(uuid4()),
+        }
+        self.id_token = encode_token(self.cognito_user)
+        self.pool_id = str(uuid4)
+        self.sample_user = User(self.id_token)
 
-    def test__repr__username(self):
+    def test__repr__username(self, jwt_partial_payload):
         username = str(uuid4())
-        sample_user = User(encode_token({"cognito:username": username}))
+        sample_user = User(encode_token({"cognito:username": username, **jwt_partial_payload}))
         assert sample_user.__repr__() == f"User username={username}"
 
     def test_decoding_user(self):
@@ -61,23 +64,21 @@ class TestAuthentication:
 
     def test_loading_user_parses_user_attributes(self):
         parsed = self.cognito_user.copy()
-        del parsed["aud"]
+        for key in ["aud", "iss", "exp", "iat"]:
+            parsed.pop(key, None)
         for key, expected_value in parsed.items():
             value = self.sample_user.__getattribute__(
                 key.replace("cognito:", "").replace("custom:", "")
             )
             assert value == expected_value
 
-    def test_loading_user_does_not_parse_standard_claims(self):
+    def test_loading_user_does_not_parse_standard_claims(self, jwt_partial_payload):
         current_ts = int(time.time())
         standard_claims = {
+            **jwt_partial_payload,
             "sub": str(uuid4()),
-            "aud": allowed_audiences[0],
             "token_use": "id",
             "auth_time": current_ts,
-            "iss": str(uuid4()),
-            "exp": current_ts + 1000,
-            "iat": current_ts,
         }
 
         id_token = encode_token(
@@ -99,4 +100,4 @@ class TestAuthentication:
     def test_nth_cognito_client_validated_as_audience(self):
         test_allowed_audiences = [str(uuid4()) for _ in range(10)]
         with patch("lbz.jwt_utils.ALLOWED_AUDIENCES", test_allowed_audiences):
-            assert User(encode_token({"aud": test_allowed_audiences[9]}))
+            assert User(encode_token({**self.cognito_user, "aud": test_allowed_audiences[9]}))

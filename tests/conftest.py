@@ -5,7 +5,6 @@ from typing import List, Type
 from uuid import uuid4
 
 import pytest
-from _pytest.fixtures import SubRequest
 from multidict import CIMultiDict
 
 from lbz.authentication import User
@@ -61,13 +60,21 @@ def sample_event() -> Event:
 
 
 @pytest.fixture(scope="session")
-def full_access_authz_payload() -> dict:
+def jwt_partial_payload() -> dict:
     return {
-        "allow": {"*": "*"},
-        "deny": {},
         "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
         "iat": int(datetime.utcnow().timestamp()),
         "iss": "test-issuer",
+        "aud": os.environ["ALLOWED_AUDIENCES"].split(",")[0],
+    }
+
+
+@pytest.fixture(scope="session")
+def full_access_authz_payload(jwt_partial_payload) -> dict:  # pylint: disable=redefined-outer-name
+    return {
+        "allow": {"*": "*"},
+        "deny": {},
+        **jwt_partial_payload,
     }
 
 
@@ -101,7 +108,7 @@ def username() -> str:
 
 
 @pytest.fixture(scope="session")
-def user_cognito(username) -> dict:  # pylint: disable=redefined-outer-name
+def user_cognito(username, jwt_partial_payload) -> dict:  # pylint: disable=redefined-outer-name
     return {
         "cognito:username": username,
         "custom:id": str(uuid4()),
@@ -111,7 +118,7 @@ def user_cognito(username) -> dict:  # pylint: disable=redefined-outer-name
         "custom:3": str(uuid4()),
         "custom:4": str(uuid4()),
         "custom:5": str(uuid4()),
-        "aud": os.environ["ALLOWED_AUDIENCES"].split(",")[0],
+        **jwt_partial_payload,
     }
 
 
@@ -140,23 +147,8 @@ def sample_request_with_user(user) -> Request:  # pylint: disable=redefined-oute
 
 
 @pytest.fixture()
-def sample_event_with_limited_access_auth_header(
-    limited_access_auth_header, request: SubRequest  # pylint: disable=redefined-outer-name
-) -> Event:
-    # https://docs.pytest.org/en/latest/example/parametrize.html#apply-indirect-on-particular-arguments
-    return Event(
-        resource_path=request.param.get("path", "/"),
-        method="GET",
-        headers={"authorization": limited_access_auth_header},
-        path_params={},
-        query_params={},
-        body={},
-    )
-
-
-@pytest.fixture()
 def sample_resoruce_with_authorization() -> Type[Resource]:
-    """Be crefull when doing any changes in this fixture"""
+    """Be careful when doing any changes in this fixture - especially for Auth Collector"""
 
     class XResource(Resource):
         _name = "test_res"
