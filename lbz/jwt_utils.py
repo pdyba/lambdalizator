@@ -25,6 +25,9 @@ if allowed_audiences_str := os.environ.get("ALLOWED_AUDIENCES"):
 if any("kid" not in public_key for public_key in PUBLIC_KEYS):
     raise ValueError("One of the provided public keys doesn't have the 'kid' field")
 
+if not ALLOWED_AUDIENCES:
+    raise ValueError("ALLOWED_AUDIENCES where not defined")
+
 
 def get_matching_jwk(auth_jwt_token: str) -> dict:
     """
@@ -40,7 +43,11 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
             "The key with id=%s was not found in the environment variable.", kid_from_jwt_header
         )
         raise Unauthorized
-    except (JWTError, KeyError) as error:
+    except JWTError as error:
+        logger.warning("Error finding matching JWK %r", error)
+        raise Unauthorized from error
+    except KeyError as error:
+        logger.warning("The key %s was not found in the JWK.", error.args[0])
         raise Unauthorized from error
 
 
@@ -53,18 +60,21 @@ def decode_jwt(auth_jwt_token: str) -> dict:
         raise RuntimeError(msg)
 
     jwk = get_matching_jwk(auth_jwt_token)
-    for aud in ALLOWED_AUDIENCES or []:
+    for idx, aud in enumerate(ALLOWED_AUDIENCES or [], start=1):
         try:
             decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
             return decoded_jwt
-        except JWTClaimsError:
-            pass
+        except JWTClaimsError as error:
+            if idx == len(ALLOWED_AUDIENCES):
+                logger.warning("Failed decoding JWT with any of JWK - details: %r", error)
+                raise Unauthorized() from error
         except ExpiredSignatureError as error:
             raise Unauthorized("Your token has expired. Please refresh it.") from error
         except JWTError as error:
-            raise Unauthorized from error
+            logger.warning("Failed decoding JWT with following details: %r", error)
+            raise Unauthorized() from error
         except Exception as ex:
             msg = f"An error occurred during decoding the token.\nToken body:\n{auth_jwt_token}"
             raise RuntimeError(msg) from ex
-
+    logger.error("Failed decoding JWT for unknown reason.")
     raise Unauthorized

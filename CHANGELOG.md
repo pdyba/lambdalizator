@@ -172,3 +172,11 @@ Released 2021-09-21
 Released 2021-09-24
 
 - Packaging Type Information \(PEP 561\)
+
+
+
+### Version 0.4.2
+Released 2021-10-09
+
+- Extends JWT validation cases.
+- Adds JWT utils tests.
