@@ -7,6 +7,9 @@ class AuthzCollector(metaclass=Singleton):
         self.resource_name = ""
         self.guest_permissions: dict = {}
 
+    def __repr__(self) -> str:
+        return f"<AuthzCollector resource_name={self.resource_name}>"
+
     def set_resource(self, resource_name: str) -> None:
         self.resource_name = resource_name
 
@@ -23,6 +26,11 @@ class AuthzCollector(metaclass=Singleton):
                 "guest_permissions": self.guest_permissions,
             }
         }
+
+    def clean(self) -> None:
+        self.possible_permissions = {}
+        self.resource_name = ""
+        self.guest_permissions = {}
 
 
 authz_collector = AuthzCollector()

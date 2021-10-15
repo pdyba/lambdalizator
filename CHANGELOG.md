@@ -180,3 +180,13 @@ Released 2021-10-09
 
 - Extends JWT validation cases.
 - Adds JWT utils tests.
+
+
+### Version 0.5.0
+Released 2021-10-09
+
+- Adds Authorization Inheritance from guest_permissions
+- EXPIRATION_KEY is now hardcoded as exp
+- Makes iss and exp (previously EXPIRATION_KEY) fields mandatory when authorizing.
+- Adds Debug Mode
+- Moves All JWT validation to decoding function from resource

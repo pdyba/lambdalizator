@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock, call
 import pytest
 
 from lbz.authz.authorizer import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
-from lbz.exceptions import PermissionDenied, SecurityRiskWarning, Unauthorized
+from lbz.exceptions import PermissionDenied, Unauthorized
 from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
 
 
@@ -74,8 +74,14 @@ class TestAuthorizerWithMockedJWT:
             authz._check_deny()  # pylint: disable=protected-access
         assert authz.outcome == DENY
 
-    def test__check_access__outcome_deny_bcs_deny_all(self) -> None:
-        authz = self._make_mocked_authorizer({"allow": {}, "deny": {ALL: ALL}})
+    def test__check_access__outcome_deny_bcs_deny_all(self, jwt_partial_payload) -> None:
+        authz = self._make_mocked_authorizer(
+            {
+                **jwt_partial_payload,
+                "allow": {},
+                "deny": {ALL: ALL},  # this is to overwrite allow but keep iss/aud etc.
+            }
+        )
         with pytest.raises(PermissionDenied):
             authz.check_access()
 
@@ -102,45 +108,48 @@ class TestAuthorizerWithMockedJWT:
         assert authz.outcome == ALLOW
         assert authz.restrictions == {"allow": "*", "deny": None}
 
-    def test_check_allow_fail_all(self, full_access_authz_payload) -> None:
-        authz = self._make_mocked_authorizer({**full_access_authz_payload, "allow": {}})
+    def test_check_allow_fail_all(self, jwt_partial_payload) -> None:
+        authz = self._make_mocked_authorizer({**jwt_partial_payload, "allow": {}, "deny": {}})
         with pytest.raises(PermissionDenied):
             authz._check_allow_and_set_resources()  # pylint: disable=protected-access
             assert authz.outcome == ALLOW
 
-    def test_check_allow_resource(self, full_access_authz_payload) -> None:
+    def test_check_allow_resource(self, jwt_partial_payload) -> None:
         authz = self._make_mocked_authorizer(
-            {**full_access_authz_payload, "allow": {"test_resource": ALL}}
+            {**jwt_partial_payload, "allow": {"test_resource": ALL}, "deny": {}}
         )
         authz._check_allow_and_set_resources()  # pylint: disable=protected-access
         assert authz.outcome == ALLOW
 
-    def test_check_allow_one(self, full_access_authz_payload) -> None:
+    def test_check_allow_one(self, jwt_partial_payload) -> None:
         authz = self._make_mocked_authorizer(
             {
-                **full_access_authz_payload,
+                **jwt_partial_payload,
                 "allow": {"test_resource": {"permission_name": {"allow": ALL}}},
+                "deny": {},
             }
         )
         authz._check_allow_and_set_resources()  # pylint: disable=protected-access
         assert authz.outcome == ALLOW
 
-    def test_check_allow_one_scope(self, full_access_authz_payload) -> None:
+    def test_check_allow_one_scope(self, jwt_partial_payload) -> None:
         authz = self._make_mocked_authorizer(
             {
-                **full_access_authz_payload,
+                **jwt_partial_payload,
                 "allow": {"test_resource": {"permission_name": {"allow": "self"}}},
+                "deny": {},
             }
         )
         authz._check_allow_and_set_resources()  # pylint: disable=protected-access
         assert authz.outcome == ALLOW
         assert authz.allowed_resource == "self"
 
-    def test_check_allow_fail_one_scope(self, full_access_authz_payload) -> None:
+    def test_check_allow_fail_one_scope(self, jwt_partial_payload) -> None:
         authz = self._make_mocked_authorizer(
             {
-                **full_access_authz_payload,
+                **jwt_partial_payload,
                 "allow": {"test_resource": {"permission_name": {"deny": "self"}}},
+                "deny": {},
             }
         )
         authz._check_allow_and_set_resources()  # pylint: disable=protected-access
@@ -153,24 +162,26 @@ class TestAuthorizerWithMockedJWT:
         authz.denied_resource = {"city": "warszawa"}
         assert authz.restrictions == {"allow": ALL, "deny": {"city": "warszawa"}}
 
-    def test_check_deny_one_scope(self, full_access_authz_payload) -> None:
+    def test_check_deny_one_scope(self, jwt_partial_payload) -> None:
         authz = self._make_mocked_authorizer(
             {
-                **full_access_authz_payload,
+                **jwt_partial_payload,
+                "allow": {},
                 "deny": {"test_resource": {"permission_name": "self"}},
             }
         )
         authz._check_deny()  # pylint: disable=protected-access
         assert authz.denied_resource == "self"
 
-    def test__set_policy_w_scope(self, full_access_authz_payload) -> None:
+    def test__set_policy_w_scope(self, full_access_authz_payload, jwt_partial_payload) -> None:
         authz = self._make_mocked_authorizer(full_access_authz_payload)
+        permission_payload = {
+            **jwt_partial_payload,
+            "allow": "Lambda",
+            "deny": "Lambda",
+        }
         authz._set_policy(  # pylint: disable=protected-access
-            "",
-            {
-                "allow": "Lambda",
-                "deny": "Lambda",
-            },
+            base_permission_policy=permission_payload,
         )
         assert authz.allow == "Lambda"
         assert authz.deny == "Lambda"
@@ -199,69 +210,62 @@ class TestAuthorizerWithMockedJWT:
             authorizer.check_access()
         assert authorizer.outcome == DENY
 
-    def test_wrong_iss(self, full_access_authz_payload) -> None:
-        with pytest.raises(PermissionDenied):
-            self._make_mocked_authorizer({**full_access_authz_payload, "iss": "test2"})
-
-    def test_validate_one(self, full_access_authz_payload) -> None:
+    def test_validate_one(self, jwt_partial_payload) -> None:
         authorizer = self._make_mocked_authorizer(
             {
-                **full_access_authz_payload,
+                **jwt_partial_payload,
                 "allow": {"test_resource": {"permission_name": {"allow": ALL}}},
+                "deny": {},
             }
         )
         authorizer.check_access()
         assert authorizer.outcome == ALLOW
         assert authorizer.restrictions == {"allow": "*", "deny": None}
 
-    def test_validate_one_deprecation(self) -> None:
-        with pytest.warns(DeprecationWarning):
-            self._make_mocked_authorizer({"allow": "*", "deny": {}})
-        with pytest.warns(SecurityRiskWarning):
-            authorizer = self._make_mocked_authorizer({"allow": "*", "deny": {}})
-        authorizer.check_access()
-        assert authorizer.outcome == ALLOW
-
-    def test_validate_one_scope(self, full_access_authz_payload) -> None:
+    def test_validate_one_scope(self, jwt_partial_payload) -> None:
         authorizer = self._make_mocked_authorizer(
             {
-                **full_access_authz_payload,
+                **jwt_partial_payload,
                 "allow": {"test_resource": {"permission_name": {"allow": "self"}}},
+                "deny": {},
             }
         )
         authorizer.check_access()
         assert authorizer.outcome == ALLOW
         assert authorizer.restrictions == {"allow": "self", "deny": None}
 
-    def test_validate_fail_one_scope(self, full_access_authz_payload) -> None:
+    def test_validate_fail_one_scope(self, jwt_partial_payload) -> None:
         authorizer = self._make_mocked_authorizer(
             {
-                **full_access_authz_payload,
+                **jwt_partial_payload,
                 "allow": {"test_resource": {"permission_name": {"deny": "self"}}},
+                "deny": {},
             }
         )
         authorizer.check_access()
         assert authorizer.outcome == LIMITED_ALLOW
         assert authorizer.restrictions == {"allow": None, "deny": "self"}
 
-    def test_refs(self, full_access_authz_payload) -> None:
+    def test_refs(self, jwt_partial_payload) -> None:
         restrictions = {"allow": "*", "deny": "example"}
         authorizer = self._make_mocked_authorizer(
             {
-                **full_access_authz_payload,
+                **jwt_partial_payload,
                 "refs": {"api-access": restrictions},
                 "allow": {"test_resource": {"permission_name": {"ref": "api-access"}}},
+                "deny": {},
             }
         )
         authorizer.check_access()
         assert authorizer.outcome == LIMITED_ALLOW
         assert authorizer.restrictions == restrictions
 
-    def test_missing_ref(self, full_access_authz_payload) -> None:
+    def test_missing_ref(self, jwt_partial_payload) -> None:
         authorizer = self._make_mocked_authorizer(
             {
-                **full_access_authz_payload,
+                **jwt_partial_payload,
                 "allow": {"test_resource": {"permission_name": {"ref": "api-access"}}},
+                "deny": {},
             }
         )
         with pytest.raises(PermissionDenied):

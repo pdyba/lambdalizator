@@ -9,13 +9,14 @@ from typing import List
 from jose import jwt
 from jose.exceptions import JWTError, JWTClaimsError, ExpiredSignatureError
 
-from lbz.exceptions import Unauthorized
+from lbz.exceptions import Unauthorized, SecurityError
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
 
 PUBLIC_KEYS: List[dict] = []
 ALLOWED_AUDIENCES = []
+ALLOWED_ISS = os.environ.get("ALLOWED_ISS", "")
 
 if allowed_pubkeys_str := os.environ.get("ALLOWED_PUBLIC_KEYS"):
     PUBLIC_KEYS.extend(json.loads(allowed_pubkeys_str)["keys"])
@@ -23,10 +24,7 @@ if allowed_audiences_str := os.environ.get("ALLOWED_AUDIENCES"):
     ALLOWED_AUDIENCES.extend(allowed_audiences_str.split(","))
 
 if any("kid" not in public_key for public_key in PUBLIC_KEYS):
-    raise ValueError("One of the provided public keys doesn't have the 'kid' field")
-
-if not ALLOWED_AUDIENCES:
-    raise ValueError("ALLOWED_AUDIENCES where not defined")
+    raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
 
 
 def get_matching_jwk(auth_jwt_token: str) -> dict:
@@ -51,6 +49,16 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
         raise Unauthorized from error
 
 
+def validate_jwt_properties(decoded_jwt: dict) -> None:
+    if "exp" not in decoded_jwt:
+        raise SecurityError("The auth token doesn't have the 'exp' field.")
+    if "iss" not in decoded_jwt:
+        raise SecurityError("The auth token doesn't have the 'iss' field.")
+    issuer = decoded_jwt["iss"]
+    if not issuer or issuer not in ALLOWED_ISS:
+        raise Unauthorized(f"{issuer} is not an allowed token issuer")
+
+
 def decode_jwt(auth_jwt_token: str) -> dict:
     """
     Decodes JWT token.
@@ -59,10 +67,14 @@ def decode_jwt(auth_jwt_token: str) -> dict:
         msg = "Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable"
         raise RuntimeError(msg)
 
+    if not ALLOWED_AUDIENCES:
+        raise RuntimeError("ALLOWED_AUDIENCES were not defined")
+
     jwk = get_matching_jwk(auth_jwt_token)
     for idx, aud in enumerate(ALLOWED_AUDIENCES or [], start=1):
         try:
             decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
+            validate_jwt_properties(decoded_jwt)
             return decoded_jwt
         except JWTClaimsError as error:
             if idx == len(ALLOWED_AUDIENCES):

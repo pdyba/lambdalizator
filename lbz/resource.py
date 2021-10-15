@@ -17,10 +17,11 @@ from lbz.exceptions import (
     UnsupportedMethod,
     ServerError,
 )
-from lbz.misc import get_logger
+from lbz.misc import get_logger, is_in_debug_mode
 from lbz.request import Request
 from lbz.response import Response
 from lbz.router import Router
+
 
 ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
 
@@ -77,7 +78,7 @@ class Resource:
             if 500 <= err.status_code < 600:
                 logger.exception(err)
             else:
-                logger.warning(err)
+                logger.warning(err, exc_info=is_in_debug_mode())
             return err.get_response(self.request.context["requestId"])
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)

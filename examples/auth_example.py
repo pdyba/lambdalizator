@@ -3,7 +3,7 @@
 """
 Simple Lambda Handler with authorization
 """
-from lbz.authz import authorization
+from lbz.authz.decorators import authorization
 from lbz.dev.server import MyDevServer
 from lbz.exceptions import ServerError
 from lbz.resource import Resource

@@ -1,7 +1,7 @@
 # coding=utf-8
-from datetime import datetime, timedelta
-from typing import List
 import os
+from datetime import datetime, timedelta
+from typing import List, Type
 from uuid import uuid4
 
 import pytest
@@ -9,8 +9,13 @@ from multidict import CIMultiDict
 
 from lbz.authentication import User
 from lbz.authz.authorizer import Authorizer
+from lbz.authz.decorators import authorization
+from lbz.collector import authz_collector
 from lbz.dev.misc import Event
 from lbz.request import Request
+from lbz.resource import Resource
+from lbz.response import Response
+from lbz.router import add_route
 from tests import SAMPLE_PRIVATE_KEY
 from tests.utils import encode_token
 
@@ -18,6 +23,12 @@ from tests.utils import encode_token
 @pytest.fixture(scope="session")
 def allowed_audiences() -> List[str]:
     return os.environ["ALLOWED_AUDIENCES"].split(",")
+
+
+@pytest.fixture(autouse=True)
+def clear_authz_collector():
+    yield
+    authz_collector.clean()
 
 
 @pytest.fixture()
@@ -49,13 +60,21 @@ def sample_event() -> Event:
 
 
 @pytest.fixture(scope="session")
-def full_access_authz_payload() -> dict:
+def jwt_partial_payload() -> dict:
     return {
-        "allow": {"*": "*"},
-        "deny": {},
         "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
         "iat": int(datetime.utcnow().timestamp()),
         "iss": "test-issuer",
+        "aud": os.environ["ALLOWED_AUDIENCES"].split(",")[0],
+    }
+
+
+@pytest.fixture(scope="session")
+def full_access_authz_payload(jwt_partial_payload) -> dict:  # pylint: disable=redefined-outer-name
+    return {
+        "allow": {"*": "*"},
+        "deny": {},
+        **jwt_partial_payload,
     }
 
 
@@ -89,7 +108,7 @@ def username() -> str:
 
 
 @pytest.fixture(scope="session")
-def user_cognito(username) -> dict:  # pylint: disable=redefined-outer-name
+def user_cognito(username, jwt_partial_payload) -> dict:  # pylint: disable=redefined-outer-name
     return {
         "cognito:username": username,
         "custom:id": str(uuid4()),
@@ -99,7 +118,7 @@ def user_cognito(username) -> dict:  # pylint: disable=redefined-outer-name
         "custom:3": str(uuid4()),
         "custom:4": str(uuid4()),
         "custom:5": str(uuid4()),
-        "aud": os.environ["ALLOWED_AUDIENCES"].split(",")[0],
+        **jwt_partial_payload,
     }
 
 
@@ -125,3 +144,24 @@ def sample_request_with_user(user) -> Request:  # pylint: disable=redefined-oute
         is_base64_encoded=False,
         uri_params={},
     )
+
+
+@pytest.fixture()
+def sample_resoruce_with_authorization() -> Type[Resource]:
+    """Be careful when doing any changes in this fixture - especially for Auth Collector"""
+
+    class XResource(Resource):
+        _name = "test_res"
+
+        @add_route("/")
+        @authorization("perm-name")
+        def handler(self, restrictions) -> Response:
+            assert restrictions == {"allow": "*", "deny": None}
+            return Response("x")
+
+        @add_route("/garbage")
+        @authorization()
+        def garbage(self, restrictions) -> Response:  # pylint: disable=unused-argument
+            return Response("x")
+
+    return XResource

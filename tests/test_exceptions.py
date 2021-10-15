@@ -29,7 +29,6 @@ from lbz.exceptions import (
     RangeNotSatisfiable,
     RequestHeaderFieldsTooLarge,
     RequestTimeout,
-    SecurityRiskWarning,
     ServerError,
     ServiceUnavailable,
     TooManyRequests,
@@ -112,8 +111,3 @@ def test_custom_exception(custom_exception):
     assert issubclass(custom_exception, LambdaFWException)
     assert exp.message == msg.strip()
     assert exp.status_code == int(code)
-
-
-def test_security_warning():
-    warn = SecurityRiskWarning()
-    assert isinstance(warn, Warning)

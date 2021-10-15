@@ -5,8 +5,8 @@ import pytest
 from jose import jwt
 
 from lbz.authz.authorizer import Authorizer
-from lbz.exceptions import Unauthorized
-from lbz.jwt_utils import get_matching_jwk, decode_jwt
+from lbz.exceptions import Unauthorized, SecurityError
+from lbz.jwt_utils import get_matching_jwk, decode_jwt, validate_jwt_properties
 from tests import SAMPLE_PUBLIC_KEY, SAMPLE_PRIVATE_KEY
 
 
@@ -63,20 +63,11 @@ class TestDecodeJWT:
         with pytest.raises(Unauthorized, match="Your token has expired. Please refresh it."):
             decode_jwt(jwt_token)
 
-    @patch.object(jwt, "decode")
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
     @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [])
-    def test_empty_allowed_audiences(
-        self,
-        get_matching_jwk_mock: MagicMock,
-        decode_mock: MagicMock,
-        caplog: pytest.LogCaptureFixture,
-    ) -> None:
-        with pytest.raises(Unauthorized):
+    def test_empty_allowed_audiences(self, _mocked_get_matching_jwk) -> None:
+        with pytest.raises(RuntimeError, match="ALLOWED_AUDIENCES"):
             decode_jwt("x")
-        get_matching_jwk_mock.assert_called_once_with("x")
-        decode_mock.assert_not_called()
-        assert "Failed decoding JWT for unknown reason" in caplog.text
 
     def test_missing_correct_audiences(self, caplog: pytest.LogCaptureFixture) -> None:
         iat = int(datetime.utcnow().timestamp())
@@ -91,3 +82,21 @@ class TestDecodeJWT:
     def test_empty_public_keys(self) -> None:
         with pytest.raises(RuntimeError):
             decode_jwt("x")
+
+    def test_validate_missing_iss_exception(self) -> None:
+        with pytest.raises(SecurityError, match="'exp'"):
+            validate_jwt_properties({"allow": "*", "deny": {}})
+
+    def test_validate_missing_exp_exception(self) -> None:
+        with pytest.raises(SecurityError, match="'iss'"):
+            validate_jwt_properties(
+                {
+                    "allow": "*",
+                    "deny": {},
+                    "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
+                }
+            )
+
+    def test_wrong_iss(self, full_access_authz_payload) -> None:
+        with pytest.raises(Unauthorized):
+            validate_jwt_properties({**full_access_authz_payload, "iss": "test2"})

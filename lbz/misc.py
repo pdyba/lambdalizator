@@ -2,6 +2,7 @@
 """
 Misc Helpers of Lambda Framework.
 """
+import copy
 import logging
 import logging.handlers
 from collections.abc import MutableMapping
@@ -97,14 +98,6 @@ def get_logger(name: str) -> logging.Logger:
     return logger_obj
 
 
-def copy_without_keys(data: MutableMapping, *keys: str) -> dict:
-    """
-    Clean up dict from unwanted keys.
-    """
-    # TODO: to be deleted in 0.4
-    return {key: value for key, value in data.items() if key not in keys}
-
-
 logger = get_logger(__name__)
 
 
@@ -125,3 +118,17 @@ def error_catcher(function: Callable, default_return: Any = False) -> Callable:
             return default_return
 
     return wrapped
+
+
+def deep_update(dict_to_update: dict, update_data: dict) -> None:
+    """Recursively updates keys in the first dict with the data in the second dict."""
+    for key, value in update_data.items():
+        if key in dict_to_update:
+            if isinstance(value, dict):
+                deep_update(dict_to_update[key], value)
+                continue
+        dict_to_update[key] = copy.deepcopy(value)
+
+
+def is_in_debug_mode() -> bool:
+    return environ.get("LBZ_DEBUG_MODE", "").lower() == "true"

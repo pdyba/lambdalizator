@@ -5,44 +5,9 @@ Authorization helper wrappers (decorators).
 from functools import wraps
 from typing import Callable, Any
 
-from lbz.authz.authorizer import Authorizer
+from lbz.authz.utils import check_permission
 from lbz.collector import authz_collector
-from lbz.exceptions import PermissionDenied, Unauthorized
 from lbz.resource import Resource
-
-
-def check_permission(resource: Resource, permission_name: str) -> dict:
-    """
-    Check if requester has sufficient permissions to do something on specific resource.
-
-    Raises if not.
-    """
-    guest_authorization_policy = None
-    if not (authorization_header := resource.request.headers.get("Authorization", "")):
-        if not (guest_authorization_policy := resource.get_guest_authorization()):
-            raise Unauthorized("Authorization header missing or empty")
-
-    authorizer = Authorizer(
-        auth_jwt=authorization_header,
-        resource_name=resource.get_name(),
-        permission_name=permission_name,
-        policy_override=guest_authorization_policy,
-    )
-    authorizer.check_access()
-    return authorizer.restrictions
-
-
-def has_permission(resource: Resource, permission_name: str) -> bool:
-    """
-    Safe Check if requester has sufficient permissions to do something on specific resource.
-
-    Does not raise.
-    """
-    try:
-        check_permission(resource, permission_name)
-    except (Unauthorized, PermissionDenied):
-        return False
-    return True
 
 
 def authorization(permission_name: str = None) -> Callable:

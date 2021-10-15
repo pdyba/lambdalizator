@@ -2,51 +2,48 @@
 
 import pytest
 
-from lbz.authz import Authorizer, has_permission, ALL, LIMITED_ALLOW
-from lbz.dev.test import Event
-from lbz.resource import Resource
-from tests import SAMPLE_PRIVATE_KEY
-
-
-class SampleResource(Resource):
-    _name = "sample_resource"
+from lbz.exceptions import PermissionDenied, Unauthorized
+from lbz.authz.utils import has_permission, check_permission
+from lbz.dev.misc import Event
 
 
 class TestAuthorizationUtils:
-    @pytest.mark.parametrize(
-        "acl, expected_result",
-        [
-            (
-                {"allow": {ALL: ALL}, "deny": {}},
-                True,
-            ),
-            (
-                {
-                    "allow": {"sample_resource": {"sample_function": {"allow": LIMITED_ALLOW}}},
-                    "deny": {},
-                },
-                True,
-            ),
-            (
-                {
-                    "allow": {ALL: ALL},
-                    "deny": {"sample_resource": {"sample_function": {"deny": ALL}}},
-                },
-                False,
-            ),
-            (
-                {
-                    "allow": {"unknown_function": ALL},
-                },
-                False,
-            ),
-        ],
-    )
-    def test__has_permission__informs_if_request_user_has_access_to_permission(
-        self, sample_event: Event, acl: dict, expected_result: bool
-    ):
+    def test_check_permission(
+        self, limited_access_auth_header, sample_resoruce_with_authorization
+    ) -> None:
+        res_instance = sample_resoruce_with_authorization(
+            Event("/", "GET", headers={"authorization": limited_access_auth_header})
+        )
+        assert check_permission(res_instance, "perm-name") == {"allow": "*", "deny": None}
 
-        authorization = Authorizer.sign_authz(acl, SAMPLE_PRIVATE_KEY)
-        sample_event["headers"]["authorization"] = authorization
+    def test_check_permission_raises(
+        self, limited_access_auth_header, sample_resoruce_with_authorization
+    ) -> None:
+        res_instance = sample_resoruce_with_authorization(
+            Event("/", "GET", headers={"authorization": limited_access_auth_header})
+        )
+        with pytest.raises(PermissionDenied):
+            check_permission(res_instance, "garbage")
 
-        assert has_permission(SampleResource(sample_event), "sample_function") is expected_result
+    def test_check_permission_unauthorised(
+        self, sample_event, sample_resoruce_with_authorization
+    ) -> None:
+        res_instance = sample_resoruce_with_authorization(sample_event)
+        with pytest.raises(Unauthorized):
+            check_permission(res_instance, "perm-name")
+
+    def test_has_permission_true(
+        self, limited_access_auth_header, sample_resoruce_with_authorization
+    ) -> None:
+        res_instance = sample_resoruce_with_authorization(
+            Event("/garbage", "GET", headers={"authorization": limited_access_auth_header})
+        )
+        assert has_permission(res_instance, "perm-name")
+
+    def test_has_permission_false(
+        self, limited_access_auth_header, sample_resoruce_with_authorization
+    ) -> None:
+        res_instance = sample_resoruce_with_authorization(
+            Event("/garbage", "GET", headers={"authorization": limited_access_auth_header})
+        )
+        assert not has_permission(res_instance, "garbage")

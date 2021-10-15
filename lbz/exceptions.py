@@ -7,6 +7,10 @@ from http import HTTPStatus
 from lbz.response import Response
 
 
+class SecurityError(Exception):
+    """Request did not match security requirements expected by server."""
+
+
 class LambdaFWException(Exception):
     """
     Standarised for AWS Lambda exception class.
@@ -313,9 +317,3 @@ class NetworkAuthenticationRequired(LambdaFWException):
 
     message = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.description
     status_code = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.value
-
-
-class SecurityRiskWarning(Warning):
-    """
-    Security Risk Warning
-    """
