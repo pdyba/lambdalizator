@@ -23,6 +23,9 @@ if allowed_pubkeys_str := os.environ.get("ALLOWED_PUBLIC_KEYS"):
 if allowed_audiences_str := os.environ.get("ALLOWED_AUDIENCES"):
     ALLOWED_AUDIENCES.extend(allowed_audiences_str.split(","))
 
+if any("kid" not in public_key for public_key in PUBLIC_KEYS):
+    raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
+
 
 def get_matching_jwk(auth_jwt_token: str) -> dict:
     """
@@ -64,11 +67,8 @@ def decode_jwt(auth_jwt_token: str) -> dict:
         msg = "Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable"
         raise RuntimeError(msg)
 
-    if any("kid" not in public_key for public_key in PUBLIC_KEYS):
-        raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
-
     if not ALLOWED_AUDIENCES:
-        raise RuntimeError("ALLOWED_AUDIENCES where not defined")
+        raise RuntimeError("ALLOWED_AUDIENCES were not defined")
 
     jwk = get_matching_jwk(auth_jwt_token)
     for idx, aud in enumerate(ALLOWED_AUDIENCES or [], start=1):
