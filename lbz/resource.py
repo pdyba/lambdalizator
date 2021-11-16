@@ -22,7 +22,6 @@ from lbz.request import Request
 from lbz.response import Response
 from lbz.router import Router
 
-
 ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
 
 logger = get_logger(__name__)
@@ -135,14 +134,22 @@ class CORSResource(Resource):
         "X-Amz-Security-Token",
     ]
 
-    def __init__(self, event: dict, methods: List[str], origins: List[str] = None):
+    def __init__(
+        self,
+        event: dict,
+        methods: List[str],
+        origins: List[str] = None,
+        cors_headers: List[str] = None,
+    ):
         super().__init__(event)
-
+        cors_headers = cors_headers or []
+        if not cors_headers and (env_headers := env.get("CORS_HEADERS")):
+            cors_headers = env_headers.split(",")
         self._resp_headers = {
             ALLOW_ORIGIN_HEADER: self._get_allowed_origins(
                 origins or env.get("CORS_ORIGIN", "").split(",")
             ),
-            "Access-Control-Allow-Headers": ", ".join(self._cors_headers),
+            "Access-Control-Allow-Headers": ", ".join([*self._cors_headers, *cors_headers]),
             "Access-Control-Allow-Methods": ", ".join([*methods, "OPTIONS"]),
         }
 
@@ -222,3 +229,7 @@ class PaginatedCORSResource(CORSResource):
             encoded_params = urlencode(query_params, doseq=True)  # type: ignore
             return f"{self.urn}?{encoded_params}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"
+
+
+class XR(CORSResource):
+    _cors_headers = CORSResource._cors_headers + []  # noqa
