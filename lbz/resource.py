@@ -229,7 +229,3 @@ class PaginatedCORSResource(CORSResource):
             encoded_params = urlencode(query_params, doseq=True)  # type: ignore
             return f"{self.urn}?{encoded_params}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"
-
-
-class XR(CORSResource):
-    _cors_headers = CORSResource._cors_headers + []  # noqa
