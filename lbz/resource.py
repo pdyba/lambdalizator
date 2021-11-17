@@ -141,6 +141,7 @@ class CORSResource(Resource):
         origins: List[str] = None,
         cors_headers: List[str] = None,
     ):
+        # TODO: adjust the rest of the arguments in the near future too.
         super().__init__(event)
         cors_headers = cors_headers or []
         if not cors_headers and (env_headers := env.get("CORS_HEADERS")):
