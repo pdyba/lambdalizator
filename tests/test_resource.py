@@ -257,10 +257,14 @@ class TestCORSResource:
     def teardown_method(self):
         del environ["CORS_ORIGIN"]
 
-    def make_cors_handler(self, origins: List[str] = None, req_origin: str = None) -> CORSResource:
+    def make_cors_handler(
+        self, origins: List[str] = None, req_origin: str = None, cors_headers: list = None
+    ) -> CORSResource:
         an_event = defaultdict(MagicMock())
         an_event["headers"] = {"origin": req_origin} if req_origin is not None else {}
-        cors_handler = CORSResource(an_event, ["GET", "POST"], origins=origins)
+        cors_handler = CORSResource(
+            an_event, ["GET", "POST"], origins=origins, cors_headers=cors_headers
+        )
         return cors_handler
 
     def test_cors_origin_headers_from_env_are_correct_1(self):
@@ -325,6 +329,44 @@ class TestCORSResource:
         assert inst().headers == {
             "Access-Control-Allow-Headers": ", ".join(
                 CORSResource._cors_headers  # pylint: disable=protected-access
+            ),
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
+        }
+
+    def test_cors_headers_param_request(self) -> None:
+        inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE, cors_headers=["X-PRN-KEY"])
+        inst.method = "OPTIONS"
+        assert inst().headers == {
+            "Access-Control-Allow-Headers": (
+                "Content-Type, X-Amz-Date, Authentication, Authorization, X-Api-Key, "
+                "X-Amz-Security-Token, X-PRN-KEY"
+            ),
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
+        }
+
+    @patch.dict(environ, {"CORS_HEADERS": "X-PRN-KEY,X-PRN-TOKEN"})
+    def test_cors_headers_env_request(self) -> None:
+        inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE)
+        inst.method = "OPTIONS"
+        assert inst().headers == {
+            "Access-Control-Allow-Headers": (
+                "Content-Type, X-Amz-Date, Authentication, Authorization, "
+                "X-Api-Key, X-Amz-Security-Token, X-PRN-KEY, X-PRN-TOKEN"
+            ),
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
+        }
+
+    @patch.dict(environ, {"CORS_HEADERS": "X-PRN-KEY,X-PRN-TOKEN"})
+    def test_cors_headers_param_more_important_than_env_request(self) -> None:
+        inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE, cors_headers=["X-PRN-XXX"])
+        inst.method = "OPTIONS"
+        assert inst().headers == {
+            "Access-Control-Allow-Headers": (
+                "Content-Type, X-Amz-Date, Authentication, Authorization, "
+                "X-Api-Key, X-Amz-Security-Token, X-PRN-XXX"
             ),
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
             ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
