@@ -197,5 +197,5 @@ Released 2021-10-09
 Released 2022-04-12
 
 - Adds Event Broker to support Asynchronous event handling with AWS Lambda
-- Introduces iSort for better sorting and related checks
+- Introduces isort for better sorting and related checks
 - Updates dependencies

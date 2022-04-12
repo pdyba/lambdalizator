@@ -2,6 +2,7 @@ import logging
 from unittest.mock import MagicMock
 
 import pytest
+from pytest import LogCaptureFixture
 
 from lbz.events.broker import Event, EventBroker
 
@@ -31,7 +32,7 @@ class TestEventBroker:
         func_1.assert_not_called()
         func_2.assert_not_called()
 
-    def test_broker_continues_even_if_one_handler_failed(self, caplog) -> None:
+    def test_broker_continues_even_if_one_handler_failed(self, caplog: LogCaptureFixture) -> None:
         func_1 = MagicMock()
         func_2 = MagicMock(side_effect=TypeError)
         func_3 = MagicMock()
