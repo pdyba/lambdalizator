@@ -4,12 +4,10 @@ import socket
 from socketserver import BaseServer
 from unittest import mock
 
-from lbz.response import Response
+from lbz.dev.server import MyDevServer, MyLambdaDevHandler
 from lbz.resource import Resource
+from lbz.response import Response
 from lbz.router import add_route
-
-from lbz.dev.server import MyDevServer
-from lbz.dev.server import MyLambdaDevHandler
 
 
 class HelloWorld(Resource):

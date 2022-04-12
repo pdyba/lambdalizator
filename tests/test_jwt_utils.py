@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from jose import jwt
 
 from lbz.authz.authorizer import Authorizer
-from lbz.exceptions import Unauthorized, SecurityError
-from lbz.jwt_utils import get_matching_jwk, decode_jwt, validate_jwt_properties
-from tests import SAMPLE_PUBLIC_KEY, SAMPLE_PRIVATE_KEY
+from lbz.exceptions import SecurityError, Unauthorized
+from lbz.jwt_utils import decode_jwt, get_matching_jwk, validate_jwt_properties
+from tests import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 
 
 class TestGetMatchingJWK:

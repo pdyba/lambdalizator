@@ -1,4 +1,6 @@
 # coding=utf-8
+import pytest
+
 from lbz.exceptions import (
     BadGateway,
     BadRequestError,
@@ -32,17 +34,16 @@ from lbz.exceptions import (
     ServerError,
     ServiceUnavailable,
     TooManyRequests,
-    URITooLong,
     Unauthorized,
     UnavailableForLegalReasons,
     UnprocessableEntity,
     UnsupportedMediaType,
     UnsupportedMethod,
     UpgradeRequired,
+    URITooLong,
     VariantAlsoNegotiates,
 )
 from lbz.response import Response
-import pytest
 
 
 def test_lambda_fw_exception():

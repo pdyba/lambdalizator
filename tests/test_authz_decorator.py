@@ -1,13 +1,12 @@
 # coding=utf-8
 from http import HTTPStatus
-from unittest.mock import patch, MagicMock
-
+from unittest.mock import MagicMock, patch
 
 from lbz.authz.decorators import authorization
 from lbz.dev.misc import Event
 from lbz.resource import Resource
-from lbz.router import add_route
 from lbz.response import Response
+from lbz.router import add_route
 
 
 class TestAuthorizationDecorator:

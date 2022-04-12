@@ -3,7 +3,7 @@
 Authorization helper wrappers (decorators).
 """
 from functools import wraps
-from typing import Callable, Any
+from typing import Any, Callable
 
 from lbz.authz.utils import check_permission
 from lbz.collector import authz_collector

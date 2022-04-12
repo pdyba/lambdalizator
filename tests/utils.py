@@ -1,4 +1,5 @@
 from jose import jwt
+
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY
 
 

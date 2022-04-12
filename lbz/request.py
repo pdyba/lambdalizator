@@ -4,7 +4,7 @@ Request standardisation module.
 """
 import base64
 import json
-from typing import Optional, Union, Any
+from typing import Any, Optional, Union
 
 from multidict import CIMultiDict
 

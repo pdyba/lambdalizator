@@ -4,7 +4,7 @@ Router module.
 """
 import json
 from functools import wraps
-from typing import Callable, Iterator, Any
+from typing import Any, Callable, Iterator
 
 from lbz.misc import NestedDict, Singleton
 

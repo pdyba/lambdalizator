@@ -2,8 +2,7 @@
 import json
 
 from lbz.misc import NestedDict
-from lbz.router import Router
-from lbz.router import add_route
+from lbz.router import Router, add_route
 
 
 class TestRouter:

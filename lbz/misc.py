@@ -8,7 +8,7 @@ import logging.handlers
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
-from typing import Any, Callable, Hashable, Iterator, Optional, List, Iterable
+from typing import Any, Callable, Hashable, Iterable, Iterator, List, Optional
 
 LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
 

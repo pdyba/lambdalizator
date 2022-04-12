@@ -19,10 +19,13 @@ jobs:
       - name: Install make
         run: |
           apt-get update
-          apt-get install make
+          apt-get --yes install make git
 
       - name: Run Black Check
         run: make black-check
+
+      - name: Run isort Check
+        run: make isort-check
 
       - name: Run Linters
         run: make lint
@@ -41,7 +44,7 @@ jobs:
       - name: Install make
         run: |
           apt-get update
-          apt-get install make
+          apt-get --yes install make
 
       - name: Run tests
         run: make test

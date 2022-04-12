@@ -190,3 +190,12 @@ Released 2021-10-09
 - Makes iss and exp (previously EXPIRATION_KEY) fields mandatory when authorizing.
 - Adds Debug Mode
 - Moves All JWT validation to decoding function from resource
+
+
+
+### Version 0.5.2
+Released 2022-04-12
+
+- Adds Event Broker to support Asynchronous event handling with AWS Lambda
+- Introduces isort for better sorting and related checks
+- Updates dependencies

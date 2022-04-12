@@ -7,9 +7,9 @@ import os
 from typing import List
 
 from jose import jwt
-from jose.exceptions import JWTError, JWTClaimsError, ExpiredSignatureError
+from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 
-from lbz.exceptions import Unauthorized, SecurityError
+from lbz.exceptions import SecurityError, Unauthorized
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)

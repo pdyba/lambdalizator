@@ -4,7 +4,7 @@ from collections import defaultdict
 from http import HTTPStatus
 from os import environ
 from typing import List
-from unittest.mock import patch, MagicMock, ANY
+from unittest.mock import ANY, MagicMock, patch
 
 from jose import jwt
 from multidict import CIMultiDict
@@ -15,15 +15,9 @@ from lbz.dev.misc import Event
 from lbz.exceptions import NotFound, ServerError
 from lbz.misc import MultiDict
 from lbz.request import Request
-from lbz.resource import (
-    Resource,
-    CORSResource,
-    PaginatedCORSResource,
-    ALLOW_ORIGIN_HEADER,
-)
+from lbz.resource import ALLOW_ORIGIN_HEADER, CORSResource, PaginatedCORSResource, Resource
 from lbz.response import Response
-from lbz.router import Router
-from lbz.router import add_route
+from lbz.router import Router, add_route
 from tests.fixtures.cognito_auth import env_mock
 
 # TODO: Use fixtures yielded from conftest.py

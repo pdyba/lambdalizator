@@ -1,12 +1,13 @@
-from setuptools import setup
 import pathlib
+
+from setuptools import setup
 
 setup(
     name="lbz",
     version=pathlib.Path("version").read_text("utf-8"),
     author="Piotr Dyba",
     author_email="piotr.dyba@localbini.com",
-    packages=["lbz", "lbz.dev", "lbz.authz"],
+    packages=["lbz", "lbz.dev", "lbz.authz", "lbz.events"],
     package_data={"lbz": ["py.typed"]},
     scripts=[],
     url="https://github.com/pdyba/lambdalizator",
@@ -14,7 +15,10 @@ setup(
     description="AWS Lambda REST ToolBox",
     long_description_content_type="text/markdown",
     long_description=pathlib.Path("README.md").read_text("utf-8"),
-    install_requires=["python-jose"],
+    install_requires=[
+        "python-jose >=3.3.0, <3.4.0",
+        "multidict >=6.0.0, <6.1.0",
+    ],
     classifiers=[
         "Environment :: Web Environment",
         "License :: OSI Approved :: MIT License",
