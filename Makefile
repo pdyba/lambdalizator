@@ -26,9 +26,9 @@ lint:
 .PHONY: isort
 isort:
 	isort --version
-	isort .
+	isort setup.py lbz examples tests
 
 .PHONY: isort-check
 isort-check:
-	isort --version
-	isort --check-only .
+	isort --vn
+	isort --check-only setup.py lbz examples tests
