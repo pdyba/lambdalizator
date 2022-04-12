@@ -11,7 +11,7 @@ from lbz.response import Response
 from lbz.router import add_route
 
 
-class HelloWorld(Resource):
+class HelloWorldExample(Resource):
     @add_route("/", method="GET")
     def list(self):
         return Response({"message": "HelloWorld"})
@@ -19,7 +19,7 @@ class HelloWorld(Resource):
 
 def handle(event, context):
     try:
-        exp = HelloWorld(event)
+        exp = HelloWorldExample(event)
         resp = exp()
         return resp
     except Exception:  # pylint: disable=broad-except
@@ -29,7 +29,7 @@ def handle(event, context):
 class TestHelloWorld:
     def setup_method(self) -> None:
         # pylint: disable=attribute-defined-outside-init
-        self.client = Client(resource=HelloWorld)
+        self.client = Client(resource=HelloWorldExample)
 
     def test_filter_queries_all_active_when_no_params(self) -> None:
         data = self.client.get("/").to_dict()["body"]
@@ -37,5 +37,5 @@ class TestHelloWorld:
 
 
 if __name__ == "__main__":
-    server = MyDevServer(acls=HelloWorld, port=8001)
+    server = MyDevServer(acls=HelloWorldExample, port=8001)
     server.run()

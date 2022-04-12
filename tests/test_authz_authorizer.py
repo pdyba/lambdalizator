@@ -1,12 +1,12 @@
 # coding=utf-8
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from lbz.authz.authorizer import Authorizer, ALL, ALLOW, DENY, LIMITED_ALLOW
+from lbz.authz.authorizer import ALL, ALLOW, DENY, LIMITED_ALLOW, Authorizer
 from lbz.exceptions import PermissionDenied, Unauthorized
-from tests import SAMPLE_PRIVATE_KEY, EXPECTED_TOKEN
+from tests import EXPECTED_TOKEN, SAMPLE_PRIVATE_KEY
 
 
 class TestAuthorizerWithoutMockingJWT:

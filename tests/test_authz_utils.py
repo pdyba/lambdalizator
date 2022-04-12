@@ -2,9 +2,9 @@
 
 import pytest
 
-from lbz.exceptions import PermissionDenied, Unauthorized
-from lbz.authz.utils import has_permission, check_permission
+from lbz.authz.utils import check_permission, has_permission
 from lbz.dev.misc import Event
+from lbz.exceptions import PermissionDenied, Unauthorized
 
 
 class TestAuthorizationUtils:

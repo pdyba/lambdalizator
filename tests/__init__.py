@@ -4,9 +4,9 @@ import os
 from uuid import uuid4
 
 from tests.fixtures.rsa_pair import (  # noqa:F401
+    EXPECTED_TOKEN,
     SAMPLE_PRIVATE_KEY,
     SAMPLE_PUBLIC_KEY,
-    EXPECTED_TOKEN,
 )
 
 os.environ["AUTH_REMOVE_PREFIXES"] = "1"

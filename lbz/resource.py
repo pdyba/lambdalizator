@@ -3,7 +3,7 @@
 from copy import deepcopy
 from http import HTTPStatus
 from os import environ as env
-from typing import Union, List, Optional, Callable
+from typing import Callable, List, Optional, Union
 from urllib.parse import urlencode
 
 from multidict import CIMultiDict
@@ -13,9 +13,9 @@ from lbz.collector import authz_collector
 from lbz.exceptions import (
     LambdaFWException,
     NotFound,
+    ServerError,
     Unauthorized,
     UnsupportedMethod,
-    ServerError,
 )
 from lbz.misc import get_logger, is_in_debug_mode
 from lbz.request import Request

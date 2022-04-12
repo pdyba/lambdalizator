@@ -1,7 +1,7 @@
 # coding=utf-8
 from collections.abc import MutableMapping
 
-from lbz.misc import MultiDict, NestedDict, Singleton, error_catcher, get_logger, deep_update
+from lbz.misc import MultiDict, NestedDict, Singleton, deep_update, error_catcher, get_logger
 
 
 def test_nested_dict():

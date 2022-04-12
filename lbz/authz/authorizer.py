@@ -1,10 +1,10 @@
-from typing import Union, Dict, Optional
+from typing import Dict, Optional, Union
 
 from jose import jwt
 
 from lbz.exceptions import PermissionDenied
 from lbz.jwt_utils import decode_jwt
-from lbz.misc import get_logger, deep_update
+from lbz.misc import deep_update, get_logger
 
 logger = get_logger(__name__)
 

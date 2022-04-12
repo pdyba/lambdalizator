@@ -24,6 +24,9 @@ jobs:
       - name: Run Black Check
         run: make black-check
 
+      - name: Run isort Check
+        run: make isort-check
+
       - name: Run Linters
         run: make lint
 

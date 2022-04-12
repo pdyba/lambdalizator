@@ -2,14 +2,13 @@
 """
 Development Server.
 """
-from os import environ
 import json
 import logging
 import urllib.parse
 from abc import ABCMeta, abstractmethod
-from http.server import BaseHTTPRequestHandler
-from http.server import HTTPServer
-from typing import Tuple, Union, Type
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from os import environ
+from typing import Tuple, Type, Union
 
 from lbz.dev.misc import Event
 from lbz.resource import Resource

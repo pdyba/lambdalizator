@@ -21,3 +21,14 @@ lint:
 	pylint setup.py lbz examples tests
 	mypy setup.py lbz # examples tests # TODO: extend for tests and if possible for examples
 	flake8 setup.py lbz examples tests
+
+
+.PHONY: isort
+isort:
+	isort --version
+	isort .
+
+.PHONY: isort-check
+isort-check:
+	isort --version
+	isort --check-only .
