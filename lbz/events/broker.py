@@ -17,15 +17,13 @@ class EventBroker:
         self.mapper = mapper
         self.event = Event(type=raw_event["detail-type"], data=raw_event["detail"])
 
-    def handle(
-        self,
-    ) -> None:
+    def handle(self) -> None:
         self.pre_handle()
 
         for handler in self._get_handlers():
             try:
                 handler(self.event)
-            except Exception as error:  # noqa pylint: disable=broad-except, unused-variable
+            except Exception:  # pylint: disable=broad-except
                 logger.exception("Handling event failed, event: %s", self.event)
 
         self.post_handle()
@@ -34,7 +32,7 @@ class EventBroker:
         try:
             return self.mapper[self.event.type]
         except KeyError as err:
-            raise NotImplementedError(f"Trigger {self.event.type} not implemented") from err
+            raise NotImplementedError(f"No handlers implemented for {self.event.type}") from err
 
     def pre_handle(self) -> None:
         pass

@@ -1,6 +1,10 @@
 # Lambdalizator
 
-AWS Lambda REST Toolbox inspired by Flask.
+AWS Lambda Toolbox inspired by Flask. Currently supporting:
+- REST API
+- Event API (AWS Event Bridge)
+- TBA: Lambda API
+
 Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by [pdyba](https://github.com/pdyba) and [songofroland](https://github.com/songofroland).
 
 

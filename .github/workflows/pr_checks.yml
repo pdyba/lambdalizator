@@ -44,7 +44,7 @@ jobs:
       - name: Install make
         run: |
           apt-get update
-          apt-get install make
+          apt-get install make git
 
       - name: Run tests
         run: make test

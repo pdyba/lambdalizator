@@ -15,7 +15,10 @@ setup(
     description="AWS Lambda REST ToolBox",
     long_description_content_type="text/markdown",
     long_description=pathlib.Path("README.md").read_text("utf-8"),
-    install_requires=["python-jose", "multidict"],
+    install_requires=[
+        "python-jose >=3.3.0, <3.4.0",
+        "multidict >=6.0.0, <6.1.0",
+    ],
     classifiers=[
         "Environment :: Web Environment",
         "License :: OSI Approved :: MIT License",
