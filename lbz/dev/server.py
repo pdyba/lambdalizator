@@ -29,7 +29,9 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
     def cls(self) -> Type[Resource]:
         pass
 
-    def _get_route_params(self, org_path: str) -> Tuple[Union[str, None], Union[dict, None]]:
+    def _get_route_params(  # noqa:C901
+        self, org_path: str
+    ) -> Tuple[Union[str, None], Union[dict, None]]:
         """
         Parses route and params.
         :param org_path:

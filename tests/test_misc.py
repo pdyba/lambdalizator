@@ -4,13 +4,13 @@ from collections.abc import MutableMapping
 from lbz.misc import MultiDict, NestedDict, Singleton, deep_update, error_catcher, get_logger
 
 
-def test_nested_dict():
+def test_nested_dict() -> None:
     nest = NestedDict()
     nest["a"]["b"]["c"]["d"]["e"] = "z"
     assert nest == {"a": {"b": {"c": {"d": {"e": "z"}}}}}
 
 
-def test_singleton():
+def test_singleton() -> None:
     class AClass(metaclass=Singleton):
         pass
 
@@ -23,7 +23,7 @@ def test_singleton():
     assert Singleton._instances.get(AClass) is None  # pylint: disable=protected-access
 
 
-def test_multi_dict():
+def test_multi_dict() -> None:
     assert issubclass(MultiDict, MutableMapping)
     multi_dict = MultiDict({"a": ["a", "b", "c"]})
     assert multi_dict["a"] == "c"
@@ -43,7 +43,7 @@ def test_multi_dict():
     assert multi_dict.original_items() == [("b", ["abc"])]
 
 
-def test_get_logger(caplog):
+def test_get_logger(caplog) -> None:
     a_loger = get_logger("a")
     b_loger = get_logger("b")
     assert a_loger != b_loger
@@ -55,7 +55,7 @@ def test_get_logger(caplog):
         assert "ZeroDivisionError" in caplog.text
 
 
-def test_error_catcher(caplog):
+def test_error_catcher(caplog) -> None:
     @error_catcher
     def zero_division():
         return 2 / 0
@@ -65,7 +65,7 @@ def test_error_catcher(caplog):
     assert "ZeroDivisionError" in caplog.text
 
 
-def test_error_catcher_class(caplog):
+def test_error_catcher_class(caplog) -> None:
     class AClass:
         logger = get_logger("xxxxx")
 
@@ -79,7 +79,7 @@ def test_error_catcher_class(caplog):
     assert "ZeroDivisionError" in caplog.text
 
 
-def test__deep_update__does_nothing_if_empty_data_given():
+def test__deep_update__does_nothing_if_empty_data_given() -> None:
     dict_to_update = {"test1": "data1"}
     update_data: dict = {}
 
@@ -88,7 +88,7 @@ def test__deep_update__does_nothing_if_empty_data_given():
     assert dict_to_update == {"test1": "data1"}
 
 
-def test__deep_update__does_recursive_updates_based_on_given_data():
+def test__deep_update__does_recursive_updates_based_on_given_data() -> None:
     dict_to_update = {
         "test1": "data1",
         "array": ["data2", "data3"],
@@ -131,7 +131,7 @@ def test__deep_update__does_recursive_updates_based_on_given_data():
     }
 
 
-def test__deep_update__creates_copy_of_updated_data():
+def test__deep_update__creates_copy_of_updated_data() -> None:
     dict_to_update: dict = {}
     update_data = {"array": [], "dict": {"nested_dict": {}}}
 

@@ -52,3 +52,6 @@ class Response:
         }
 
         return response
+
+    def is_ok(self) -> bool:
+        return self.status_code < 400

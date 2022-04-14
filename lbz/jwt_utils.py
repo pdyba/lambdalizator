@@ -59,7 +59,7 @@ def validate_jwt_properties(decoded_jwt: dict) -> None:
         raise Unauthorized(f"{issuer} is not an allowed token issuer")
 
 
-def decode_jwt(auth_jwt_token: str) -> dict:
+def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
     """
     Decodes JWT token.
     """
