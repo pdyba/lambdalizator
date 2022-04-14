@@ -189,7 +189,7 @@ class TestResource:
             def test_method(self) -> Response:
                 return Response("OK")
 
-            def pre_request_hook(self)  -> None:
+            def pre_request_hook(self) -> None:
                 nonlocal pre_request_called
                 pre_request_called = True
 
@@ -203,10 +203,10 @@ class TestResource:
 
         class TestAPI(Resource):
             @add_route("/")
-            def test_method(self)  -> None:
+            def test_method(self) -> None:
                 raise ServerError("test")
 
-            def post_request_hook(self)  -> None:
+            def post_request_hook(self) -> None:
                 nonlocal post_request_called
                 post_request_called = True
 
@@ -218,7 +218,7 @@ class TestResource:
     def test_500_returned_when_server_error_caught(self) -> None:
         class XResource(Resource):
             @add_route("/")
-            def test_method(self)  -> None:
+            def test_method(self) -> None:
                 raise RuntimeError("test")
 
         resp = XResource(event)()
