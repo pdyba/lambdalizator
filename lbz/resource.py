@@ -83,7 +83,7 @@ class Resource:
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
             self.response = ServerError().get_response(self.request.context["requestId"])
-        self.post_request_hook()
+        self._post_request_hook()
         return self.response
 
     def __repr__(self) -> str:
@@ -99,6 +99,15 @@ class Resource:
         if authentication:
             raise Unauthorized("Authentication method not supported")
         return None
+
+    def _post_request_hook(self) -> None:
+        """
+        Makes the post_request_hook run-time friendly.
+        """
+        try:
+            self.post_request_hook()
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
 
     def pre_request_hook(self) -> None:
         """
@@ -234,6 +243,10 @@ class PaginatedCORSResource(CORSResource):
 
 
 class EventAwareResource(Resource):
+    def __init__(self, event: dict):
+        super().__init__(event)
+        self.event_api = EventAPI()
+
     def post_request_hook(self) -> None:
         if self.response.is_ok():
-            EventAPI().send()
+            self.event_api.send()

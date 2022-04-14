@@ -2,7 +2,7 @@ from os import environ
 from typing import Optional
 from unittest.mock import MagicMock, patch
 
-from lbz.boto3_client import Boto3Clients
+from lbz.aws_boto3 import Boto3Client
 from lbz.events.api import BaseEvent, EventAPI
 
 
@@ -36,9 +36,10 @@ class TestEventApi:
 
     def test_init_with_defaults(self) -> None:
         # pylint: disable=protected-access
-        assert self.event_api.entries == []
+        assert self.event_api._pending_events == []
+        assert self.event_api._sent_events == []
         assert self.event_api._source == "million-dollar-lambda"
-        assert self.event_api.bus_name == "million-dollar-lambda-event-bus"
+        assert self.event_api._bus_name == "million-dollar-lambda-event-bus"
         assert self.event_api._resources == []
 
     def test_set_source(self) -> None:
@@ -48,41 +49,28 @@ class TestEventApi:
 
     def test_set_resource(self) -> None:
         # pylint: disable=protected-access
-        self.event_api.set_resource(["x", "Y"])
+        self.event_api.set_resources(["x", "Y"])
         assert self.event_api._resources == ["x", "Y"]
 
-    @patch.object(EventAPI, "create_eb_entry")
-    def test_register(self, mock_create_eb_entry: MagicMock) -> None:
-        mock_create_eb_entry.return_value = True
+    def test_register(self) -> None:
+        # pylint: disable=protected-access
+        event = MyTestEvent({"x": 1})
+        self.event_api.register(event)
 
-        self.event_api.register({"x": 1})
-
-        mock_create_eb_entry.assert_called_once_with({"x": 1})
-        assert self.event_api.entries == [True]
+        assert self.event_api._pending_events == [event]
 
     def test_get_all_registered_events(self) -> None:
-        self.event_api.register(MyTestEvent({"x": 1}))
-        self.event_api.register(MyTestEvent({"x": 2}))
-        assert self.event_api.get_all_registered_events() == [
-            {
-                "Detail": '{"x": 1}',
-                "DetailType": "MY_TEST_EVENT",
-                "EventBusName": "million-dollar-lambda-event-bus",
-                "Resources": [],
-                "Source": "million-dollar-lambda",
-            },
-            {
-                "Detail": '{"x": 2}',
-                "DetailType": "MY_TEST_EVENT",
-                "EventBusName": "million-dollar-lambda-event-bus",
-                "Resources": [],
-                "Source": "million-dollar-lambda",
-            },
-        ]
+        event_1 = MyTestEvent({"x": 1})
+        event_2 = MyTestEvent({"x": 2})
+        self.event_api.register(event_1)
+        self.event_api.register(event_2)
+        assert self.event_api.get_all_pending_events() == [event_1, event_2]
 
-    @patch.object(Boto3Clients, "eventbridge")
-    def test_send(self, mock_send: MagicMock) -> None:
-        self.event_api.register(MyTestEvent({"x": 1}))
+    @patch.object(Boto3Client, "eventbridge")
+    @patch.object(EventAPI, "_mark_sent")
+    def test_send(self, mock__mark_sent: MagicMock, mock_send: MagicMock) -> None:
+        event = MyTestEvent({"x": 1})
+        self.event_api.register(event)
 
         self.event_api.send()
 
@@ -97,8 +85,27 @@ class TestEventApi:
                 }
             ]
         )
+        mock__mark_sent.assert_called_once()
 
-    @patch.object(Boto3Clients, "eventbridge")
+    def test_clear(self):
+        # pylint: disable=protected-access
+        event = MyTestEvent({"x": 1})
+        self.event_api.register(event)
+
+        self.event_api._mark_sent()
+
+        assert self.event_api._pending_events == []
+        assert self.event_api._sent_events == [event]
+
+    def test_get_all_sent_events(self):
+        event = MyTestEvent({"x": 1})
+        self.event_api.register(event)
+
+        self.event_api._mark_sent()  # pylint: disable=protected-access
+
+        assert self.event_api.get_all_sent_events() == [event]
+
+    @patch.object(Boto3Client, "eventbridge")
     def test_send_no_events(self, mock_send: MagicMock) -> None:
         self.event_api.send()
 
@@ -107,7 +114,7 @@ class TestEventApi:
     def test_create_eb_entry(self) -> None:
         new_event = MyTestEvent({"x": 1})
 
-        resp = self.event_api.create_eb_entry(new_event)
+        resp = self.event_api._create_eb_entry(new_event)  # pylint: disable=protected-access
 
         assert resp == {
             "Detail": '{"x": 1}',
@@ -123,7 +130,7 @@ class TestEventApiSingleton:
         event_api_1 = EventAPI()
         event_api_2 = EventAPI()
         event_api_2.set_source("XXX")
-        event_api_2.set_resource(["a", "b"])
+        event_api_2.set_resources(["a", "b"])
         event_api_3 = EventAPI()
         assert event_api_3._source == "XXX"  # pylint: disable=protected-access
         assert event_api_3._resources == ["a", "b"]  # pylint: disable=protected-access

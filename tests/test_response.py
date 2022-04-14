@@ -1,6 +1,8 @@
 # coding=utf-8
 from base64 import b64encode
 
+import pytest
+
 from lbz.response import Response
 
 
@@ -67,3 +69,22 @@ class TestResponse:
             "statusCode": 666,
             "isBase64Encoded": True,
         }
+
+    @pytest.mark.parametrize(
+        "code, outcome",
+        [
+            (100, True),
+            (200, True),
+            (201, True),
+            (300, True),
+            (399, True),
+            (400, False),
+            (404, False),
+            (500, False),
+            (501, False),
+            (666, False),
+        ],
+    )
+    def test_response_is_ok(self, code: int, outcome: bool) -> None:
+        response = Response({"message": "xxx"}, headers={"xx": "xx"}, status_code=code)
+        assert response.is_ok() == outcome

@@ -24,7 +24,7 @@ else:
     DynamoDBClient = object
 
 
-class Boto3Clients:
+class Boto3Client:
     @cached_property
     def cognito_idp(self) -> CognitoIdentityProviderClient:
         return boto3.client("cognito-idp")
@@ -58,4 +58,4 @@ class Boto3Clients:
         return boto3.client("sqs")
 
 
-clients = Boto3Clients()
+client = Boto3Client()

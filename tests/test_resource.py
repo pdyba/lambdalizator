@@ -441,13 +441,34 @@ class TestPagination:
 
 
 class TestEventAwareResource:
-    @patch.object(EventAPI, "send")
-    def test___call__(self, mocked_event_api_send: MagicMock) -> None:
+    def test___init__(self) -> None:
         class XResource(EventAwareResource):
             @add_route("/")
-            def test_method(self):
+            def test_method(self) -> Response:
+                return Response({"message": "x"})
+
+        res = XResource(event)
+        assert hasattr(res, "event_api")
+        assert res.event_api == EventAPI()
+
+    @patch.object(EventAPI, "send")
+    def test_post_hook_event_api_sent(self, mocked_event_api_send: MagicMock) -> None:
+        class XResource(EventAwareResource):
+            @add_route("/")
+            def test_method(self) -> Response:
                 return Response({"message": "x"})
 
         XResource(event)()
 
         mocked_event_api_send.assert_called_once()
+
+    @patch.object(EventAPI, "send")
+    def test_post_hook_event_api_did_not_sent(self, mocked_event_api_send: MagicMock) -> None:
+        class XResource(EventAwareResource):
+            @add_route("/")
+            def test_method(self) -> None:
+                raise TypeError
+
+        XResource(event)()
+
+        mocked_event_api_send.assert_not_called()

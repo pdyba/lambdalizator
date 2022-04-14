@@ -208,5 +208,5 @@ Released 2022-04-12
 Released 2022-04-15
 
 - Adds EventApi and EventAware Resource
-- Adds Response as a part of Resource so it can be easly access by post hook.
+- Adds Response as a part of Resource so it can be easily accessed by post hook.
 - Improves mypy situation for tests
