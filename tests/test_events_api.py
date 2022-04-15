@@ -39,22 +39,29 @@ class TestEventApi:
         assert self.event_api._bus_name == "million-dollar-lambda-event-bus"
         assert self.event_api._resources == []
 
-    def test___repr__(self):
-        repr = str(self.event_api)
-        assert repr == "<EventAPI bus: million-dollar-lambda-event-bus Events: pending=0 sent=0 failed=0>"
+    def test___repr__(self) -> None:
+        expected_repr = (
+            "<EventAPI bus: million-dollar-lambda-event-bus Events: pending=0 sent=0 failed=0>"
+        )
+        assert str(self.event_api) == expected_repr
         self.event_api.register(MyTestEvent({"x": 1}))
         self.event_api.register(MyTestEvent({"x": 1}))
-        repr = str(self.event_api)
-        assert repr == "<EventAPI bus: million-dollar-lambda-event-bus Events: pending=2 sent=0 failed=0>"
+        expected_repr = (
+            "<EventAPI bus: million-dollar-lambda-event-bus Events: pending=2 sent=0 failed=0>"
+        )
+        assert str(self.event_api) == expected_repr
         self.event_api._mark_sent()  # pylint: disable=protected-access
-        repr = str(self.event_api)
-        assert repr == "<EventAPI bus: million-dollar-lambda-event-bus Events: pending=0 sent=2 failed=0>"
+        expected_repr = (
+            "<EventAPI bus: million-dollar-lambda-event-bus Events: pending=0 sent=2 failed=0>"
+        )
+        assert str(self.event_api) == expected_repr
         self.event_api.register(MyTestEvent({"x": 1}))
         self.event_api.register(MyTestEvent({"x": 1}))
         self.event_api._mark_failed()  # pylint: disable=protected-access
-        repr = str(self.event_api)
-        assert repr == "<EventAPI bus: million-dollar-lambda-event-bus Events: pending=0 sent=2 failed=2>"
-
+        expected_repr = (
+            "<EventAPI bus: million-dollar-lambda-event-bus Events: pending=0 sent=2 failed=2>"
+        )
+        assert str(self.event_api) == expected_repr
 
     def test_set_source(self) -> None:
         # pylint: disable=protected-access
