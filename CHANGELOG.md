@@ -193,6 +193,7 @@ Released 2021-10-09
 
 
 ### Version 0.5.1
+Released 2021-11-17
 
 - Extends CORS capabilities and adds relevant unit tests.
 
@@ -210,4 +211,4 @@ Released 2022-04-15
 - Adds EventApi and EventAware Resource
 - Adds Response as a part of Resource, so it can be easily accessed by post hook.
 - Improves mypy situation for tests
-- Makes Resource's post_request_hook error proneŻ
+- Makes Resource's post_request_hook more fault-tolerant

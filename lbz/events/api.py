@@ -29,13 +29,14 @@ class EventAPI(metaclass=Singleton):
         self._resources: List[str] = []
         self._pending_events: List[BaseEvent] = []
         self._sent_events: List[BaseEvent] = []
+        self._failed_events: List[BaseEvent] = []
         self._bus_name = getenv("EVENT_BRIDGE_BUS_NAME", f"{self._source}-event-bus")
 
     def __repr__(self) -> str:
-        return f"<EventAPI bus: {self._bus_name} pending_events_count: {len(self)}>"
-
-    def __len__(self) -> int:
-        return len(self._pending_events)
+        return (
+            f"<EventAPI bus: {self._bus_name} Events: pending={len(self._pending_events)} "
+            f"sent={len(self._sent_events)} failed={len(self._failed_events)}>"
+        )
 
     def set_source(self, source: str) -> None:
         self._source = source
@@ -52,6 +53,9 @@ class EventAPI(metaclass=Singleton):
     def get_all_sent_events(self) -> List[BaseEvent]:
         return self._sent_events
 
+    def get_all_failed_events(self) -> List[BaseEvent]:
+        return self._failed_events
+
     def send(self) -> None:
         if self._pending_events:
             entries = [self._create_eb_entry(event) for event in self._pending_events]
@@ -59,9 +63,6 @@ class EventAPI(metaclass=Singleton):
             self._mark_sent()
 
     def _create_eb_entry(self, new_event: BaseEvent) -> PutEventsRequestEntryTypeDef:
-        """
-        boto3.amazonaws.com/v1/documentation/api/latest/reference/services/events.html#EventBridge.Client.put_events
-        """
         return {
             "Detail": new_event.data,
             "DetailType": new_event.type,
@@ -72,4 +73,8 @@ class EventAPI(metaclass=Singleton):
 
     def _mark_sent(self) -> None:
         self._sent_events = self._pending_events
+        self._pending_events = []
+
+    def _mark_failed(self) -> None:
+        self._failed_events = self._pending_events
         self._pending_events = []

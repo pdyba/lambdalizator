@@ -3,7 +3,7 @@ import json
 from collections import defaultdict
 from http import HTTPStatus
 from os import environ
-from typing import List
+from typing import Callable, List
 from unittest.mock import ANY, MagicMock, patch
 
 from jose import jwt
@@ -215,6 +215,19 @@ class TestResource:
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert post_request_called
 
+    def test_post_request_hook_fails_but_respons_is_still_send(self) -> None:
+        class TestAPI(Resource):
+            @add_route("/")
+            def test_method(self) -> Response:
+                return Response("OK")
+
+            def post_request_hook(self) -> None:
+                raise TypeError
+
+        response = TestAPI(event)()
+
+        assert response.status_code == HTTPStatus.OK
+
     def test_500_returned_when_server_error_caught(self) -> None:
         class XResource(Resource):
             @add_route("/")
@@ -376,7 +389,7 @@ class TestCORSResource:
 
 class TestPagination:
     @patch.object(PaginatedCORSResource, "__init__", return_value=None)
-    def setup_method(self, _test_method, _init_mock: MagicMock) -> None:
+    def setup_method(self, _test_method: Callable, _init_mock: MagicMock) -> None:
         # pylint: disable=attribute-defined-outside-init
         self.resource = PaginatedCORSResource({}, [])
         self.resource.path = "/test/path"
@@ -441,7 +454,7 @@ class TestPagination:
 
 
 class TestEventAwareResource:
-    def test___init__(self) -> None:
+    def test_check_if_init_creates_event_api_attribute(self) -> None:
         class XResource(EventAwareResource):
             @add_route("/")
             def test_method(self) -> Response:
@@ -449,7 +462,7 @@ class TestEventAwareResource:
 
         res = XResource(event)
         assert hasattr(res, "event_api")
-        assert res.event_api == EventAPI()
+        assert res.event_api is EventAPI()
 
     @patch.object(EventAPI, "send")
     def test_post_hook_event_api_sent(self, mocked_event_api_send: MagicMock) -> None:
@@ -463,7 +476,9 @@ class TestEventAwareResource:
         mocked_event_api_send.assert_called_once()
 
     @patch.object(EventAPI, "send")
-    def test_post_hook_event_api_did_not_sent(self, mocked_event_api_send: MagicMock) -> None:
+    def test_post_hook_event_api_did_not_sent_when_response_with_error(
+        self, mocked_event_api_send: MagicMock
+    ) -> None:
         class XResource(EventAwareResource):
             @add_route("/")
             def test_method(self) -> None:
