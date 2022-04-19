@@ -30,7 +30,7 @@ class EventAPI(metaclass=Singleton):
         self._pending_events: List[BaseEvent] = []
         self._sent_events: List[BaseEvent] = []
         self._failed_events: List[BaseEvent] = []
-        self._bus_name = getenv("EVENT_BRIDGE_BUS_NAME", f"{self._source}-event-bus")
+        self._bus_name = getenv("EVENTS_BUS_NAME", f"{self._source}-event-bus")
 
     def __repr__(self) -> str:
         return (
