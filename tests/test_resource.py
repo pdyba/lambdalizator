@@ -1,5 +1,6 @@
 # coding=utf-8
 import json
+import logging
 from collections import defaultdict
 from http import HTTPStatus
 from os import environ
@@ -8,6 +9,7 @@ from unittest.mock import ANY, MagicMock, patch
 
 from jose import jwt
 from multidict import CIMultiDict
+from pytest import LogCaptureFixture
 
 from lbz.authentication import User
 from lbz.collector import AuthzCollector
@@ -215,18 +217,27 @@ class TestResource:
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert post_request_called
 
-    def test_post_request_hook_fails_but_respons_is_still_send(self) -> None:
+    def test_post_request_hook_fails_but_response_is_still_sent(
+        self, caplog: LogCaptureFixture
+    ) -> None:
         class TestAPI(Resource):
             @add_route("/")
             def test_method(self) -> Response:
                 return Response("OK")
 
             def post_request_hook(self) -> None:
-                raise TypeError
+                raise TypeError("xxx")
 
         response = TestAPI(event)()
 
         assert response.status_code == HTTPStatus.OK
+        assert caplog.record_tuples == [
+            (
+                "lbz.resource",
+                logging.ERROR,
+                "xxx",
+            )
+        ]
 
     def test_500_returned_when_server_error_caught(self) -> None:
         class XResource(Resource):
@@ -461,7 +472,6 @@ class TestEventAwareResource:
                 return Response({"message": "x"})
 
         res = XResource(event)
-        assert hasattr(res, "event_api")
         assert res.event_api is EventAPI()
 
     @patch.object(EventAPI, "send")
@@ -476,7 +486,7 @@ class TestEventAwareResource:
         mocked_event_api_send.assert_called_once()
 
     @patch.object(EventAPI, "send")
-    def test_post_hook_event_api_did_not_sent_when_response_with_error(
+    def test_post_hook_event_api_was_not_sent_when_response_with_error(
         self, mocked_event_api_send: MagicMock
     ) -> None:
         class XResource(EventAwareResource):

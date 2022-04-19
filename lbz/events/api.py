@@ -44,6 +44,9 @@ class EventAPI(metaclass=Singleton):
     def set_resources(self, resources: List[str]) -> None:
         self._resources = resources
 
+    def set_bus_name(self, bus_name: str) -> None:
+        self._bus_name = bus_name
+
     def register(self, new_event: BaseEvent) -> None:
         self._pending_events.append(new_event)
 
@@ -57,10 +60,14 @@ class EventAPI(metaclass=Singleton):
         return self._failed_events
 
     def send(self) -> None:
-        if self._pending_events:
-            entries = [self._create_eb_entry(event) for event in self._pending_events]
-            client.eventbridge.put_events(Entries=entries)
-            self._mark_sent()
+        try:
+            if self._pending_events:
+                entries = [self._create_eb_entry(event) for event in self._pending_events]
+                client.eventbridge.put_events(Entries=entries)
+                self._mark_sent()
+        except Exception as err:
+            self._mark_failed()
+            raise err
 
     def _create_eb_entry(self, new_event: BaseEvent) -> PutEventsRequestEntryTypeDef:
         return {
@@ -74,7 +81,9 @@ class EventAPI(metaclass=Singleton):
     def _mark_sent(self) -> None:
         self._sent_events = self._pending_events
         self._pending_events = []
+        self._failed_events = []
 
     def _mark_failed(self) -> None:
         self._failed_events = self._pending_events
         self._pending_events = []
+        self._sent_events = []
