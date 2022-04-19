@@ -10,6 +10,7 @@ from multidict import CIMultiDict
 
 from lbz.authentication import User
 from lbz.collector import authz_collector
+from lbz.events.api import EventAPI
 from lbz.exceptions import (
     LambdaFWException,
     NotFound,
@@ -59,6 +60,7 @@ class Resource:
         )
         self._authz_collector.set_resource(self.get_name())
         self._authz_collector.set_guest_permissions(self.get_guest_authorization())
+        self.response: Response = None  # type: ignore
 
     def __call__(self) -> Response:
         try:
@@ -71,19 +73,18 @@ class Resource:
                 raise UnsupportedMethod(method=self.method)
             self.request.user = self._get_user(self.request.headers)
             endpoint: Callable = getattr(self, self._router[self.path][self.method])
-            response: Response = endpoint(**self.path_params)
-            return response
+            self.response = endpoint(**self.path_params)
         except LambdaFWException as err:
             if 500 <= err.status_code < 600:
                 logger.exception(err)
             else:
                 logger.warning(err, exc_info=is_in_debug_mode())
-            return err.get_response(self.request.context["requestId"])
+            self.response = err.get_response(self.request.context["requestId"])
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
-            return ServerError().get_response(self.request.context["requestId"])
-        finally:
-            self.post_request_hook()
+            self.response = ServerError().get_response(self.request.context["requestId"])
+        self._post_request_hook()
+        return self.response
 
     def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"
@@ -98,6 +99,15 @@ class Resource:
         if authentication:
             raise Unauthorized("Authentication method not supported")
         return None
+
+    def _post_request_hook(self) -> None:
+        """
+        Makes the post_request_hook run-time friendly.
+        """
+        try:
+            self.post_request_hook()
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
 
     def pre_request_hook(self) -> None:
         """
@@ -230,3 +240,13 @@ class PaginatedCORSResource(CORSResource):
             encoded_params = urlencode(query_params, doseq=True)  # type: ignore
             return f"{self.urn}?{encoded_params}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"
+
+
+class EventAwareResource(Resource):
+    def __init__(self, event: dict):
+        super().__init__(event)
+        self.event_api = EventAPI()
+
+    def post_request_hook(self) -> None:
+        if self.response.is_ok():
+            self.event_api.send()

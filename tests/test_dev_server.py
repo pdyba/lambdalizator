@@ -12,11 +12,11 @@ from lbz.router import add_route
 
 class HelloWorld(Resource):
     @add_route("/", method="GET")
-    def list(self):
+    def list(self) -> Response:
         return Response({"message": "HelloWorld"})
 
     @add_route("/t/{id}", method="GET")
-    def get(self):
+    def get(self) -> Response:
         return Response({"message": "HelloWorld"})
 
 
@@ -25,12 +25,12 @@ class MyLambdaDevHandlerHelloWorld(MyLambdaDevHandler):
 
 
 class MyClass:
-    def __init__(self):
+    def __init__(self) -> None:
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcp_socket.connect("0.0.0.0", "8888")
 
 
-def test_my_lambda_dev_handler():
+def test_my_lambda_dev_handler() -> None:
     with mock.patch("socket.socket") as msocket:
         msocket.makefile = lambda a, b: io.BytesIO(b"GET / HTTP/1.1\r\n")
         msocket.rfile.close = lambda: 0
@@ -48,7 +48,7 @@ def test_my_lambda_dev_handler():
     assert params == {"id": "123"}
 
 
-def test_my_dev_server():
+def test_my_dev_server() -> None:
     dev_serv = MyDevServer(HelloWorld)
     assert dev_serv.server_address == ("localhost", 8000)
     assert dev_serv.port == 8000

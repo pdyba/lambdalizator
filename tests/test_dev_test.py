@@ -5,7 +5,7 @@ from lbz.response import Response
 from .test_dev_server import HelloWorld
 
 
-def test_client():
+def test_client() -> None:
     client = Client(HelloWorld)
     resp = client.get("/")
     assert isinstance(resp, Response)

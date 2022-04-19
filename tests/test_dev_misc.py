@@ -8,5 +8,5 @@ def hash_string(string):
     return sha1(string.encode("UTF-8")).hexdigest()
 
 
-def test_event():
+def test_event() -> None:
     assert hash_string(EVENT_TEMPLATE) == "fe0ffbaaf59a43ccf384a99076675b1fcefcd9b2"

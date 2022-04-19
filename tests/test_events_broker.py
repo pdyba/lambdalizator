@@ -15,7 +15,7 @@ class TestEventBroker:
         mapper = {"x": [func_1, func_2]}
         event = {"detail-type": "x", "detail": {"y": 1}}
 
-        EventBroker(mapper, event).handle()
+        EventBroker(mapper, event).handle()  # type: ignore
 
         func_1.assert_called_once_with(expected_event)
         func_2.assert_called_once_with(expected_event)
@@ -27,7 +27,7 @@ class TestEventBroker:
         event = {"detail-type": "y", "detail": {"y": 1}}
 
         with pytest.raises(NotImplementedError, match="No handlers implemented for y"):
-            EventBroker(mapper, event).handle()
+            EventBroker(mapper, event).handle()  # type: ignore
 
         func_1.assert_not_called()
         func_2.assert_not_called()
@@ -40,7 +40,7 @@ class TestEventBroker:
         mapper = {"x": [func_1, func_2, func_3]}
         event = {"detail-type": "x", "detail": {"y": 1}}
 
-        EventBroker(mapper, event).handle()
+        EventBroker(mapper, event).handle()  # type: ignore
 
         func_1.assert_called_once_with(expected_event)
         func_2.assert_called_once_with(expected_event)

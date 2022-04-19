@@ -17,7 +17,7 @@ allowed_audiences = [str(uuid4()), str(uuid4())]
 
 
 class TestAuthentication:
-    def setup_class(self):
+    def setup_class(self) -> None:
         # pylint: disable=attribute-defined-outside-init
         self.cognito_user = {
             "cognito:username": str(uuid4()),
@@ -39,30 +39,30 @@ class TestAuthentication:
         self.pool_id = str(uuid4)
         self.sample_user = User(self.id_token)
 
-    def test__repr__username(self, jwt_partial_payload):
+    def test__repr__username(self, jwt_partial_payload) -> None:
         username = str(uuid4())
         sample_user = User(encode_token({"cognito:username": username, **jwt_partial_payload}))
         assert sample_user.__repr__() == f"User username={username}"
 
-    def test_decoding_user(self):
+    def test_decoding_user(self) -> None:
         assert User(self.id_token)
 
-    def test_decoding_user_raises_unauthorized_when_invalid_token(self):
+    def test_decoding_user_raises_unauthorized_when_invalid_token(self) -> None:
         with pytest.raises(Unauthorized):
             User(self.id_token + "?")
 
-    def test_decoding_user_raises_unauthorized_when_invalid_audience(self):
+    def test_decoding_user_raises_unauthorized_when_invalid_audience(self) -> None:
         with pytest.raises(Unauthorized), patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [str(uuid4())]):
             User(self.id_token)
 
-    def test_decoding_user_raises_unauthorized_when_invalid_public_key(self):
+    def test_decoding_user_raises_unauthorized_when_invalid_public_key(self) -> None:
         with pytest.raises(Unauthorized), patch(
             "lbz.jwt_utils.PUBLIC_KEYS",
             [{**SAMPLE_PUBLIC_KEY.copy(), "n": str(uuid4())}],
         ):
             User(self.id_token)
 
-    def test_loading_user_parses_user_attributes(self):
+    def test_loading_user_parses_user_attributes(self) -> None:
         parsed = self.cognito_user.copy()
         for key in ["aud", "iss", "exp", "iat"]:
             parsed.pop(key, None)
@@ -72,7 +72,7 @@ class TestAuthentication:
             )
             assert value == expected_value
 
-    def test_loading_user_does_not_parse_standard_claims(self, jwt_partial_payload):
+    def test_loading_user_does_not_parse_standard_claims(self, jwt_partial_payload) -> None:
         current_ts = int(time.time())
         standard_claims = {
             **jwt_partial_payload,
@@ -92,12 +92,12 @@ class TestAuthentication:
         for key in standard_claims:
             assert not hasattr(user, key)
 
-    def test_user_raises_when_more_attributes_than_1000(self):
+    def test_user_raises_when_more_attributes_than_1000(self) -> None:
         with pytest.raises(RuntimeError):
             cognito_user = {str(uuid4()): str(uuid4()) for i in range(1001)}
             User(encode_token(cognito_user))
 
-    def test_nth_cognito_client_validated_as_audience(self):
+    def test_nth_cognito_client_validated_as_audience(self) -> None:
         test_allowed_audiences = [str(uuid4()) for _ in range(10)]
         with patch("lbz.jwt_utils.ALLOWED_AUDIENCES", test_allowed_audiences):
             assert User(encode_token({**self.cognito_user, "aud": test_allowed_audiences[9]}))

@@ -18,6 +18,7 @@ setup(
     install_requires=[
         "python-jose >=3.3.0, <3.4.0",
         "multidict >=6.0.0, <6.1.0",
+        "boto3 >=1.21.0, <1.22.0",
     ],
     classifiers=[
         "Environment :: Web Environment",

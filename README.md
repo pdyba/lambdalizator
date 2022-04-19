@@ -36,6 +36,9 @@ Lambdalizator can be configured using the following environment variables:
   auth token will have the prefix removed. Defaults to False (set as "0" or "1").
 - `LOGGING_LEVEL` - log level used in the application. Defaults to INFO.
 - `EXPIRATION_KEY` - for defining the expiration key used in authorization default "exp" according to JWT standard.
+- `AWS_LAMBDA_FUNCTION_NAME` - defined by AWS Lambda environment used ATM only in EventAPI
+- `EVENTS_BUS_NAME` - expected by EventAPI Event Bridge Events Bus Name. Defaults to Lambda name 
+  taken from AWS_LAMBDA_FUNCTION_NAME and extended with `-event-bus`
 
 
 ## Hello World Example:

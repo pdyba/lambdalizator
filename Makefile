@@ -19,7 +19,7 @@ requirements-dev:
 
 lint:
 	pylint setup.py lbz examples tests
-	mypy setup.py lbz # examples tests # TODO: extend for tests and if possible for examples
+	mypy setup.py lbz tests/test_events_* # examples tests # TODO: extend for tests and if possible for examples
 	flake8 setup.py lbz examples tests
 
 
