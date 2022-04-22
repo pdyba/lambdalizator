@@ -3,7 +3,7 @@
 import pytest
 
 from lbz.authz.utils import check_permission, has_permission
-from lbz.dev.misc import RestEvent
+from lbz.dev.misc import APIGatewayEvent
 from lbz.exceptions import PermissionDenied, Unauthorized
 
 
@@ -12,7 +12,7 @@ class TestAuthorizationUtils:
         self, limited_access_auth_header, sample_resource_with_authorization
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            RestEvent("/", "GET", headers={"authorization": limited_access_auth_header})
+            APIGatewayEvent("/", "GET", headers={"authorization": limited_access_auth_header})
         )
         assert check_permission(res_instance, "perm-name") == {"allow": "*", "deny": None}
 
@@ -20,7 +20,7 @@ class TestAuthorizationUtils:
         self, limited_access_auth_header, sample_resource_with_authorization
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            RestEvent("/", "GET", headers={"authorization": limited_access_auth_header})
+            APIGatewayEvent("/", "GET", headers={"authorization": limited_access_auth_header})
         )
         with pytest.raises(PermissionDenied):
             check_permission(res_instance, "garbage")
@@ -36,7 +36,7 @@ class TestAuthorizationUtils:
         self, limited_access_auth_header, sample_resource_with_authorization
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            RestEvent("/garbage", "GET", headers={"authorization": limited_access_auth_header})
+            APIGatewayEvent("/garbage", "GET", headers={"authorization": limited_access_auth_header})
         )
         assert has_permission(res_instance, "perm-name")
 
@@ -44,6 +44,6 @@ class TestAuthorizationUtils:
         self, limited_access_auth_header, sample_resource_with_authorization
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            RestEvent("/garbage", "GET", headers={"authorization": limited_access_auth_header})
+            APIGatewayEvent("/garbage", "GET", headers={"authorization": limited_access_auth_header})
         )
         assert not has_permission(res_instance, "garbage")

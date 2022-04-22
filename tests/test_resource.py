@@ -13,7 +13,7 @@ from pytest import LogCaptureFixture
 
 from lbz.authentication import User
 from lbz.collector import AuthzCollector
-from lbz.dev.misc import RestEvent
+from lbz.dev.misc import APIGatewayEvent
 from lbz.events.api import EventAPI
 from lbz.exceptions import NotFound, ServerError
 from lbz.misc import MultiDict
@@ -42,7 +42,7 @@ req = Request(
     user=None,
 )
 
-event = RestEvent(
+event = APIGatewayEvent(
     resource_path="/",
     method="GET",
     body=req,  # pylint issue #214
@@ -51,7 +51,7 @@ event = RestEvent(
     query_params={},
 )
 
-event_wrong_uri = RestEvent(
+event_wrong_uri = APIGatewayEvent(
     resource_path="/xxxs/asdasd/xxx",
     method="GET",
     headers={},

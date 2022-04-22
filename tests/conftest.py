@@ -11,7 +11,7 @@ from lbz.authentication import User
 from lbz.authz.authorizer import Authorizer
 from lbz.authz.decorators import authorization
 from lbz.collector import authz_collector
-from lbz.dev.misc import RestEvent
+from lbz.dev.misc import APIGatewayEvent
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
@@ -48,8 +48,8 @@ def sample_request() -> Request:
 
 
 @pytest.fixture()
-def sample_event() -> RestEvent:
-    return RestEvent(
+def sample_event() -> APIGatewayEvent:
+    return APIGatewayEvent(
         resource_path="/",
         method="GET",
         headers={},

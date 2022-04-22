@@ -3,7 +3,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
 from lbz.authz.decorators import authorization
-from lbz.dev.misc import RestEvent
+from lbz.dev.misc import APIGatewayEvent
 from lbz.resource import Resource
 from lbz.response import Response
 from lbz.router import add_route
@@ -25,7 +25,7 @@ class TestAuthorizationDecorator:
         self, sample_resource_with_authorization, full_access_auth_header
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            RestEvent("/", "GET", headers={"authorization": full_access_auth_header})
+            APIGatewayEvent("/", "GET", headers={"authorization": full_access_auth_header})
         )
         assert res_instance().status_code == HTTPStatus.OK
 
@@ -33,7 +33,7 @@ class TestAuthorizationDecorator:
         self, limited_access_auth_header, sample_resource_with_authorization
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            RestEvent("/", "GET", headers={"authorization": limited_access_auth_header})
+            APIGatewayEvent("/", "GET", headers={"authorization": limited_access_auth_header})
         )
         assert res_instance().status_code == HTTPStatus.OK
 
@@ -41,7 +41,7 @@ class TestAuthorizationDecorator:
         self, limited_access_auth_header, sample_resource_with_authorization
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            RestEvent("/garbage", "GET", headers={"authorization": limited_access_auth_header})
+            APIGatewayEvent("/garbage", "GET", headers={"authorization": limited_access_auth_header})
         )
         assert res_instance().status_code == HTTPStatus.FORBIDDEN
 
@@ -66,11 +66,11 @@ class GuestResource(Resource):  # pylint: disable=unused-variable
 
 class TestAuthorizationDecoratorGuestPermissions:
     def test_get_success(self) -> None:
-        res_instance = GuestResource(RestEvent("/", "GET"))
+        res_instance = GuestResource(APIGatewayEvent("/", "GET"))
         assert res_instance().status_code == HTTPStatus.OK
 
     def test_limited_permissions_failed(self) -> None:
-        res_instance = GuestResource(RestEvent("/garbage2", "GET"))
+        res_instance = GuestResource(APIGatewayEvent("/garbage2", "GET"))
         assert res_instance().status_code == HTTPStatus.FORBIDDEN
 
     def test_inharitance_success(
@@ -78,6 +78,6 @@ class TestAuthorizationDecoratorGuestPermissions:
         full_access_auth_header,
     ) -> None:
         res_instance = GuestResource(
-            RestEvent("/garbage2", "GET", headers={"authorization": full_access_auth_header})
+            APIGatewayEvent("/garbage2", "GET", headers={"authorization": full_access_auth_header})
         )
         assert res_instance().status_code == HTTPStatus.OK
