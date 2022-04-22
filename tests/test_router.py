@@ -14,7 +14,6 @@ class TestRouter:
     def teardown_method(self, _test_method) -> None:
         # pylint: disable= attribute-defined-outside-init
         self.router._del()  # pylint: disable=protected-access
-        self.router = None
 
     def test___init__(self) -> None:
         assert isinstance(self.router._routes, NestedDict)  # pylint: disable=protected-access
@@ -63,3 +62,5 @@ class TestAddRoute:
         assert len(router) == 1
         assert router["/"] == {"GET": "random_method"}
         assert router["/"]["GET"] == "random_method"
+
+        router._del()  # pylint: disable=protected-access
