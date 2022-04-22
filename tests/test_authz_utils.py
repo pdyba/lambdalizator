@@ -36,7 +36,9 @@ class TestAuthorizationUtils:
         self, limited_access_auth_header, sample_resource_with_authorization
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            APIGatewayEvent("/garbage", "GET", headers={"authorization": limited_access_auth_header})
+            APIGatewayEvent(
+                "/garbage", "GET", headers={"authorization": limited_access_auth_header}
+            )
         )
         assert has_permission(res_instance, "perm-name")
 
@@ -44,6 +46,8 @@ class TestAuthorizationUtils:
         self, limited_access_auth_header, sample_resource_with_authorization
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            APIGatewayEvent("/garbage", "GET", headers={"authorization": limited_access_auth_header})
+            APIGatewayEvent(
+                "/garbage", "GET", headers={"authorization": limited_access_auth_header}
+            )
         )
         assert not has_permission(res_instance, "garbage")

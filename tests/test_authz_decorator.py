@@ -41,7 +41,9 @@ class TestAuthorizationDecorator:
         self, limited_access_auth_header, sample_resource_with_authorization
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            APIGatewayEvent("/garbage", "GET", headers={"authorization": limited_access_auth_header})
+            APIGatewayEvent(
+                "/garbage", "GET", headers={"authorization": limited_access_auth_header}
+            )
         )
         assert res_instance().status_code == HTTPStatus.FORBIDDEN
 
