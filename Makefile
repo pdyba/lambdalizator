@@ -18,9 +18,9 @@ requirements-dev:
 	pip install -r requirements_dev.txt
 
 lint:
-	pylint setup.py lbz examples tests
-	mypy setup.py lbz tests/test_events_* # examples tests # TODO: extend for tests and if possible for examples
 	flake8 setup.py lbz examples tests
+	pylint setup.py lbz examples tests
+	mypy setup.py lbz tests/test_events # examples tests # TODO: extend for tests and if possible for examples
 
 
 .PHONY: isort

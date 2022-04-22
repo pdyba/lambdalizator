@@ -10,7 +10,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from os import environ
 from typing import Tuple, Type, Union
 
-from lbz.dev.misc import Event
+from lbz.dev.misc import APIGatewayEvent
 from lbz.resource import Resource
 
 if environ.get("LBZ_DEBUG_MODE") is None:
@@ -106,7 +106,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                 self._error(666, "Path not Found")
                 return
             resource = self.cls(  # pylint: disable=not-callable
-                Event(
+                APIGatewayEvent(
                     resource_path=route,
                     method=self.command,
                     headers=self.headers,  # type: ignore

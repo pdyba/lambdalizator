@@ -2,7 +2,7 @@
 """Helper class for testing."""
 from typing import Optional, Type
 
-from lbz.dev.misc import Event
+from lbz.dev.misc import APIGatewayEvent
 from lbz.misc import get_logger
 from lbz.resource import Resource
 from lbz.response import Response
@@ -84,7 +84,7 @@ class Client:
                 else:
                     query_params[key] = [str(elem) for elem in value]
         return self.resource(
-            Event(
+            APIGatewayEvent(
                 resource_path=path,
                 method=method,
                 body=body,

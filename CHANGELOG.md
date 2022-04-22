@@ -212,3 +212,9 @@ Released 2022-04-15
 - Adds Response as a part of Resource, so it can be easily accessed by post hook.
 - Improves mypy situation for tests
 - Makes Resource's post_request_hook more fault-tolerant
+
+### Version 0.5.4
+Released 2022-04-22
+
+- EventApi and EventAware improvements
+- Refactors Event to APIGatewayEvent

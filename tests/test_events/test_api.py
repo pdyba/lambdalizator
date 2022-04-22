@@ -1,4 +1,3 @@
-from os import environ
 from typing import Callable
 from unittest.mock import MagicMock, patch
 
@@ -21,12 +20,32 @@ class TestBaseEvent:
         assert new_event.raw_data == {"x": 1}
         assert new_event.data == '{"x": 1}'
 
+    def test__eq__same(self) -> None:
+        new_event_1 = MyTestEvent({"x": 1})
+        new_event_2 = MyTestEvent({"x": 1})
+
+        assert new_event_1 == new_event_2
+
+    def test__eq__different_data(self) -> None:
+        new_event_1 = MyTestEvent({"x": 1})
+        new_event_2 = MyTestEvent({"x": 2})
+
+        assert new_event_1 != new_event_2
+
+    def test__eq__different_type_same_data(self) -> None:
+        class MySecondTestEvent(BaseEvent):
+            type = "MY_SECOND_TEST_EVENT"
+
+        new_event_1 = MyTestEvent({"x": 1})
+        new_event_2 = MySecondTestEvent({"x": 1})
+
+        assert new_event_1 != new_event_2
+
 
 class TestEventApi:
     def setup_method(self) -> None:
         # pylint: disable= attribute-defined-outside-init
-        with patch.dict(environ, {"AWS_LAMBDA_FUNCTION_NAME": "million-dollar-lambda"}):
-            self.event_api = EventAPI()
+        self.event_api = EventAPI()
 
     def teardown_method(self, _test_method: Callable) -> None:
         # pylint: disable= attribute-defined-outside-init
@@ -149,3 +168,28 @@ class TestEventApi:
                 }
             ]
         )
+
+    @patch.object(Boto3Client, "eventbridge", MagicMock())
+    def test_second_send_clears_everything(self) -> None:
+        event = MyTestEvent({"x": 1})
+        self.event_api.register(event)
+
+        self.event_api.send()
+        self.event_api.send()
+
+        assert self.event_api.get_all_failed_events() == []
+        assert self.event_api.get_all_sent_events() == []
+        assert self.event_api.get_all_pending_events() == []
+
+    @patch.object(Boto3Client, "eventbridge", MagicMock())
+    def test_clear(self) -> None:
+        event = MyTestEvent({"x": 1})
+        self.event_api.register(event)
+        self.event_api.send()
+        self.event_api.register(event)
+
+        self.event_api.clear()
+
+        assert self.event_api.get_all_failed_events() == []
+        assert self.event_api.get_all_sent_events() == []
+        assert self.event_api.get_all_pending_events() == []

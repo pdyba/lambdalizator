@@ -13,7 +13,7 @@ from pytest import LogCaptureFixture
 
 from lbz.authentication import User
 from lbz.collector import AuthzCollector
-from lbz.dev.misc import Event
+from lbz.dev.misc import APIGatewayEvent
 from lbz.events.api import EventAPI
 from lbz.exceptions import NotFound, ServerError
 from lbz.misc import MultiDict
@@ -42,7 +42,7 @@ req = Request(
     user=None,
 )
 
-event = Event(
+event = APIGatewayEvent(
     resource_path="/",
     method="GET",
     body=req,  # pylint issue #214
@@ -51,7 +51,7 @@ event = Event(
     query_params={},
 )
 
-event_wrong_uri = Event(
+event_wrong_uri = APIGatewayEvent(
     resource_path="/xxxs/asdasd/xxx",
     method="GET",
     headers={},
@@ -474,8 +474,11 @@ class TestEventAwareResource:
         res = XResource(event)
         assert res.event_api is EventAPI()
 
+    @patch.object(EventAPI, "clear")
     @patch.object(EventAPI, "send")
-    def test_post_hook_event_api_sent(self, mocked_event_api_send: MagicMock) -> None:
+    def test_post_hook_event_api_sent(
+        self, mocked_event_api_send: MagicMock, mocked_event_api_clear: MagicMock
+    ) -> None:
         class XResource(EventAwareResource):
             @add_route("/")
             def test_method(self) -> Response:
@@ -484,10 +487,12 @@ class TestEventAwareResource:
         XResource(event)()
 
         mocked_event_api_send.assert_called_once()
+        mocked_event_api_clear.assert_not_called()
 
+    @patch.object(EventAPI, "clear")
     @patch.object(EventAPI, "send")
     def test_post_hook_event_api_was_not_sent_when_response_with_error(
-        self, mocked_event_api_send: MagicMock
+        self, mocked_event_api_send: MagicMock, mocked_event_api_clear: MagicMock
     ) -> None:
         class XResource(EventAwareResource):
             @add_route("/")
@@ -497,3 +502,4 @@ class TestEventAwareResource:
         XResource(event)()
 
         mocked_event_api_send.assert_not_called()
+        mocked_event_api_clear.assert_called_once()

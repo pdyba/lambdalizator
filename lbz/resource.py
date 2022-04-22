@@ -250,3 +250,5 @@ class EventAwareResource(Resource):
     def post_request_hook(self) -> None:
         if self.response.is_ok():
             self.event_api.send()
+        else:
+            self.event_api.clear()

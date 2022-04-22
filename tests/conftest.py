@@ -11,7 +11,7 @@ from lbz.authentication import User
 from lbz.authz.authorizer import Authorizer
 from lbz.authz.decorators import authorization
 from lbz.collector import authz_collector
-from lbz.dev.misc import Event
+from lbz.dev.misc import APIGatewayEvent
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
@@ -48,8 +48,8 @@ def sample_request() -> Request:
 
 
 @pytest.fixture()
-def sample_event() -> Event:
-    return Event(
+def sample_event() -> APIGatewayEvent:
+    return APIGatewayEvent(
         resource_path="/",
         method="GET",
         headers={},
@@ -147,7 +147,7 @@ def sample_request_with_user(user) -> Request:  # pylint: disable=redefined-oute
 
 
 @pytest.fixture()
-def sample_resoruce_with_authorization() -> Type[Resource]:
+def sample_resource_with_authorization() -> Type[Resource]:
     """Be careful when doing any changes in this fixture - especially for Auth Collector"""
 
     class XResource(Resource):

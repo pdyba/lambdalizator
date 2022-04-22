@@ -11,7 +11,7 @@ from lbz.dev.event import EVENT_TEMPLATE
 WORKING_DIR = pathlib.Path(__file__).parent.absolute()
 
 
-class Event(dict):
+class APIGatewayEvent(dict):
     """Fake Event object for AWS Lambda compatibility"""
 
     def __init__(

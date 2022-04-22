@@ -18,6 +18,11 @@ class BaseEvent:
         self.raw_data = raw_data
         self.data: str = self.serialize(raw_data)
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, BaseEvent):
+            return self.type == other.type and self.raw_data == other.raw_data
+        return False
+
     @staticmethod
     def serialize(raw_data: dict) -> str:
         return json.dumps(raw_data, default=str)
@@ -64,10 +69,15 @@ class EventAPI(metaclass=Singleton):
             if self._pending_events:
                 entries = [self._create_eb_entry(event) for event in self._pending_events]
                 client.eventbridge.put_events(Entries=entries)
-                self._mark_sent()
+            self._mark_sent()
         except Exception as err:
             self._mark_failed()
             raise err
+
+    def clear(self) -> None:
+        self._sent_events = []
+        self._pending_events = []
+        self._failed_events = []
 
     def _create_eb_entry(self, new_event: BaseEvent) -> PutEventsRequestEntryTypeDef:
         return {
