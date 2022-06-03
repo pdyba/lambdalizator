@@ -10,6 +10,9 @@ if TYPE_CHECKING:
 else:
     PutEventsRequestEntryTypeDef = dict
 
+# https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html
+MAX_EVENTS_TO_SEND_AT_ONCE = 10
+
 
 class BaseEvent:
     type: str
@@ -65,13 +68,20 @@ class EventAPI(metaclass=Singleton):
         return self._failed_events
 
     def send(self) -> None:
+        self._sent_events = []
+        self._failed_events = []
+
         try:
-            if self._pending_events:
-                entries = [self._create_eb_entry(event) for event in self._pending_events]
+            while self._pending_events:
+                events = self._pending_events[:MAX_EVENTS_TO_SEND_AT_ONCE]
+                entries = [self._create_eb_entry(event) for event in events]
                 client.eventbridge.put_events(Entries=entries)
-            self._mark_sent()
+
+                self._sent_events.extend(events)
+                self._pending_events = self._pending_events[MAX_EVENTS_TO_SEND_AT_ONCE:]
         except Exception as err:
-            self._mark_failed()
+            self._failed_events.extend(self._pending_events)
+            self._pending_events = []
             raise err
 
     def clear(self) -> None:
@@ -87,13 +97,3 @@ class EventAPI(metaclass=Singleton):
             "Resources": self._resources,
             "Source": self._source,
         }
-
-    def _mark_sent(self) -> None:
-        self._sent_events = self._pending_events
-        self._pending_events = []
-        self._failed_events = []
-
-    def _mark_failed(self) -> None:
-        self._failed_events = self._pending_events
-        self._pending_events = []
-        self._sent_events = []

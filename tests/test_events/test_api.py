@@ -123,6 +123,36 @@ class TestEventApi:
         assert self.event_api.get_all_sent_events() == [event]
 
     @patch.object(Boto3Client, "eventbridge")
+    def test__send__sends_events_in_chunks_respecting_limits(self, mock_send: MagicMock) -> None:
+        for i in range(33):  # AWS allows sending maximum 10 events at once
+            self.event_api.register(MyTestEvent({"x": i}))
+
+        self.event_api.send()
+
+        assert mock_send.put_events.call_count == 4
+        assert len(mock_send.put_events.call_args_list[0].kwargs["Entries"]) == 10
+        assert len(mock_send.put_events.call_args_list[1].kwargs["Entries"]) == 10
+        assert len(mock_send.put_events.call_args_list[2].kwargs["Entries"]) == 10
+        assert len(mock_send.put_events.call_args_list[3].kwargs["Entries"]) == 3
+        assert len(self.event_api.get_all_sent_events()) == 33
+        assert len(self.event_api.get_all_pending_events()) == 0
+        assert len(self.event_api.get_all_failed_events()) == 0
+
+    @patch.object(Boto3Client, "eventbridge")
+    def test__send__stops_processing_events_on_first_error(self, mock_send: MagicMock) -> None:
+        mock_send.put_events.side_effect = (None, None, RuntimeError)
+        for i in range(33):  # AWS allows sending maximum 10 events at once
+            self.event_api.register(MyTestEvent({"x": i}))
+
+        with pytest.raises(RuntimeError):
+            self.event_api.send()
+
+        assert mock_send.put_events.call_count == 3
+        assert len(self.event_api.get_all_sent_events()) == 20
+        assert len(self.event_api.get_all_pending_events()) == 0
+        assert len(self.event_api.get_all_failed_events()) == 13
+
+    @patch.object(Boto3Client, "eventbridge")
     def test_sent_fail_saves_events_in_right_place(self, mock_send: MagicMock) -> None:
         assert self.event_api.get_all_failed_events() == []
 
