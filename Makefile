@@ -1,34 +1,88 @@
-black:
-	black . --line-length 99
+SHELL = /bin/bash
 
-black-check:
-	black . --line-length 99 --check
+.SILENT:
 
-test:
-	coverage run --include 'lbz/*' -m pytest "tests"
-	coverage report --skip-covered
 
-build:
-	python setup.py sdist bdist_wheel
+###############################################################################
+# Python Requirements
+# -----------------------------------------------------------------------------
+# TODO: Start using pip-tools as a dependency freezing tool
+.PHONY: install
+install:
+	pip install -r requirements.txt
 
-upload:
-	python3 -m twine upload dist/*
-
-requirements-dev:
+.PHONY: install-dev
+install-dev:
 	pip install -r requirements_dev.txt
 
-lint:
-	flake8 setup.py lbz examples tests
-	pylint setup.py lbz examples tests
-	mypy setup.py lbz tests/test_events # examples tests # TODO: extend for tests and if possible for examples
 
+###############################################################################
+# Code Quality
+# -----------------------------------------------------------------------------
+.PHONY: black
+black:
+	black --version
+	black --target-version py38 --line-length 99 examples lbz tests setup.py
+
+.PHONY: black-check
+black-check:
+	black --version
+	black --target-version py38 --line-length 99 --check examples lbz tests setup.py
 
 .PHONY: isort
 isort:
 	isort --version-number
-	isort setup.py lbz examples tests
+	isort examples lbz tests setup.py
 
 .PHONY: isort-check
 isort-check:
 	isort --version-number
-	isort --check-only setup.py lbz examples tests
+	isort --check-only examples lbz tests setup.py
+
+.PHONY: format
+format: black isort
+
+.PHONY: flake8
+flake8:
+	flake8 --version
+	flake8 examples lbz tests setup.py
+
+.PHONY: mypy
+mypy:
+	mypy --version
+	mypy lbz tests/test_events setup.py  # TODO: start validating the rest of the code by mypy
+
+.PHONY: pylint
+pylint:
+	pylint --version
+	pylint examples lbz tests setup.py
+
+.PHONY: lint
+lint:  flake8 mypy pylint
+
+.PHONY: format-and-lint
+format-and-lint: format lint
+
+
+###############################################################################
+# Tests
+# -----------------------------------------------------------------------------
+.PHONY: test-unit tu
+test-unit tu:
+	coverage run --include "lbz/*" -m pytest "tests"
+	coverage report -m --skip-covered
+
+.PHONY: test
+test: test-unit
+
+
+###############################################################################
+# Custom Scripts
+# -----------------------------------------------------------------------------
+.PHONY: build
+build:
+	python setup.py sdist bdist_wheel
+
+.PHONY: upload
+upload:
+	python3 -m twine upload dist/*
