@@ -91,6 +91,21 @@ class TestEventApi:
             ]
         )
 
+    def test__sent_events__disallows_changing_its_content_outside_api(self) -> None:
+        self.event_api.sent_events.append(MyTestEvent({"x": 0}))
+
+        assert self.event_api.sent_events == []
+
+    def test__pending_events__disallows_changing_its_content_outside_api(self) -> None:
+        self.event_api.pending_events.append(MyTestEvent({"x": 0}))
+
+        assert self.event_api.pending_events == []
+
+    def test__failed_events__disallows_changing_its_content_outside_api(self) -> None:
+        self.event_api.failed_events.append(MyTestEvent({"x": 0}))
+
+        assert self.event_api.failed_events == []
+
     def test_register_saves_event_in_right_place(self) -> None:
         assert self.event_api.get_all_pending_events() == []
 
@@ -134,9 +149,9 @@ class TestEventApi:
         assert len(mock_send.put_events.call_args_list[1].kwargs["Entries"]) == 10
         assert len(mock_send.put_events.call_args_list[2].kwargs["Entries"]) == 10
         assert len(mock_send.put_events.call_args_list[3].kwargs["Entries"]) == 3
-        assert len(self.event_api.get_all_sent_events()) == 33
-        assert len(self.event_api.get_all_pending_events()) == 0
-        assert len(self.event_api.get_all_failed_events()) == 0
+        assert len(self.event_api.sent_events) == 33
+        assert len(self.event_api.pending_events) == 0
+        assert len(self.event_api.failed_events) == 0
 
     @patch.object(Boto3Client, "eventbridge")
     def test__send__stops_processing_events_on_first_error(self, mock_send: MagicMock) -> None:
@@ -148,9 +163,9 @@ class TestEventApi:
             self.event_api.send()
 
         assert mock_send.put_events.call_count == 3
-        assert len(self.event_api.get_all_sent_events()) == 20
-        assert len(self.event_api.get_all_pending_events()) == 0
-        assert len(self.event_api.get_all_failed_events()) == 13
+        assert len(self.event_api.sent_events) == 20
+        assert len(self.event_api.pending_events) == 0
+        assert len(self.event_api.failed_events) == 13
 
     @patch.object(Boto3Client, "eventbridge")
     def test_sent_fail_saves_events_in_right_place(self, mock_send: MagicMock) -> None:

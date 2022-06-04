@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from os import getenv
 from typing import TYPE_CHECKING, List
 
@@ -55,9 +56,22 @@ class EventAPI(metaclass=Singleton):
     def set_bus_name(self, bus_name: str) -> None:
         self._bus_name = bus_name
 
+    @property
+    def sent_events(self) -> List[BaseEvent]:
+        return deepcopy(self._sent_events)
+
+    @property
+    def pending_events(self) -> List[BaseEvent]:
+        return deepcopy(self._pending_events)
+
+    @property
+    def failed_events(self) -> List[BaseEvent]:
+        return deepcopy(self._failed_events)
+
     def register(self, new_event: BaseEvent) -> None:
         self._pending_events.append(new_event)
 
+    # TODO: Stop sharing protected lists outside the class, use the above properties instead
     def get_all_pending_events(self) -> List[BaseEvent]:
         return self._pending_events
 
