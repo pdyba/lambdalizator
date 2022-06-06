@@ -218,3 +218,9 @@ Released 2022-04-22
 
 - EventApi and EventAware improvements
 - Refactors Event to APIGatewayEvent
+
+### Version 0.5.5
+Released 2022-06-04
+
+- Fixes EventAPI to send events in chunks (conforms to AWS limits)
+- Adds real property methods that protect events list the better way

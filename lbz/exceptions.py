@@ -1,7 +1,5 @@
 # coding=utf-8
-"""
-Set of HTTP Exceptions that are json compatabile.
-"""
+
 from http import HTTPStatus
 
 from lbz.response import Response
@@ -12,9 +10,7 @@ class SecurityError(Exception):
 
 
 class LambdaFWException(Exception):
-    """
-    Standarised for AWS Lambda exception class.
-    """
+    """Standardised for AWS Lambda exception class."""
 
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
@@ -28,9 +24,7 @@ class LambdaFWException(Exception):
         return f"[{self.status_code}] {self.message}"
 
     def get_response(self, request_id: str) -> Response:
-        """
-        Creates a proper standarised Response for Errors.
-        """
+        """Creates a proper standardised Response for Errors."""
         return Response(
             {"message": self.message, "request_id": request_id},
             status_code=self.status_code,
@@ -237,7 +231,7 @@ class TooManyRequests(LambdaFWClientException):
 
 
 class RequestHeaderFieldsTooLarge(LambdaFWClientException):
-    """431 - The server is unwilling to process the request because its header fields are too large"""
+    """431 - The server is unwilling to process the request because its header fields are too large"""  # noqa: E501
 
     message = HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.description
     status_code = HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.value

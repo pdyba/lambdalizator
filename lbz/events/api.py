@@ -1,14 +1,20 @@
 import json
+from copy import deepcopy
 from os import getenv
 from typing import TYPE_CHECKING, List
 
 from lbz.aws_boto3 import client
-from lbz.misc import Singleton
+from lbz.misc import Singleton, get_logger
 
 if TYPE_CHECKING:
     from mypy_boto3_events.type_defs import PutEventsRequestEntryTypeDef
 else:
     PutEventsRequestEntryTypeDef = dict
+
+logger = get_logger(__name__)
+
+# https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html
+MAX_EVENTS_TO_SEND_AT_ONCE = 10
 
 
 class BaseEvent:
@@ -52,9 +58,22 @@ class EventAPI(metaclass=Singleton):
     def set_bus_name(self, bus_name: str) -> None:
         self._bus_name = bus_name
 
+    @property
+    def sent_events(self) -> List[BaseEvent]:
+        return deepcopy(self._sent_events)
+
+    @property
+    def pending_events(self) -> List[BaseEvent]:
+        return deepcopy(self._pending_events)
+
+    @property
+    def failed_events(self) -> List[BaseEvent]:
+        return deepcopy(self._failed_events)
+
     def register(self, new_event: BaseEvent) -> None:
         self._pending_events.append(new_event)
 
+    # TODO: Stop sharing protected lists outside the class, use the above properties instead
     def get_all_pending_events(self) -> List[BaseEvent]:
         return self._pending_events
 
@@ -65,14 +84,23 @@ class EventAPI(metaclass=Singleton):
         return self._failed_events
 
     def send(self) -> None:
-        try:
-            if self._pending_events:
-                entries = [self._create_eb_entry(event) for event in self._pending_events]
+        self._sent_events = []
+        self._failed_events = []
+
+        while self._pending_events:
+            events = self._pending_events[:MAX_EVENTS_TO_SEND_AT_ONCE]
+            try:
+                entries = [self._create_eb_entry(event) for event in events]
                 client.eventbridge.put_events(Entries=entries)
-            self._mark_sent()
-        except Exception as err:
-            self._mark_failed()
-            raise err
+                self._sent_events.extend(events)
+            except Exception as err:  # pylint: disable=broad-except
+                self._failed_events.extend(events)
+                logger.exception(err)
+
+            self._pending_events = self._pending_events[MAX_EVENTS_TO_SEND_AT_ONCE:]
+
+        if self._failed_events:
+            raise RuntimeError("Sending events has failed. Check logs for more details!")
 
     def clear(self) -> None:
         self._sent_events = []
@@ -87,13 +115,3 @@ class EventAPI(metaclass=Singleton):
             "Resources": self._resources,
             "Source": self._source,
         }
-
-    def _mark_sent(self) -> None:
-        self._sent_events = self._pending_events
-        self._pending_events = []
-        self._failed_events = []
-
-    def _mark_failed(self) -> None:
-        self._failed_events = self._pending_events
-        self._pending_events = []
-        self._sent_events = []
