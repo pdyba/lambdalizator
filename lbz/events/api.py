@@ -4,12 +4,14 @@ from os import getenv
 from typing import TYPE_CHECKING, List
 
 from lbz.aws_boto3 import client
-from lbz.misc import Singleton
+from lbz.misc import Singleton, get_logger
 
 if TYPE_CHECKING:
     from mypy_boto3_events.type_defs import PutEventsRequestEntryTypeDef
 else:
     PutEventsRequestEntryTypeDef = dict
+
+logger = get_logger(__name__)
 
 # https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html
 MAX_EVENTS_TO_SEND_AT_ONCE = 10
@@ -85,18 +87,20 @@ class EventAPI(metaclass=Singleton):
         self._sent_events = []
         self._failed_events = []
 
-        try:
-            while self._pending_events:
-                events = self._pending_events[:MAX_EVENTS_TO_SEND_AT_ONCE]
+        while self._pending_events:
+            events = self._pending_events[:MAX_EVENTS_TO_SEND_AT_ONCE]
+            try:
                 entries = [self._create_eb_entry(event) for event in events]
                 client.eventbridge.put_events(Entries=entries)
-
                 self._sent_events.extend(events)
-                self._pending_events = self._pending_events[MAX_EVENTS_TO_SEND_AT_ONCE:]
-        except Exception as err:
-            self._failed_events.extend(self._pending_events)
-            self._pending_events = []
-            raise err
+            except Exception as err:  # pylint: disable=broad-except
+                self._failed_events.extend(events)
+                logger.exception(err)
+
+            self._pending_events = self._pending_events[MAX_EVENTS_TO_SEND_AT_ONCE:]
+
+        if self._failed_events:
+            raise RuntimeError("Sending events has failed. Check logs for more details!")
 
     def clear(self) -> None:
         self._sent_events = []

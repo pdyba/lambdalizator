@@ -1,7 +1,9 @@
+import logging
 from typing import Callable
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pytest import LogCaptureFixture
 
 from lbz.aws_boto3 import Boto3Client
 from lbz.events.api import BaseEvent, EventAPI
@@ -154,18 +156,30 @@ class TestEventApi:
         assert len(self.event_api.failed_events) == 0
 
     @patch.object(Boto3Client, "eventbridge")
-    def test__send__stops_processing_events_on_first_error(self, mock_send: MagicMock) -> None:
-        mock_send.put_events.side_effect = (None, None, RuntimeError)
+    def test__send__always_tries_to_send_all_events_treating_each_chunk_individually(
+        self, mock_send: MagicMock, caplog: LogCaptureFixture
+    ) -> None:
+        mock_send.put_events.side_effect = (
+            None,  # no error == success
+            ValueError("Event data is too big to be sent"),
+            None,  # no error == success
+            ValueError("Event type cannot be recognized"),
+        )
         for i in range(33):  # AWS allows sending maximum 10 events at once
             self.event_api.register(MyTestEvent({"x": i}))
 
-        with pytest.raises(RuntimeError):
+        error_message = "Sending events has failed. Check logs for more details!"
+        with pytest.raises(RuntimeError, match=error_message):
             self.event_api.send()
 
-        assert mock_send.put_events.call_count == 3
+        assert mock_send.put_events.call_count == 4
         assert len(self.event_api.sent_events) == 20
         assert len(self.event_api.pending_events) == 0
         assert len(self.event_api.failed_events) == 13
+        assert caplog.record_tuples == [
+            ("lbz.events.api", logging.ERROR, "Event data is too big to be sent"),
+            ("lbz.events.api", logging.ERROR, "Event type cannot be recognized"),
+        ]
 
     @patch.object(Boto3Client, "eventbridge")
     def test_sent_fail_saves_events_in_right_place(self, mock_send: MagicMock) -> None:
@@ -175,7 +189,7 @@ class TestEventApi:
         event = MyTestEvent({"x": 1})
         self.event_api.register(event)
 
-        with pytest.raises(NotADirectoryError):
+        with pytest.raises(RuntimeError):
             self.event_api.send()
 
         assert self.event_api.get_all_failed_events() == [event]
