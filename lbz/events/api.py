@@ -1,7 +1,8 @@
 import json
 from copy import deepcopy
+from functools import wraps
 from os import getenv
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, Callable, List
 
 from lbz.aws_boto3 import client
 from lbz.misc import Singleton, get_logger
@@ -115,3 +116,19 @@ class EventAPI(metaclass=Singleton):
             "Resources": self._resources,
             "Source": self._source,
         }
+
+
+def event_emitter(function: Callable) -> Callable:
+    """Decorator that makes function an emitter - automatically sends pending events on success"""
+
+    @wraps(function)
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
+        try:
+            result = function(*args, **kwargs)
+            EventAPI().send()
+            return result
+        except Exception as error:
+            EventAPI().clear()
+            raise error
+
+    return wrapped

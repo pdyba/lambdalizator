@@ -6,7 +6,7 @@ import pytest
 from pytest import LogCaptureFixture
 
 from lbz.aws_boto3 import Boto3Client
-from lbz.events.api import BaseEvent, EventAPI
+from lbz.events.api import BaseEvent, EventAPI, event_emitter
 
 
 class MyTestEvent(BaseEvent):
@@ -44,7 +44,7 @@ class TestBaseEvent:
         assert new_event_1 != new_event_2
 
 
-class TestEventApi:
+class TestEventAPI:
     def setup_method(self) -> None:
         # pylint: disable= attribute-defined-outside-init
         self.event_api = EventAPI()
@@ -252,3 +252,41 @@ class TestEventApi:
         assert self.event_api.get_all_failed_events() == []
         assert self.event_api.get_all_sent_events() == []
         assert self.event_api.get_all_pending_events() == []
+
+
+@patch.object(Boto3Client, "eventbridge", MagicMock())
+class TestEventEmitter:
+    def test_does_nothing_when_thera_are_no_pending_events(self) -> None:
+        @event_emitter
+        def decorated_function() -> None:
+            pass
+
+        decorated_function()
+
+        assert not EventAPI().sent_events
+        assert not EventAPI().pending_events
+        assert not EventAPI().failed_events
+
+    def test_sends_all_pending_events_when_decorated_function_finished_with_success(self) -> None:
+        @event_emitter
+        def decorated_function() -> None:
+            EventAPI().register(MyTestEvent(raw_data={"x": 1}))
+
+        decorated_function()
+
+        assert EventAPI().sent_events == [MyTestEvent(raw_data={"x": 1})]
+        assert not EventAPI().pending_events
+        assert not EventAPI().failed_events
+
+    def test_clears_queues_when_error_appeared_during_running_decorated_function(self) -> None:
+        @event_emitter
+        def decorated_function() -> None:
+            EventAPI().register(MyTestEvent(raw_data={"x": 1}))
+            raise RuntimeError
+
+        with pytest.raises(RuntimeError):
+            decorated_function()
+
+        assert not EventAPI().sent_events
+        assert not EventAPI().pending_events
+        assert not EventAPI().failed_events
