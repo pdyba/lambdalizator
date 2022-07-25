@@ -50,9 +50,26 @@ from lbz.response import Response
 
 def test_lambda_fw_exception() -> None:
     exp = LambdaFWException(message="Nope")
+    assert str(exp) == "[500] Nope"
     assert exp.message == "Nope"
     assert exp.status_code == 500
-    assert isinstance(exp.get_response(request_id=""), Response)
+
+    response = exp.get_response(request_id="test-req-id")
+    assert isinstance(response, Response)
+    assert response.body == {"message": "Nope", "request_id": "test-req-id"}
+
+
+def test_lambda_fw_exception_with_error_code() -> None:
+    exp = LambdaFWException(message="Nope", error_code="TEST_ERR")
+    assert str(exp) == "[500] TEST_ERR - Nope"
+    assert exp.message == "Nope"
+    assert exp.error_code == "TEST_ERR"
+    assert exp.status_code == 500
+    assert exp.get_response(request_id="test-req-id").body == {
+        "error_code": "TEST_ERR",
+        "message": "Nope",
+        "request_id": "test-req-id",
+    }
 
 
 def test_unsupported_method() -> None:
