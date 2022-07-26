@@ -224,3 +224,13 @@ Released 2022-06-04
 
 - Fixes EventAPI to send events in chunks (conforms to AWS limits)
 - Adds real property methods that protect events list the better way
+
+### Version 0.5.6
+Released 2022-07-25
+
+- Adds a decorator that makes the given function an event emitter
+
+### Version 0.5.7
+Released 2022-07-26
+
+- Adds optional error codes to exceptions (the LambdaFWException class)
