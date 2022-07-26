@@ -15,16 +15,17 @@ class LambdaFWException(Exception):
 
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
+    error_code: Optional[str] = None
 
-    def __init__(self, message: str = "", error_code: Optional[str] = None) -> None:
+    def __init__(self, message: str = "") -> None:
         super().__init__(message)
         if message:
             self.message = message
-        self.error_code = error_code
 
     def __str__(self) -> str:
-        full_msg = f"{self.error_code} - {self.message}" if self.error_code else self.message
-        return f"[{self.status_code}] {full_msg}"
+        if self.error_code is not None:
+            return f"[{self.status_code}] {self.error_code} - {self.message}"
+        return f"[{self.status_code}] {self.message}"
 
     def get_response(self, request_id: str) -> Response:
         """Creates a proper standardised Response for Errors."""
@@ -90,8 +91,8 @@ class UnsupportedMethod(LambdaFWClientException):
 
     status_code = HTTPStatus.METHOD_NOT_ALLOWED.value
 
-    def __init__(self, method: str, error_code: Optional[str] = None) -> None:
-        super().__init__(message=f"Unsupported method: {method}", error_code=error_code)
+    def __init__(self, method: str) -> None:
+        super().__init__(message=f"Unsupported method: {method}")
 
 
 class NotAcceptable(LambdaFWClientException):

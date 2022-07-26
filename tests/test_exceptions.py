@@ -45,27 +45,28 @@ from lbz.exceptions import (
     URITooLong,
     VariantAlsoNegotiates,
 )
-from lbz.response import Response
 
 
 def test_lambda_fw_exception() -> None:
-    exp = LambdaFWException(message="Nope")
-    assert str(exp) == "[500] Nope"
-    assert exp.message == "Nope"
-    assert exp.status_code == 500
+    exception = LambdaFWException(message="Nope")
+    assert str(exception) == "[500] Nope"
+    assert exception.message == "Nope"
+    assert exception.status_code == 500
 
-    response = exp.get_response(request_id="test-req-id")
-    assert isinstance(response, Response)
+    response = exception.get_response(request_id="test-req-id")
     assert response.body == {"message": "Nope", "request_id": "test-req-id"}
 
 
 def test_lambda_fw_exception_with_error_code() -> None:
-    exp = LambdaFWException(message="Nope", error_code="TEST_ERR")
-    assert str(exp) == "[500] TEST_ERR - Nope"
-    assert exp.message == "Nope"
-    assert exp.error_code == "TEST_ERR"
-    assert exp.status_code == 500
-    assert exp.get_response(request_id="test-req-id").body == {
+    class TestException(LambdaFWException):
+        error_code = "TEST_ERR"
+
+    exception = TestException(message="Nope")
+    assert str(exception) == "[500] TEST_ERR - Nope"
+    assert exception.message == "Nope"
+    assert exception.error_code == "TEST_ERR"
+    assert exception.status_code == 500
+    assert exception.get_response(request_id="test-req-id").body == {
         "error_code": "TEST_ERR",
         "message": "Nope",
         "request_id": "test-req-id",

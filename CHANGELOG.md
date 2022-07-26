@@ -229,4 +229,8 @@ Released 2022-06-04
 Released 2022-07-25
 
 - Adds a decorator that makes the given function an event emitter
-- Adds optional status codes to exceptions (the LambdaFWException class)
+
+### Version 0.5.7
+Released 2022-07-26
+
+- Adds optional error codes to exceptions (the LambdaFWException class)
