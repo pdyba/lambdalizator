@@ -234,3 +234,8 @@ Released 2022-07-25
 Released 2022-07-26
 
 - Adds optional error codes to exceptions (the LambdaFWException class)
+
+### Version 0.5.8
+Released 2022-07-28
+
+- Fixes an issue with permissions overwriting
