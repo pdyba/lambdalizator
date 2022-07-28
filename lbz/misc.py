@@ -124,7 +124,7 @@ def deep_update(dict_to_update: dict, update_data: dict) -> None:
     """Recursively updates keys in the first dict with the data in the second dict."""
     for key, value in update_data.items():
         if key in dict_to_update:
-            if isinstance(value, dict):
+            if isinstance(value, dict) and isinstance(dict_to_update[key], dict):
                 deep_update(dict_to_update[key], value)
                 continue
         dict_to_update[key] = copy.deepcopy(value)

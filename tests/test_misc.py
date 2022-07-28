@@ -140,3 +140,37 @@ def test__deep_update__creates_copy_of_updated_data() -> None:
     update_data["dict"]["nested_dict"]["new_key"] = "post_update_data"
 
     assert dict_to_update == {"array": [], "dict": {"nested_dict": {}}}
+
+
+def test__deep_update__overwrite_strings() -> None:
+    dict_to_update: dict = {
+        "allow": {
+            "user": {
+                "create": {"allow": {"status": "NEW"}},
+                "list": {"allow": "*"},
+            },
+        },
+        "deny": {},
+    }
+    update_data = {
+        "allow": {
+            "user": {
+                "create": {"allow": {"status": "OLD"}},
+                "list": {
+                    "allow": {"type": "ADMIN"},
+                },
+            },
+        },
+    }
+
+    deep_update(dict_to_update, update_data)
+
+    assert dict_to_update == {
+        "allow": {
+            "user": {
+                "create": {"allow": {"status": "OLD"}},
+                "list": {"allow": {"type": "ADMIN"}},
+            },
+        },
+        "deny": {},
+    }
