@@ -1,8 +1,10 @@
 # coding=utf-8
+import logging
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, call, patch
 
 import pytest
+from pytest import LogCaptureFixture
 
 from lbz.authz.authorizer import ALL, ALLOW, DENY, LIMITED_ALLOW, Authorizer
 from lbz.exceptions import PermissionDenied, Unauthorized
@@ -260,7 +262,7 @@ class TestAuthorizerWithMockedJWT:
         assert authorizer.outcome == LIMITED_ALLOW
         assert authorizer.restrictions == restrictions
 
-    def test_missing_ref(self, jwt_partial_payload) -> None:
+    def test_missing_ref(self, jwt_partial_payload: dict, caplog: LogCaptureFixture) -> None:
         authorizer = self._make_mocked_authorizer(
             {
                 **jwt_partial_payload,
@@ -268,9 +270,14 @@ class TestAuthorizerWithMockedJWT:
                 "deny": {},
             }
         )
+
         with pytest.raises(PermissionDenied):
             authorizer.check_access()
+
         assert authorizer.outcome == DENY
+        assert caplog.record_tuples == [
+            ("lbz.authz.authorizer", logging.ERROR, 'Missing "api-access" ref in the policy')
+        ]
 
     def test_sign_authz(self) -> None:
         token = Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, SAMPLE_PRIVATE_KEY)

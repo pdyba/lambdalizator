@@ -103,7 +103,7 @@ class Authorizer:
     def _get_effective_permissions(self, permissions: dict) -> dict:
         if ref_name := permissions.get("ref"):
             if ref_name not in self.refs:
-                logger.warning("Missing %s ref in the policy", ref_name)
+                logger.error('Missing "%s" ref in the policy', ref_name)
                 self.outcome = DENY
                 self._raise_permission_denied()
             return self.refs[ref_name]
