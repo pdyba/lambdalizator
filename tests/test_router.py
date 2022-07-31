@@ -26,7 +26,7 @@ class TestRouter:
         assert str(self.router) == json.dumps({"/": {"GET": "x"}}, indent=4)
 
     def test___repr__(self) -> None:
-        assert self.router.__repr__() == json.dumps({"/": {"GET": "x"}}, indent=4)
+        assert repr(self.router) == json.dumps({"/": {"GET": "x"}}, indent=4)
 
     def test___contains__(self) -> None:
         assert "/" in self.router
@@ -53,7 +53,7 @@ class TestRouter:
 class TestAddRoute:
     def test_add_route(self) -> None:
         router = Router()
-        assert len(router) == 0
+        assert len(router) == 0  # pylint: disable=compare-to-zero
 
         @add_route("/")
         def random_method() -> None:

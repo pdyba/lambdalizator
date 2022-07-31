@@ -152,8 +152,8 @@ class TestEventAPI:
         assert len(mock_send.put_events.call_args_list[2].kwargs["Entries"]) == 10
         assert len(mock_send.put_events.call_args_list[3].kwargs["Entries"]) == 3
         assert len(self.event_api.sent_events) == 33
-        assert len(self.event_api.pending_events) == 0
-        assert len(self.event_api.failed_events) == 0
+        assert not self.event_api.pending_events
+        assert not self.event_api.failed_events
 
     @patch.object(Boto3Client, "eventbridge")
     def test__send__always_tries_to_send_all_events_treating_each_chunk_individually(
@@ -174,7 +174,7 @@ class TestEventAPI:
 
         assert mock_send.put_events.call_count == 4
         assert len(self.event_api.sent_events) == 20
-        assert len(self.event_api.pending_events) == 0
+        assert not self.event_api.pending_events
         assert len(self.event_api.failed_events) == 13
         assert caplog.record_tuples == [
             ("lbz.events.api", logging.ERROR, "Event data is too big to be sent"),
