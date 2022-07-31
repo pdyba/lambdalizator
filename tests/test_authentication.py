@@ -42,7 +42,7 @@ class TestAuthentication:
     def test__repr__username(self, jwt_partial_payload) -> None:
         username = str(uuid4())
         sample_user = User(encode_token({"cognito:username": username, **jwt_partial_payload}))
-        assert sample_user.__repr__() == f"User username={username}"
+        assert repr(sample_user) == f"User username={username}"
 
     def test_decoding_user(self) -> None:
         assert User(self.id_token)
@@ -67,9 +67,8 @@ class TestAuthentication:
         for key in ["aud", "iss", "exp", "iat"]:
             parsed.pop(key, None)
         for key, expected_value in parsed.items():
-            value = self.sample_user.__getattribute__(
-                key.replace("cognito:", "").replace("custom:", "")
-            )
+            key = key.replace("cognito:", "").replace("custom:", "")
+            value = getattr(self.sample_user, key)
             assert value == expected_value
 
     def test_loading_user_does_not_parse_standard_claims(self, jwt_partial_payload) -> None:

@@ -75,7 +75,7 @@ class MultiDict(MutableMapping):
         return iter(self._dict)
 
     def __repr__(self) -> str:
-        return "MultiDict(%s)" % self._dict
+        return f"MultiDict({self._dict})"
 
     def __str__(self) -> str:
         return repr(self)

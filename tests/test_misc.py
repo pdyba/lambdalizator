@@ -33,7 +33,7 @@ def test_multi_dict() -> None:
 
     del multi_dict["a"]
     assert multi_dict.get("a") is None
-    assert multi_dict.__repr__() == str(multi_dict)
+    assert repr(multi_dict) == str(multi_dict)
     assert str(multi_dict) == "MultiDict({})"
     multi_dict["b"] = "abc"
     for letter in multi_dict:

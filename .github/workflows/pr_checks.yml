@@ -13,13 +13,13 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@master
 
-      - name: Install dependencies
-        run: pip install -r requirements_dev.txt
-
       - name: Install make
         run: |
           apt-get update
           apt-get --yes install make git
+
+      - name: Install dependencies
+        run: make install-dev
 
       - name: Run Black Check
         run: make black-check
@@ -38,13 +38,13 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@master
 
-      - name: Install dependencies
-        run: pip install -r requirements_dev.txt
-
       - name: Install make
         run: |
           apt-get update
           apt-get --yes install make
+
+      - name: Install dependencies
+        run: make install-dev
 
       - name: Run tests
         run: make test
