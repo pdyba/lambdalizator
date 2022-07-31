@@ -1,0 +1,11 @@
+-r requirements.txt
+
+black
+boto3-stubs[cognito-idp,dynamodb,events,lambda,s3,sns,ssm,sqs]<1.22.0
+coverage
+flake8
+isort
+mypy
+pylint<2.11
+pytest
+pytest-cov

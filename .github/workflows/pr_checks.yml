@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: Install dependencies
-        run: pip install -r requirements_dev.txt
+        run: pip install -r requirements-dev.txt
 
       - name: Install make
         run: |
@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: Install dependencies
-        run: pip install -r requirements_dev.txt
+        run: pip install -r requirements-dev.txt
 
       - name: Install make
         run: |
