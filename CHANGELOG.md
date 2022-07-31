@@ -244,3 +244,9 @@ Released 2022-07-28
 Released 2022-07-31
 
 - Starts freezing dependencies with the usage of pip-tools
+
+### Version 0.5.10
+Released 2022-07-31
+
+- Logs an error when required ref is missing in the Authorization policy
+- Accepts the error_code also during initialization of the Exception
