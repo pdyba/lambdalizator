@@ -6,14 +6,27 @@ SHELL = /bin/bash
 ###############################################################################
 # Python Requirements
 # -----------------------------------------------------------------------------
-# TODO: Start using pip-tools as a dependency freezing tool
 .PHONY: install
 install:
 	pip install -r requirements.txt
 
 .PHONY: install-dev
 install-dev:
-	pip install -r requirements_dev.txt
+	pip install -r requirements.txt -r requirements-dev.txt
+
+.PHONY: lock-dependencies
+lock-dependencies:
+	pip-compile
+	pip-compile requirements-dev.in
+
+.PHONY: upgrade-dev
+upgrade-dev:
+	pip-compile --upgrade requirements-dev.in
+
+.PHONY: upgrade-all
+upgrade-all:
+	pip-compile --upgrade
+	pip-compile --upgrade requirements-dev.in
 
 
 ###############################################################################
