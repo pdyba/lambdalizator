@@ -47,36 +47,59 @@ from lbz.exceptions import (
 )
 
 
-def test_lambda_fw_exception() -> None:
-    exception = LambdaFWException(message="Nope")
-    assert str(exception) == "[500] Nope"
-    assert exception.message == "Nope"
-    assert exception.status_code == 500
+def test__lambda_fw_exception__simulates_server_error_by_default() -> None:
+    exception = LambdaFWException()
 
-    response = exception.get_response(request_id="test-req-id")
-    assert response.body == {"message": "Nope", "request_id": "test-req-id"}
-
-
-def test_lambda_fw_exception_with_error_code() -> None:
-    class TestException(LambdaFWException):
-        error_code = "TEST_ERR"
-
-    exception = TestException(message="Nope")
-    assert str(exception) == "[500] TEST_ERR - Nope"
-    assert exception.message == "Nope"
-    assert exception.error_code == "TEST_ERR"
+    # this exception should only be used as a base class for all the other more specific ones
+    assert str(exception) == "[500] Server got itself in trouble"
+    assert exception.message == "Server got itself in trouble"
+    assert exception.error_code is None
     assert exception.status_code == 500
     assert exception.get_response(request_id="test-req-id").body == {
-        "error_code": "TEST_ERR",
-        "message": "Nope",
+        "message": "Server got itself in trouble",
         "request_id": "test-req-id",
     }
 
 
-def test_unsupported_method() -> None:
-    exp = UnsupportedMethod("GET")
-    assert exp.message == "Unsupported method: GET"
-    assert exp.status_code == 405
+def test__lambda_fw_exception__respects_attributes_declared_on_inherited_class_level() -> None:
+    class TestException(LambdaFWException):
+        message = "No error message"
+        status_code = 444
+        error_code = "TEST_ERR"
+
+    exception = TestException()
+
+    assert str(exception) == "[444] TEST_ERR - No error message"
+    assert exception.message == "No error message"
+    assert exception.error_code == "TEST_ERR"
+    assert exception.status_code == 444
+    assert exception.get_response(request_id="test-req-id").body == {
+        "error_code": "TEST_ERR",
+        "message": "No error message",
+        "request_id": "test-req-id",
+    }
+
+
+def test__lambda_fw_exception__respects_values_provided_during_initialization() -> None:
+    exception = LambdaFWException(message="Test error message", error_code="TEST_ERR")
+
+    assert str(exception) == "[500] TEST_ERR - Test error message"
+    assert exception.message == "Test error message"
+    assert exception.error_code == "TEST_ERR"
+    assert exception.status_code == 500
+    assert exception.get_response(request_id="test-req-id").body == {
+        "error_code": "TEST_ERR",
+        "message": "Test error message",
+        "request_id": "test-req-id",
+    }
+
+
+def test__unsupported_method__builds_message_based_on_method_provided_from_outside() -> None:
+    exception = UnsupportedMethod("GET")
+
+    assert exception.message == "Unsupported method: GET"
+    assert exception.error_code is None
+    assert exception.status_code == 405
 
 
 @pytest.mark.parametrize(
@@ -122,13 +145,15 @@ def test_unsupported_method() -> None:
         VariantAlsoNegotiates,
     ],
 )
-def test_custom_exception(custom_exception: Type[LambdaFWException]) -> None:
-    exp = custom_exception()
+def test__custom_exception__contains_message_and_status_code_according_to_its_docstring(
+    custom_exception: Type[LambdaFWException],
+) -> None:
+    exception = custom_exception()
     try:
-        code, msg = exp.__doc__.split(" - ")
+        code, message = exception.__doc__.split(" - ")
     except ValueError:  # black removes the intentional white space
-        code, msg = exp.__doc__.split(" -")
+        code, message = exception.__doc__.split(" -")
 
     assert issubclass(custom_exception, LambdaFWException)
-    assert exp.message == msg.strip()
-    assert exp.status_code == int(code)
+    assert exception.message == message
+    assert exception.status_code == int(code)

@@ -17,10 +17,12 @@ class LambdaFWException(Exception):
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
     error_code: Optional[str] = None
 
-    def __init__(self, message: str = "") -> None:
+    def __init__(self, message: str = "", error_code: str = None) -> None:
         super().__init__(message)
         if message:
             self.message = message
+        if error_code:
+            self.error_code = error_code
 
     def __str__(self) -> str:
         if self.error_code is not None:
