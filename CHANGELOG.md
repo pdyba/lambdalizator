@@ -239,3 +239,8 @@ Released 2022-07-26
 Released 2022-07-28
 
 - Fixes an issue with permissions overwriting
+
+### Version 0.5.9
+Released 2022-07-31
+
+- Starts freezing dependencies with the usage of pip-tools
