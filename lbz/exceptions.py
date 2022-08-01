@@ -216,6 +216,13 @@ class FailedDependency(LambdaFWClientException):
     status_code = HTTPStatus.FAILED_DEPENDENCY.value
 
 
+class TooEarly(LambdaFWClientException):
+    """425 - Server is not ready to process request try again later"""
+
+    message = "Server is not ready to process request try again later"
+    status_code = 425
+
+
 class UpgradeRequired(LambdaFWClientException):
     """426 -"""
 

@@ -35,6 +35,7 @@ from lbz.exceptions import (
     RequestTimeout,
     ServerError,
     ServiceUnavailable,
+    TooEarly,
     TooManyRequests,
     Unauthorized,
     UnavailableForLegalReasons,
@@ -143,6 +144,7 @@ def test__unsupported_method__builds_message_based_on_method_provided_from_outsi
         UnsupportedMediaType,
         UpgradeRequired,
         VariantAlsoNegotiates,
+        TooEarly,
     ],
 )
 def test__custom_exception__contains_message_and_status_code_according_to_its_docstring(

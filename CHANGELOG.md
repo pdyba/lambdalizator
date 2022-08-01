@@ -1,5 +1,6 @@
 # Change Log
 
+## 0.1.x
 
 ### Version 0.1
 Released 2020-09-01
@@ -37,6 +38,8 @@ Released 2020-11-14
 - adds EXPIRATION_KEY config variable for checking authorization expiration.
 - adds ALLOWED_ISS config variable setting the allowed JWT issues.
 
+## 0.2.x
+
 ### Version 0.2.0
 Released 2020-12-03
 
@@ -67,6 +70,8 @@ Released 2020-12-18
 - Added "urn" attribute to Resource,
 - Deprecation of authorization and authentication flags in test utility,
 - "LambdaFWException" class reworked: added request ID.
+
+## 0.3.x
 
 ### Version 0.3.0
 Released 2020-12-18
@@ -158,6 +163,7 @@ Released 2021-08-25
 
 - Bug fix for a query params in Paginated Resource
 
+## 0.4.x
 
 ### Version 0.4.0
 Released 2021-09-21
@@ -181,6 +187,7 @@ Released 2021-10-09
 - Extends JWT validation cases.
 - Adds JWT utils tests.
 
+## 0.5.x
 
 ### Version 0.5.0
 Released 2021-10-09
@@ -250,3 +257,10 @@ Released 2022-07-31
 
 - Logs an error when required ref is missing in the Authorization policy
 - Accepts the error_code also during initialization of the Exception
+
+
+### Version 0.5.11
+Released 2022-08-01
+
+- Adds missing exception Too Early - 425
+
