@@ -268,6 +268,7 @@ Released 2022-08-01
 Released 2022-08-05
 
 - Use the same class representing Event (both sent/received)
+- Extends Event Broker with additional, optional parameters
 - Adds additional verbose test running to makefile
-- Updates dev dependancies
+- Updates dev dependencies
 
