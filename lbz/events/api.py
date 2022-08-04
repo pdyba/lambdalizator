@@ -1,10 +1,10 @@
-import json
 from copy import deepcopy
 from functools import wraps
 from os import getenv
 from typing import TYPE_CHECKING, Any, Callable, List
 
 from lbz.aws_boto3 import client
+from lbz.events.event import Event
 from lbz.misc import Singleton, get_logger
 
 if TYPE_CHECKING:
@@ -18,30 +18,13 @@ logger = get_logger(__name__)
 MAX_EVENTS_TO_SEND_AT_ONCE = 10
 
 
-class BaseEvent:
-    type: str
-
-    def __init__(self, raw_data: dict) -> None:
-        self.raw_data = raw_data
-        self.data: str = self.serialize(raw_data)
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, BaseEvent):
-            return self.type == other.type and self.raw_data == other.raw_data
-        return False
-
-    @staticmethod
-    def serialize(raw_data: dict) -> str:
-        return json.dumps(raw_data, default=str)
-
-
 class EventAPI(metaclass=Singleton):
     def __init__(self) -> None:
         self._source = getenv("AWS_LAMBDA_FUNCTION_NAME") or "lbz-event-api"
         self._resources: List[str] = []
-        self._pending_events: List[BaseEvent] = []
-        self._sent_events: List[BaseEvent] = []
-        self._failed_events: List[BaseEvent] = []
+        self._pending_events: List[Event] = []
+        self._sent_events: List[Event] = []
+        self._failed_events: List[Event] = []
         self._bus_name = getenv("EVENTS_BUS_NAME", f"{self._source}-event-bus")
 
     def __repr__(self) -> str:
@@ -60,28 +43,28 @@ class EventAPI(metaclass=Singleton):
         self._bus_name = bus_name
 
     @property
-    def sent_events(self) -> List[BaseEvent]:
+    def sent_events(self) -> List[Event]:
         return deepcopy(self._sent_events)
 
     @property
-    def pending_events(self) -> List[BaseEvent]:
+    def pending_events(self) -> List[Event]:
         return deepcopy(self._pending_events)
 
     @property
-    def failed_events(self) -> List[BaseEvent]:
+    def failed_events(self) -> List[Event]:
         return deepcopy(self._failed_events)
 
-    def register(self, new_event: BaseEvent) -> None:
+    def register(self, new_event: Event) -> None:
         self._pending_events.append(new_event)
 
     # TODO: Stop sharing protected lists outside the class, use the above properties instead
-    def get_all_pending_events(self) -> List[BaseEvent]:
+    def get_all_pending_events(self) -> List[Event]:
         return self._pending_events
 
-    def get_all_sent_events(self) -> List[BaseEvent]:
+    def get_all_sent_events(self) -> List[Event]:
         return self._sent_events
 
-    def get_all_failed_events(self) -> List[BaseEvent]:
+    def get_all_failed_events(self) -> List[Event]:
         return self._failed_events
 
     def send(self) -> None:
@@ -108,9 +91,9 @@ class EventAPI(metaclass=Singleton):
         self._pending_events = []
         self._failed_events = []
 
-    def _create_eb_entry(self, new_event: BaseEvent) -> PutEventsRequestEntryTypeDef:
+    def _create_eb_entry(self, new_event: Event) -> PutEventsRequestEntryTypeDef:
         return {
-            "Detail": new_event.data,
+            "Detail": new_event.serialized_data,
             "DetailType": new_event.type,
             "EventBusName": self._bus_name,
             "Resources": self._resources,

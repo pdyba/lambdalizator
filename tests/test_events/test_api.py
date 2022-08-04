@@ -6,42 +6,12 @@ import pytest
 from pytest import LogCaptureFixture
 
 from lbz.aws_boto3 import Boto3Client
-from lbz.events.api import BaseEvent, EventAPI, event_emitter
+from lbz.events.api import EventAPI, event_emitter
+from lbz.events.event import Event
 
 
-class MyTestEvent(BaseEvent):
+class MyTestEvent(Event):
     type = "MY_TEST_EVENT"
-
-
-class TestBaseEvent:
-    def test_base_event_creation_and_structure(self) -> None:
-        event = {"x": 1}
-        new_event = MyTestEvent(event)
-
-        assert new_event.type == "MY_TEST_EVENT"
-        assert new_event.raw_data == {"x": 1}
-        assert new_event.data == '{"x": 1}'
-
-    def test__eq__same(self) -> None:
-        new_event_1 = MyTestEvent({"x": 1})
-        new_event_2 = MyTestEvent({"x": 1})
-
-        assert new_event_1 == new_event_2
-
-    def test__eq__different_data(self) -> None:
-        new_event_1 = MyTestEvent({"x": 1})
-        new_event_2 = MyTestEvent({"x": 2})
-
-        assert new_event_1 != new_event_2
-
-    def test__eq__different_type_same_data(self) -> None:
-        class MySecondTestEvent(BaseEvent):
-            type = "MY_SECOND_TEST_EVENT"
-
-        new_event_1 = MyTestEvent({"x": 1})
-        new_event_2 = MySecondTestEvent({"x": 1})
-
-        assert new_event_1 != new_event_2
 
 
 class TestEventAPI:
@@ -270,18 +240,18 @@ class TestEventEmitter:
     def test_sends_all_pending_events_when_decorated_function_finished_with_success(self) -> None:
         @event_emitter
         def decorated_function() -> None:
-            EventAPI().register(MyTestEvent(raw_data={"x": 1}))
+            EventAPI().register(MyTestEvent({"x": 1}))
 
         decorated_function()
 
-        assert EventAPI().sent_events == [MyTestEvent(raw_data={"x": 1})]
+        assert EventAPI().sent_events == [MyTestEvent({"x": 1})]
         assert not EventAPI().pending_events
         assert not EventAPI().failed_events
 
     def test_clears_queues_when_error_appeared_during_running_decorated_function(self) -> None:
         @event_emitter
         def decorated_function() -> None:
-            EventAPI().register(MyTestEvent(raw_data={"x": 1}))
+            EventAPI().register(MyTestEvent({"x": 1}))
             raise RuntimeError
 
         with pytest.raises(RuntimeError):

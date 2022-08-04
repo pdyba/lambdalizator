@@ -1,21 +1,21 @@
-from dataclasses import dataclass
 from typing import Callable, Dict, List
 
+from lbz.events.event import Event
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
 
 
-@dataclass()
-class Event:
-    type: str
-    data: dict
-
-
 class EventBroker:
-    def __init__(self, mapper: Dict[str, List[Callable]], raw_event: dict) -> None:
+    def __init__(
+        self,
+        mapper: Dict[str, List[Callable]],
+        raw_event: dict,
+        type_key: str = "detail-type",
+        data_key: str = "detail",
+    ) -> None:
         self.mapper = mapper
-        self.event = Event(type=raw_event["detail-type"], data=raw_event["detail"])
+        self.event = Event(raw_event[data_key], event_type=raw_event[type_key])
 
     def handle(self) -> None:
         self.pre_handle()

@@ -264,3 +264,10 @@ Released 2022-08-01
 
 - Adds missing exception Too Early - 425
 
+### Version 0.5.12
+Released 2022-08-05
+
+- Use the same class representing Event (both sent/received)
+- Adds additional verbose test running to makefile
+- Updates dev dependancies
+

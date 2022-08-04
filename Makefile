@@ -88,6 +88,10 @@ test-unit tu:
 .PHONY: test
 test: test-unit
 
+.PHONY: test-unit-verbose tuv
+test-unit-verbose tuv:
+	coverage run --include "lbz/*" -m pytest "tests" -vv
+	coverage report -m --skip-covered
 
 ###############################################################################
 # Custom Scripts
