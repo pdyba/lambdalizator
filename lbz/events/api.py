@@ -57,16 +57,6 @@ class EventAPI(metaclass=Singleton):
     def register(self, new_event: Event) -> None:
         self._pending_events.append(new_event)
 
-    # TODO: Stop sharing protected lists outside the class, use the above properties instead
-    def get_all_pending_events(self) -> List[Event]:
-        return self._pending_events
-
-    def get_all_sent_events(self) -> List[Event]:
-        return self._sent_events
-
-    def get_all_failed_events(self) -> List[Event]:
-        return self._failed_events
-
     def send(self) -> None:
         self._sent_events = []
         self._failed_events = []

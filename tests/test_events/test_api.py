@@ -79,7 +79,7 @@ class TestEventAPI:
         assert self.event_api.failed_events == []
 
     def test_register_saves_event_in_right_place(self) -> None:
-        assert self.event_api.get_all_pending_events() == []
+        assert self.event_api.pending_events == []
 
         event_1 = MyTestEvent({"x": 1})
         event_2 = MyTestEvent({"x": 2})
@@ -87,7 +87,7 @@ class TestEventAPI:
         self.event_api.register(event_1)
         self.event_api.register(event_2)
 
-        assert self.event_api.get_all_pending_events() == [event_1, event_2]
+        assert self.event_api.pending_events == [event_1, event_2]
 
     @patch.object(Boto3Client, "eventbridge")
     def test_send(self, mock_send: MagicMock) -> None:
@@ -107,7 +107,7 @@ class TestEventAPI:
                 }
             ]
         )
-        assert self.event_api.get_all_sent_events() == [event]
+        assert self.event_api.sent_events == [event]
 
     @patch.object(Boto3Client, "eventbridge")
     def test__send__sends_events_in_chunks_respecting_limits(self, mock_send: MagicMock) -> None:
@@ -153,7 +153,7 @@ class TestEventAPI:
 
     @patch.object(Boto3Client, "eventbridge")
     def test_sent_fail_saves_events_in_right_place(self, mock_send: MagicMock) -> None:
-        assert self.event_api.get_all_failed_events() == []
+        assert self.event_api.failed_events == []
 
         mock_send.put_events.side_effect = NotADirectoryError
         event = MyTestEvent({"x": 1})
@@ -162,16 +162,16 @@ class TestEventAPI:
         with pytest.raises(RuntimeError):
             self.event_api.send()
 
-        assert self.event_api.get_all_failed_events() == [event]
+        assert self.event_api.failed_events == [event]
 
     @patch.object(Boto3Client, "eventbridge")
     def test_send_no_events(self, mock_send: MagicMock) -> None:
         self.event_api.send()
 
         mock_send.put_events.assert_not_called()
-        assert self.event_api.get_all_failed_events() == []
-        assert self.event_api.get_all_sent_events() == []
-        assert self.event_api.get_all_pending_events() == []
+        assert self.event_api.failed_events == []
+        assert self.event_api.sent_events == []
+        assert self.event_api.pending_events == []
 
     @patch.object(Boto3Client, "eventbridge")
     def test_singleton_pattern_working_correctly_for_event_api(self, mock_send: MagicMock) -> None:
@@ -206,9 +206,9 @@ class TestEventAPI:
         self.event_api.send()
         self.event_api.send()
 
-        assert self.event_api.get_all_failed_events() == []
-        assert self.event_api.get_all_sent_events() == []
-        assert self.event_api.get_all_pending_events() == []
+        assert self.event_api.failed_events == []
+        assert self.event_api.sent_events == []
+        assert self.event_api.pending_events == []
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
     def test_clear(self) -> None:
@@ -219,9 +219,9 @@ class TestEventAPI:
 
         self.event_api.clear()
 
-        assert self.event_api.get_all_failed_events() == []
-        assert self.event_api.get_all_sent_events() == []
-        assert self.event_api.get_all_pending_events() == []
+        assert self.event_api.failed_events == []
+        assert self.event_api.sent_events == []
+        assert self.event_api.pending_events == []
 
 
 @patch.object(Boto3Client, "eventbridge", MagicMock())
