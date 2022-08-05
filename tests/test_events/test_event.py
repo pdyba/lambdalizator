@@ -6,7 +6,7 @@ class MyTestEvent(Event):
 
 
 class TestEvent:
-    def test_base_event_creation_and_structure(self) -> None:
+    def test_event_creation_and_structure(self) -> None:
         event = {"x": 1}
         new_event = MyTestEvent(event)
 

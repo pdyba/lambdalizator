@@ -11,6 +11,7 @@ class EventBroker:
         self,
         mapper: Dict[str, List[Callable]],
         raw_event: dict,
+        *,
         type_key: str = "detail-type",
         data_key: str = "detail",
     ) -> None:

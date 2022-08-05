@@ -18,8 +18,8 @@ class Event:
         return f"Event(type='{self.type}', data={self.data})"
 
     @staticmethod
-    def serialize(raw_data: dict) -> str:
-        return json.dumps(raw_data, default=str)
+    def serialize(data: dict) -> str:
+        return json.dumps(data, default=str)
 
     @property
     def serialized_data(self) -> str:
