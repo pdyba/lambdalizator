@@ -1,6 +1,8 @@
 # coding=utf-8
 import io
+import json
 import socket
+import urllib
 from socketserver import BaseServer
 from unittest import mock
 
@@ -12,7 +14,7 @@ from lbz.router import add_route
 
 class HelloWorld(Resource):
     @add_route("/", method="GET")
-    def list(self) -> Response:
+    def handler(self) -> Response:
         return Response({"message": "HelloWorld"})
 
     @add_route("/t/{id}", method="GET")
@@ -54,3 +56,19 @@ def test_my_dev_server() -> None:
     assert dev_serv.port == 8000
     assert dev_serv.address == "localhost"
     assert issubclass(dev_serv.my_handler, MyLambdaDevHandler)
+
+
+def test_server_can_run_in_background() -> None:
+    http_process = MyDevServer(HelloWorld, port=9999)
+    http_process.start()
+    url = "http://localhost:9999/"
+
+    request = urllib.request.Request(url, method="GET")
+    try:
+        with urllib.request.urlopen(request) as response:
+            assert response.status == 200
+            assert json.loads(response.read().decode()) == {"message": "HelloWorld"}
+    except Exception as err:
+        raise err
+    finally:
+        http_process.stop()

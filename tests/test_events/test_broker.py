@@ -1,4 +1,5 @@
 import logging
+from typing import Dict
 from unittest.mock import MagicMock
 
 import pytest
@@ -68,3 +69,15 @@ class TestEventBroker:
                 "Handling event failed, event: Event(type='x', data={'y': 1})",
             )
         ]
+
+    def test_broker_events_are_not_affected_by_specific_event_handler(self) -> None:
+        def handler(event: Event) -> None:
+            expected_event = Event({"y": 1}, event_type="x")
+            assert event == expected_event
+            event.data["y"] += 5
+            event.data["b"] = 50
+
+        mapper: Dict[str, list] = {"x": [handler, handler, handler]}
+        event_payload = {"detail-type": "x", "detail": {"y": 1}}
+
+        EventBroker(mapper, event_payload).handle()

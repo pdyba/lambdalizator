@@ -272,3 +272,8 @@ Released 2022-08-05
 - Adds additional verbose test running to makefile
 - Updates dev dependencies
 
+### Version 0.5.13
+Released 2022-08-07
+
+- Makes sure that event broker is always passing original event and other handlers cannot affect it.
+- Makes DevServer threaded, so it can be run in background, useful for testing
