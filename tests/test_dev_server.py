@@ -17,11 +17,11 @@ class MyClass:
         self.tcp_socket.connect("0.0.0.0", "8888")
 
 
-def test_my_lambda_dev_handler(sample_resource_without_authorization: Type[Resource]) -> None:
+def test_my_lambda_dev_handler(sample_resource: Type[Resource]) -> None:
     with mock.patch("socket.socket") as msocket:
 
         class MyLambdaDevHandlerHelloWorld(MyLambdaDevHandler):
-            cls = sample_resource_without_authorization
+            cls = sample_resource
 
         msocket.makefile = lambda a, b: io.BytesIO(b"GET / HTTP/1.1\r\n")
         msocket.rfile.close = lambda: 0
@@ -39,18 +39,16 @@ def test_my_lambda_dev_handler(sample_resource_without_authorization: Type[Resou
     assert params == {"id": "123"}
 
 
-def test_my_dev_server(sample_resource_without_authorization: Type[Resource]) -> None:
-    dev_serv = MyDevServer(sample_resource_without_authorization)
+def test_my_dev_server(sample_resource: Type[Resource]) -> None:
+    dev_serv = MyDevServer(sample_resource)
     assert dev_serv.server_address == ("localhost", 8000)
     assert dev_serv.port == 8000
     assert dev_serv.address == "localhost"
     assert issubclass(dev_serv.my_handler, MyLambdaDevHandler)
 
 
-def test_server_can_run_in_background(
-    sample_resource_without_authorization: Type[Resource],
-) -> None:
-    dev_serv = MyDevServer(sample_resource_without_authorization, port=9999)
+def test_server_can_run_in_background(sample_resource: Type[Resource]) -> None:
+    dev_serv = MyDevServer(sample_resource, port=9999)
     dev_serv.start()
     url = "http://localhost:9999/"
 

@@ -180,7 +180,7 @@ class MyDevServer(Thread):
     def stop(self) -> None:
         self.httpd.shutdown()
         self.httpd.server_close()
-        print(f"Server stopped and port {self.port} release")
+        print(f"Server stopped and port {self.port} released")
 
     def start(self) -> None:  # pylint: disable=useless-super-delegation
         """
