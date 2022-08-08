@@ -1,27 +1,14 @@
 # coding=utf-8
 import io
+import json
 import socket
 from socketserver import BaseServer
+from typing import Type
 from unittest import mock
+from urllib import request
 
 from lbz.dev.server import MyDevServer, MyLambdaDevHandler
 from lbz.resource import Resource
-from lbz.response import Response
-from lbz.router import add_route
-
-
-class HelloWorld(Resource):
-    @add_route("/", method="GET")
-    def list(self) -> Response:
-        return Response({"message": "HelloWorld"})
-
-    @add_route("/t/{id}", method="GET")
-    def get(self) -> Response:
-        return Response({"message": "HelloWorld"})
-
-
-class MyLambdaDevHandlerHelloWorld(MyLambdaDevHandler):
-    cls = HelloWorld
 
 
 class MyClass:
@@ -30,8 +17,12 @@ class MyClass:
         self.tcp_socket.connect("0.0.0.0", "8888")
 
 
-def test_my_lambda_dev_handler() -> None:
+def test_my_lambda_dev_handler(sample_resource: Type[Resource]) -> None:
     with mock.patch("socket.socket") as msocket:
+
+        class MyLambdaDevHandlerHelloWorld(MyLambdaDevHandler):
+            cls = sample_resource
+
         msocket.makefile = lambda a, b: io.BytesIO(b"GET / HTTP/1.1\r\n")
         msocket.rfile.close = lambda: 0
         my_class = MyClass()
@@ -48,9 +39,23 @@ def test_my_lambda_dev_handler() -> None:
     assert params == {"id": "123"}
 
 
-def test_my_dev_server() -> None:
-    dev_serv = MyDevServer(HelloWorld)
+def test_my_dev_server(sample_resource: Type[Resource]) -> None:
+    dev_serv = MyDevServer(sample_resource)
     assert dev_serv.server_address == ("localhost", 8000)
     assert dev_serv.port == 8000
     assert dev_serv.address == "localhost"
     assert issubclass(dev_serv.my_handler, MyLambdaDevHandler)
+
+
+def test_server_can_run_in_background(sample_resource: Type[Resource]) -> None:
+    dev_serv = MyDevServer(sample_resource, port=9999)
+    dev_serv.start()
+    url = "http://localhost:9999/"
+
+    req = request.Request(url, method="GET")
+    try:
+        with request.urlopen(req) as response:
+            assert response.status == 200
+            assert json.loads(response.read().decode()) == {"message": "HelloWorld"}
+    finally:
+        dev_serv.stop()

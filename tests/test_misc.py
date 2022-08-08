@@ -1,6 +1,8 @@
 # coding=utf-8
 from collections.abc import MutableMapping
 
+from pytest import LogCaptureFixture
+
 from lbz.misc import MultiDict, NestedDict, Singleton, deep_update, error_catcher, get_logger
 
 
@@ -43,7 +45,7 @@ def test_multi_dict() -> None:
     assert multi_dict.original_items() == [("b", ["abc"])]
 
 
-def test_get_logger(caplog) -> None:
+def test_get_logger(caplog: LogCaptureFixture) -> None:
     a_loger = get_logger("a")
     b_loger = get_logger("b")
     assert a_loger != b_loger
@@ -65,7 +67,7 @@ def test_error_catcher(caplog) -> None:
     assert "ZeroDivisionError" in caplog.text
 
 
-def test_error_catcher_class(caplog) -> None:
+def test_error_catcher_class(caplog: LogCaptureFixture) -> None:
     class AClass:
         logger = get_logger("xxxxx")
 

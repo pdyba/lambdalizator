@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Callable, Dict, List
 
 from lbz.events.event import Event
@@ -23,7 +24,7 @@ class EventBroker:
 
         for handler in self._get_handlers():
             try:
-                handler(self.event)
+                handler(deepcopy(self.event))
             except Exception:  # pylint: disable=broad-except
                 logger.exception("Handling event failed, event: %s", self.event)
 

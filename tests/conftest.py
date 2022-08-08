@@ -59,8 +59,8 @@ def sample_event() -> APIGatewayEvent:
     )
 
 
-@pytest.fixture(scope="session")
-def jwt_partial_payload() -> dict:
+@pytest.fixture(scope="session", name="jwt_partial_payload")
+def jwt_partial_payload_fixture() -> dict:
     return {
         "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
         "iat": int(datetime.utcnow().timestamp()),
@@ -69,8 +69,8 @@ def jwt_partial_payload() -> dict:
     }
 
 
-@pytest.fixture(scope="session")
-def full_access_authz_payload(jwt_partial_payload) -> dict:  # pylint: disable=redefined-outer-name
+@pytest.fixture(scope="session", name="full_access_authz_payload")
+def full_access_authz_payload_fixture(jwt_partial_payload: dict) -> dict:
     return {
         "allow": {"*": "*"},
         "deny": {},
@@ -80,7 +80,7 @@ def full_access_authz_payload(jwt_partial_payload) -> dict:  # pylint: disable=r
 
 @pytest.fixture(scope="session")
 def full_access_auth_header(
-    full_access_authz_payload,  # pylint: disable=redefined-outer-name
+    full_access_authz_payload: dict,
 ) -> str:
     return Authorizer.sign_authz(
         full_access_authz_payload,
@@ -90,7 +90,7 @@ def full_access_auth_header(
 
 @pytest.fixture(scope="session")
 def limited_access_auth_header(
-    full_access_authz_payload,  # pylint: disable=redefined-outer-name
+    full_access_authz_payload: dict,
 ) -> str:
     return Authorizer.sign_authz(
         {
@@ -102,13 +102,13 @@ def limited_access_auth_header(
     )
 
 
-@pytest.fixture(scope="session")
-def username() -> str:
+@pytest.fixture(scope="session", name="username")
+def username_fixture() -> str:
     return str(uuid4())
 
 
-@pytest.fixture(scope="session")
-def user_cognito(username, jwt_partial_payload) -> dict:  # pylint: disable=redefined-outer-name
+@pytest.fixture(scope="session", name="user_cognito")
+def user_cognito_fixture(username: str, jwt_partial_payload: dict) -> dict:
     return {
         "cognito:username": username,
         "custom:id": str(uuid4()),
@@ -122,18 +122,18 @@ def user_cognito(username, jwt_partial_payload) -> dict:  # pylint: disable=rede
     }
 
 
-@pytest.fixture(scope="session")
-def user_token(user_cognito) -> str:  # pylint: disable=redefined-outer-name
+@pytest.fixture(scope="session", name="user_token")
+def user_token_fixture(user_cognito: dict) -> str:
     return encode_token(user_cognito)
 
 
-@pytest.fixture(scope="session")
-def user(user_token) -> User:  # pylint: disable=redefined-outer-name
+@pytest.fixture(scope="session", name="user")
+def user_fixture(user_token: str) -> User:
     return User(user_token)
 
 
 @pytest.fixture()
-def sample_request_with_user(user) -> Request:  # pylint: disable=redefined-outer-name
+def sample_request_with_user(user: User) -> Request:
     return Request(
         method="GET",
         body="",
@@ -147,6 +147,22 @@ def sample_request_with_user(user) -> Request:  # pylint: disable=redefined-oute
 
 
 @pytest.fixture()
+def sample_resource() -> Type[Resource]:
+    """Be careful when doing any changes in this fixture"""
+
+    class HelloWorld(Resource):
+        @add_route("/", method="GET")
+        def list(self) -> Response:
+            return Response({"message": "HelloWorld"})
+
+        @add_route("/t/{id}", method="GET")
+        def get(self) -> Response:
+            return Response({"message": "HelloWorld"})
+
+    return HelloWorld
+
+
+@pytest.fixture()
 def sample_resource_with_authorization() -> Type[Resource]:
     """Be careful when doing any changes in this fixture - especially for Auth Collector"""
 
@@ -155,13 +171,13 @@ def sample_resource_with_authorization() -> Type[Resource]:
 
         @add_route("/")
         @authorization("perm-name")
-        def handler(self, restrictions) -> Response:
+        def handler(self, restrictions: dict) -> Response:
             assert restrictions == {"allow": "*", "deny": None}
             return Response("x")
 
         @add_route("/garbage")
         @authorization()
-        def garbage(self, restrictions) -> Response:  # pylint: disable=unused-argument
+        def garbage(self, restrictions: dict) -> Response:  # pylint: disable=unused-argument
             return Response("x")
 
     return XResource

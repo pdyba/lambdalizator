@@ -6,8 +6,9 @@ import json
 import logging
 import urllib.parse
 from abc import ABCMeta, abstractmethod
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from os import environ
+from threading import Thread
 from typing import Tuple, Type, Union
 
 from lbz.dev.misc import APIGatewayEvent
@@ -147,24 +148,42 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
         self.handle_request()
 
 
-class MyDevServer:
+class MyDevServer(Thread):
     """
     Development Server base class.
     """
 
-    def __init__(self, acls: Type[Resource], address: str = "localhost", port: int = 8000):
+    def __init__(
+        self,
+        acls: Type[Resource],
+        address: str = "localhost",
+        port: int = 8000,
+    ) -> None:
         class MyClassLambdaDevHandler(MyLambdaDevHandler):
             cls: Type[Resource] = acls
 
+        super().__init__()
         self.my_handler = MyClassLambdaDevHandler
         self.address = address
         self.port = port
         self.server_address = (self.address, self.port)
+        self.httpd = ThreadingHTTPServer(self.server_address, self.my_handler)
+        print(f"server bound to port: {self.port}")
 
     def run(self) -> None:
         """
-        Start the server.
+        Start the server in the foreground.
         """
         print(f"serving on http://{self.address}:{self.port}")
-        httpd = HTTPServer(self.server_address, self.my_handler)
-        httpd.serve_forever()
+        self.httpd.serve_forever()
+
+    def stop(self) -> None:
+        self.httpd.shutdown()
+        self.httpd.server_close()
+        print(f"Server stopped and port {self.port} released")
+
+    def start(self) -> None:  # pylint: disable=useless-super-delegation
+        """
+        Start the server in the background
+        """
+        super().start()
