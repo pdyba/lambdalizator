@@ -59,8 +59,8 @@ def sample_event() -> APIGatewayEvent:
     )
 
 
-@pytest.fixture(scope="session")
-def jwt_partial_payload() -> dict:
+@pytest.fixture(scope="session", name="jwt_partial_payload")
+def jwt_partial_authz() -> dict:
     return {
         "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
         "iat": int(datetime.utcnow().timestamp()),
@@ -69,8 +69,10 @@ def jwt_partial_payload() -> dict:
     }
 
 
-@pytest.fixture(scope="session")
-def full_access_authz_payload(jwt_partial_payload) -> dict:  # pylint: disable=redefined-outer-name
+@pytest.fixture(scope="session", name="full_access_authz_payload")
+def full_access_authz(
+    jwt_partial_payload: dict,
+) -> dict:
     return {
         "allow": {"*": "*"},
         "deny": {},
@@ -80,7 +82,7 @@ def full_access_authz_payload(jwt_partial_payload) -> dict:  # pylint: disable=r
 
 @pytest.fixture(scope="session")
 def full_access_auth_header(
-    full_access_authz_payload,  # pylint: disable=redefined-outer-name
+    full_access_authz_payload: dict,
 ) -> str:
     return Authorizer.sign_authz(
         full_access_authz_payload,
@@ -90,7 +92,7 @@ def full_access_auth_header(
 
 @pytest.fixture(scope="session")
 def limited_access_auth_header(
-    full_access_authz_payload,  # pylint: disable=redefined-outer-name
+    full_access_authz_payload: dict,
 ) -> str:
     return Authorizer.sign_authz(
         {
@@ -102,13 +104,13 @@ def limited_access_auth_header(
     )
 
 
-@pytest.fixture(scope="session")
-def username() -> str:
+@pytest.fixture(scope="session", name="username")
+def username_generator() -> str:
     return str(uuid4())
 
 
 @pytest.fixture(scope="session")
-def user_cognito(username, jwt_partial_payload) -> dict:  # pylint: disable=redefined-outer-name
+def user_cognito(username: str, jwt_partial_payload: dict) -> dict:
     return {
         "cognito:username": username,
         "custom:id": str(uuid4()),
@@ -123,17 +125,17 @@ def user_cognito(username, jwt_partial_payload) -> dict:  # pylint: disable=rede
 
 
 @pytest.fixture(scope="session")
-def user_token(user_cognito) -> str:  # pylint: disable=redefined-outer-name
+def user_token(user_cognito: dict) -> str:  # pylint: disable=redefined-outer-name
     return encode_token(user_cognito)
 
 
 @pytest.fixture(scope="session")
-def user(user_token) -> User:  # pylint: disable=redefined-outer-name
+def user(user_token: str) -> User:  # pylint: disable=redefined-outer-name
     return User(user_token)
 
 
 @pytest.fixture()
-def sample_request_with_user(user) -> Request:  # pylint: disable=redefined-outer-name
+def sample_request_with_user(user: User) -> Request:  # pylint: disable=redefined-outer-name
     return Request(
         method="GET",
         body="",
@@ -165,3 +167,19 @@ def sample_resource_with_authorization() -> Type[Resource]:
             return Response("x")
 
     return XResource
+
+
+@pytest.fixture()
+def sample_resource_without_authorization() -> Type[Resource]:
+    """Be careful when doing any changes in this fixture"""
+
+    class HelloWorld(Resource):
+        @add_route("/", method="GET")
+        def list(self) -> Response:
+            return Response({"message": "HelloWorld"})
+
+        @add_route("/t/{id}", method="GET")
+        def get(self) -> Response:
+            return Response({"message": "HelloWorld"})
+
+    return HelloWorld

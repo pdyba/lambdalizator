@@ -1,5 +1,6 @@
 import logging
-from typing import Dict
+from copy import deepcopy
+from typing import Dict, List
 from unittest.mock import MagicMock
 
 import pytest
@@ -71,9 +72,11 @@ class TestEventBroker:
         ]
 
     def test_broker_events_are_not_affected_by_specific_event_handler(self) -> None:
+        expected_events = [Event({"y": 1}, event_type="x")] * 3
+        passed_events: List[Event] = []
+
         def handler(event: Event) -> None:
-            expected_event = Event({"y": 1}, event_type="x")
-            assert event == expected_event
+            passed_events.append(deepcopy(event))
             event.data["y"] += 5
             event.data["b"] = 50
 
@@ -81,3 +84,5 @@ class TestEventBroker:
         event_payload = {"detail-type": "x", "detail": {"y": 1}}
 
         EventBroker(mapper, event_payload).handle()
+
+        assert passed_events == expected_events

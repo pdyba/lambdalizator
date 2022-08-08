@@ -151,11 +151,14 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
 class MyDevServer(Thread):
     """
     Development Server base class.
-
-    .start() allows to run in the background
     """
 
-    def __init__(self, acls: Type[Resource], address: str = "localhost", port: int = 8000):
+    def __init__(
+        self,
+        acls: Type[Resource],
+        address: str = "localhost",
+        port: int = 8000,
+    ) -> None:
         class MyClassLambdaDevHandler(MyLambdaDevHandler):
             cls: Type[Resource] = acls
 
@@ -165,13 +168,22 @@ class MyDevServer(Thread):
         self.port = port
         self.server_address = (self.address, self.port)
         self.httpd = ThreadingHTTPServer(self.server_address, self.my_handler)
+        print(f"server bound to port: {self.port}")
 
     def run(self) -> None:
         """
-        Start the server.
+        Start the server in the foreground.
         """
         print(f"serving on http://{self.address}:{self.port}")
         self.httpd.serve_forever()
 
     def stop(self) -> None:
         self.httpd.shutdown()
+        self.httpd.server_close()
+        print(f"Server stopped and port {self.port} release")
+
+    def start(self) -> None:  # pylint: disable=useless-super-delegation
+        """
+        Start the server in the background
+        """
+        super().start()
