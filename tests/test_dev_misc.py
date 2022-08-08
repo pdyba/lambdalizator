@@ -4,7 +4,7 @@ from hashlib import sha1
 from lbz.dev.misc import EVENT_TEMPLATE
 
 
-def hash_string(string):
+def hash_string(string: str) -> str:
     return sha1(string.encode("UTF-8")).hexdigest()
 
 

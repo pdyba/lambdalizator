@@ -277,3 +277,13 @@ Released 2022-08-07
 
 - Makes sure that event broker is always passing original event and other handlers cannot affect it.
 - Makes DevServer threaded, so it can be run in background, useful for testing
+
+
+### Version 0.5.14
+Released 2022-08-09
+
+- This change contains only library development improvements
+- Adds Router cleanup after each test and router fixture
+- General tests improvements
+- Many mypy related improvements for tests
+

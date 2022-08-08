@@ -1,7 +1,7 @@
 # coding=utf-8
 import os
 from datetime import datetime, timedelta
-from typing import List, Type
+from typing import Generator, List, Type
 from uuid import uuid4
 
 import pytest
@@ -15,7 +15,7 @@ from lbz.dev.misc import APIGatewayEvent
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
-from lbz.router import add_route
+from lbz.router import Router, add_route
 from tests import SAMPLE_PRIVATE_KEY
 from tests.utils import encode_token
 
@@ -26,9 +26,22 @@ def allowed_audiences() -> List[str]:
 
 
 @pytest.fixture(autouse=True)
-def clear_authz_collector():
+def clear_authz_collector() -> Generator:
     yield
     authz_collector.clean()
+
+
+@pytest.fixture(autouse=True)
+def clear_router_collector() -> Generator:
+    yield
+    Router()._clear()  # pylint: disable=protected-access
+
+
+@pytest.fixture()
+def sample_router() -> Router:
+    router = Router()
+    router.add_route("/", "GET", "x")
+    return router
 
 
 @pytest.fixture()
@@ -181,3 +194,25 @@ def sample_resource_with_authorization() -> Type[Resource]:
             return Response("x")
 
     return XResource
+
+
+@pytest.fixture()
+def sample_guest_resource() -> Type[Resource]:
+    class GuestResource(Resource):  # pylint: disable=unused-variable
+        _name = "guest_res"
+
+        @staticmethod
+        def get_guest_authorization() -> dict:
+            return {"allow": {"guest_res": {"handler": {"allow": "*"}}}, "deny": {}}
+
+        @add_route("/")
+        @authorization()
+        def handler(self, restrictions: dict) -> Response:  # pylint: disable=unused-argument
+            return Response("ok")
+
+        @add_route("/garbage2")
+        @authorization()
+        def garbage(self, restrictions: dict) -> Response:  # pylint: disable=unused-argument
+            return Response("ok")
+
+    return GuestResource

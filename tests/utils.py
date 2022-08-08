@@ -3,7 +3,7 @@ from jose import jwt
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY
 
 
-def encode_token(claims) -> str:
+def encode_token(claims: dict) -> str:
     encodeded_jwt: str = jwt.encode(
         claims,
         SAMPLE_PRIVATE_KEY,
