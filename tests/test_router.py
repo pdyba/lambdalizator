@@ -1,10 +1,20 @@
 # coding=utf-8
 import json
 
+import pytest
+
 from lbz.misc import NestedDict
 from lbz.router import Router, add_route
 
 
+@pytest.fixture(name="sample_router")
+def sample_router_fixture() -> Router:
+    router = Router()
+    router.add_route("/", "GET", "x")
+    return router
+
+
+# TODO: Improve router tests
 class TestRouter:
     def test___init__(self, sample_router: Router) -> None:
         assert isinstance(sample_router._routes, NestedDict)  # pylint: disable=protected-access

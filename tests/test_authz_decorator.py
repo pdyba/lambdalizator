@@ -3,9 +3,35 @@ from http import HTTPStatus
 from typing import Type
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from lbz.authz.decorators import authorization
 from lbz.dev.misc import APIGatewayEvent
 from lbz.resource import Resource
+from lbz.response import Response
+from lbz.router import add_route
+
+
+@pytest.fixture(name="sample_guest_resource")
+def sample_guest_resource_fixture() -> Type[Resource]:
+    class GuestResource(Resource):
+        _name = "guest_res"
+
+        @staticmethod
+        def get_guest_authorization() -> dict:
+            return {"allow": {"guest_res": {"handler": {"allow": "*"}}}, "deny": {}}
+
+        @add_route("/")
+        @authorization()
+        def handler(self, restrictions: dict) -> Response:  # pylint: disable=unused-argument
+            return Response("ok")
+
+        @add_route("/garbage2")
+        @authorization()
+        def garbage(self, restrictions: dict) -> Response:  # pylint: disable=unused-argument
+            return Response("ok")
+
+    return GuestResource
 
 
 class TestAuthorizationDecorator:

@@ -28,7 +28,7 @@ class TestAuthorizationUtils:
             check_permission(res_instance, "garbage")
 
     def test_check_permission_unauthorised(
-        self, sample_event: dict, sample_resource_with_authorization: Type[Resource]
+        self, sample_event: APIGatewayEvent, sample_resource_with_authorization: Type[Resource]
     ) -> None:
         res_instance = sample_resource_with_authorization(sample_event)
         with pytest.raises(Unauthorized):

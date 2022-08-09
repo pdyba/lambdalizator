@@ -41,7 +41,7 @@ class Router(metaclass=Singleton):
         """
         self._routes[route][method] = handler
 
-    def _clear(self) -> None:
+    def clear(self) -> None:
         self._routes = NestedDict()
 
 
