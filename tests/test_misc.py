@@ -21,7 +21,7 @@ def test_singleton() -> None:
     c_inst = AClass()
     assert a_inst is b_inst is c_inst
     assert Singleton._instances[AClass] == a_inst  # pylint: disable=protected-access
-    a_inst._del()  # pylint: disable=protected-access
+    a_inst._del()  # type: ignore  # pylint: disable=protected-access
     assert Singleton._instances.get(AClass) is None  # pylint: disable=protected-access
 
 
@@ -57,9 +57,9 @@ def test_get_logger(caplog: LogCaptureFixture) -> None:
         assert "ZeroDivisionError" in caplog.text
 
 
-def test_error_catcher(caplog) -> None:
+def test_error_catcher(caplog: LogCaptureFixture) -> None:
     @error_catcher
-    def zero_division():
+    def zero_division() -> float:
         return 2 / 0
 
     zero_division()
@@ -72,7 +72,7 @@ def test_error_catcher_class(caplog: LogCaptureFixture) -> None:
         logger = get_logger("xxxxx")
 
         @error_catcher
-        def zero_division(self):
+        def zero_division(self) -> float:
             return 2 / 0
 
     AClass().zero_division()

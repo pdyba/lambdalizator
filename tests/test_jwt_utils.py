@@ -63,9 +63,9 @@ class TestDecodeJWT:
         with pytest.raises(Unauthorized, match="Your token has expired. Please refresh it."):
             decode_jwt(jwt_token)
 
-    @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
+    @patch("lbz.jwt_utils.get_matching_jwk", MagicMock(return_value={}))
     @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [])
-    def test_empty_allowed_audiences(self, _mocked_get_matching_jwk) -> None:
+    def test_empty_allowed_audiences(self) -> None:
         with pytest.raises(RuntimeError, match="ALLOWED_AUDIENCES"):
             decode_jwt("x")
 
@@ -97,6 +97,6 @@ class TestDecodeJWT:
                 }
             )
 
-    def test_wrong_iss(self, full_access_authz_payload) -> None:
+    def test_wrong_iss(self, full_access_authz_payload: dict) -> None:
         with pytest.raises(Unauthorized):
             validate_jwt_properties({**full_access_authz_payload, "iss": "test2"})

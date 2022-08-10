@@ -2,49 +2,49 @@ from lbz.collector import AuthzCollector
 
 
 class TestAuthzCollector:
-    def setup_method(self) -> None:
-        self.azc = AuthzCollector()  # pylint: disable=attribute-defined-outside-init
-
-    def teardown_method(self) -> None:
-        self.azc._del()  # pylint: disable=protected-access
-
     def test__singleton_only_one_exists(self) -> None:
+        azc = AuthzCollector()
         az_2 = AuthzCollector()
 
-        assert self.azc == az_2
+        assert azc == az_2
 
     def test__init__(self) -> None:
-        assert self.azc.possible_permissions == {}
-        assert self.azc.resource_name == ""  # pylint: disable=compare-to-empty-string
-        assert self.azc.guest_permissions == {}
+        azc = AuthzCollector()
+        assert azc.possible_permissions == {}
+        assert azc.resource_name == ""  # pylint: disable=compare-to-empty-string
+        assert azc.guest_permissions == {}
 
     def test_set_resource(self) -> None:
+        azc = AuthzCollector()
         test_resource = "test_resource"
-        self.azc.set_resource(test_resource)
+        azc.set_resource(test_resource)
 
-        assert self.azc.resource_name == test_resource
+        assert azc.resource_name == test_resource
 
     def test_set_guest_permissions(self) -> None:
+        azc = AuthzCollector()
         guest_permissions = {"allow": "*"}
-        self.azc.set_guest_permissions(guest_permissions)
+        azc.set_guest_permissions(guest_permissions)
 
-        assert self.azc.guest_permissions == guest_permissions
+        assert azc.guest_permissions == guest_permissions
 
     def test_add_authz(self) -> None:
+        azc = AuthzCollector()
         some_permission = "some_permission"
-        self.azc.add_authz(some_permission)
+        azc.add_authz(some_permission)
 
-        assert self.azc.possible_permissions == {some_permission: None}
+        assert azc.possible_permissions == {some_permission: None}
 
     def test_dump(self) -> None:
+        azc = AuthzCollector()
         test_resource = "x_resource"
-        self.azc.set_resource(test_resource)
+        azc.set_resource(test_resource)
         guest_permissions = {"allow": "*", "deny": "root"}
-        self.azc.set_guest_permissions(guest_permissions)
+        azc.set_guest_permissions(guest_permissions)
         some_permission = "x_permission"
-        self.azc.add_authz(some_permission)
+        azc.add_authz(some_permission)
 
-        assert self.azc.dump() == {
+        assert azc.dump() == {
             test_resource: {
                 "possible_permissions": {some_permission: None},
                 "guest_permissions": guest_permissions,
@@ -52,19 +52,20 @@ class TestAuthzCollector:
         }
 
     def test_clean(self) -> None:
+        azc = AuthzCollector()
         guest_permissions = {"allow": "*"}
-        self.azc.set_guest_permissions(guest_permissions)
+        azc.set_guest_permissions(guest_permissions)
         test_resource = "test_resource"
-        self.azc.set_resource(test_resource)
+        azc.set_resource(test_resource)
         some_permission = "some_permission"
-        self.azc.add_authz(some_permission)
+        azc.add_authz(some_permission)
 
-        assert self.azc.possible_permissions == {some_permission: None}
-        assert self.azc.resource_name == test_resource
-        assert self.azc.guest_permissions == guest_permissions
+        assert azc.possible_permissions == {some_permission: None}
+        assert azc.resource_name == test_resource
+        assert azc.guest_permissions == guest_permissions
 
-        self.azc.clean()
+        azc.clean()
 
-        assert self.azc.possible_permissions == {}
-        assert self.azc.resource_name == ""  # pylint: disable=compare-to-empty-string
-        assert self.azc.guest_permissions == {}
+        assert azc.possible_permissions == {}
+        assert azc.resource_name == ""  # pylint: disable=compare-to-empty-string
+        assert azc.guest_permissions == {}

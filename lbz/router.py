@@ -41,6 +41,9 @@ class Router(metaclass=Singleton):
         """
         self._routes[route][method] = handler
 
+    def clear(self) -> None:
+        self._routes = NestedDict()
+
 
 def add_route(route: str, method: str = "GET") -> Callable:
     """

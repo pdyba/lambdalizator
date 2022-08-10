@@ -1,7 +1,7 @@
 # coding=utf-8
 import os
 from datetime import datetime, timedelta
-from typing import List, Type
+from typing import Iterator, List, Type
 from uuid import uuid4
 
 import pytest
@@ -15,7 +15,7 @@ from lbz.dev.misc import APIGatewayEvent
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
-from lbz.router import add_route
+from lbz.router import Router, add_route
 from tests import SAMPLE_PRIVATE_KEY
 from tests.utils import encode_token
 
@@ -26,9 +26,15 @@ def allowed_audiences() -> List[str]:
 
 
 @pytest.fixture(autouse=True)
-def clear_authz_collector():
+def clear_authz_collector() -> Iterator[None]:
     yield
     authz_collector.clean()
+
+
+@pytest.fixture(autouse=True)
+def clear_router_collector() -> Iterator[None]:
+    yield
+    Router().clear()
 
 
 @pytest.fixture()
