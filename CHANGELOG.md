@@ -287,3 +287,9 @@ Released 2022-08-09
 - General tests improvements
 - Many mypy related improvements for tests
 
+
+
+### Version 0.5.15
+Released 2022-08-25
+
+- Add the all_lbz_errors function

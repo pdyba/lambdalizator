@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from http import HTTPStatus
-from typing import Optional
+from typing import Generator, Optional, Type
 
 from lbz.response import Response
 
@@ -333,3 +333,12 @@ class NetworkAuthenticationRequired(LambdaFWServerException):
 
     message = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.description
     status_code = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.value
+
+
+def all_lbz_errors(
+    cls: Type[LambdaFWException] = LambdaFWException,
+) -> Generator[Type[LambdaFWException], None, None]:
+    for subcls in cls.__subclasses__():
+        if subcls not in [LambdaFWClientException, LambdaFWServerException]:
+            yield subcls
+        yield from all_lbz_errors(subcls)

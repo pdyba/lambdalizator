@@ -4,47 +4,11 @@ from typing import Type
 import pytest
 
 from lbz.exceptions import (
-    BadGateway,
     BadRequestError,
-    Conflict,
-    ExpectationFailed,
-    FailedDependency,
-    GatewayTimeout,
-    Gone,
-    ImATeapot,
-    InsufficientStorage,
-    InvalidResolutionError,
     LambdaFWException,
-    LengthRequired,
-    Locked,
-    LoopDetected,
-    MisdirectedRequest,
-    NetworkAuthenticationRequired,
-    NotAcceptable,
-    NotExtended,
-    NotFound,
-    NotImplementedFunctionality,
-    PayloadTooLarge,
-    PaymentRequired,
-    PermissionDenied,
-    PreconditionFailed,
-    PreconditionRequired,
-    ProxyAuthenticationRequired,
-    RangeNotSatisfiable,
-    RequestHeaderFieldsTooLarge,
-    RequestTimeout,
     ServerError,
-    ServiceUnavailable,
-    TooEarly,
-    TooManyRequests,
-    Unauthorized,
-    UnavailableForLegalReasons,
-    UnprocessableEntity,
-    UnsupportedMediaType,
     UnsupportedMethod,
-    UpgradeRequired,
-    URITooLong,
-    VariantAlsoNegotiates,
+    all_lbz_errors,
 )
 
 
@@ -103,50 +67,7 @@ def test__unsupported_method__builds_message_based_on_method_provided_from_outsi
     assert exception.status_code == 405
 
 
-@pytest.mark.parametrize(
-    "custom_exception",
-    [
-        BadGateway,
-        BadRequestError,
-        Conflict,
-        ExpectationFailed,
-        FailedDependency,
-        GatewayTimeout,
-        Gone,
-        ImATeapot,
-        InsufficientStorage,
-        InvalidResolutionError,
-        LengthRequired,
-        Locked,
-        LoopDetected,
-        MisdirectedRequest,
-        NetworkAuthenticationRequired,
-        NotAcceptable,
-        NotExtended,
-        NotFound,
-        NotImplementedFunctionality,
-        PayloadTooLarge,
-        PaymentRequired,
-        PermissionDenied,
-        PreconditionFailed,
-        PreconditionRequired,
-        ProxyAuthenticationRequired,
-        RangeNotSatisfiable,
-        RequestHeaderFieldsTooLarge,
-        RequestTimeout,
-        ServerError,
-        ServiceUnavailable,
-        TooManyRequests,
-        URITooLong,
-        Unauthorized,
-        UnavailableForLegalReasons,
-        UnprocessableEntity,
-        UnsupportedMediaType,
-        UpgradeRequired,
-        VariantAlsoNegotiates,
-        TooEarly,
-    ],
-)
+@pytest.mark.parametrize("custom_exception", set(all_lbz_errors()) - {UnsupportedMethod})
 def test__custom_exception__contains_message_and_status_code_according_to_its_docstring(
     custom_exception: Type[LambdaFWException],
 ) -> None:
@@ -159,3 +80,10 @@ def test__custom_exception__contains_message_and_status_code_according_to_its_do
     assert issubclass(custom_exception, LambdaFWException)
     assert exception.message == message
     assert exception.status_code == int(code)
+
+
+def test__all_lbz_errors__returns_all_subclasses_of_lambda_fw_exception():
+    result = list(all_lbz_errors())
+
+    assert BadRequestError in result
+    assert ServerError in result
