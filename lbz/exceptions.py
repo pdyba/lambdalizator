@@ -333,3 +333,8 @@ class NetworkAuthenticationRequired(LambdaFWServerException):
 
     message = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.description
     status_code = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.value
+
+
+class ConfigurationMissingKey(LambdaFWServerException):
+    def __init__(self, config_key: str) -> None:
+        super().__init__(message=f"Missing {config_key} in configuration")
