@@ -41,7 +41,7 @@ class Resource:
     def get_name(cls) -> str:
         return cls._name or cls.__name__.lower()
 
-    def __init__(self, event: dict):
+    def __init__(self, event: dict, context: object = None):
         self._load_configuration()
         self.urn = event["path"]  # TODO: Variables should match corresponding event fields
         self.path = event.get("requestContext", {}).get("resourcePath")
@@ -61,6 +61,7 @@ class Resource:
         self._authz_collector.set_resource(self.get_name())
         self._authz_collector.set_guest_permissions(self.get_guest_authorization())
         self.response: Response = None  # type: ignore
+        self.context = context
 
     def __call__(self) -> Response:
         try:

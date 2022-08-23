@@ -292,3 +292,4 @@ Released 2022-08-09
 Released 2022-08-30
 
 - Adds Configuration Management
+- Allows passing context to Resource and stores it within the class

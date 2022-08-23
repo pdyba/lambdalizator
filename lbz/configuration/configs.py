@@ -27,7 +27,7 @@ class BaseConfig:
             val = self.getter()
             val = val if val is not None else self.default
             if val is None:
-                self.val = None
+                self._value = None
             else:
                 self._value = self.parser(val) if self.parser else val
         return self._value

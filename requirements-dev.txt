@@ -12,7 +12,7 @@ black==22.6.0
     # via -r requirements-dev.in
 boto3-stubs[cognito-idp,dynamodb,events,lambda,s3,sns,sqs,ssm]==1.21.46
     # via -r requirements-dev.in
-botocore-stubs==1.27.45
+botocore-stubs==1.27.57
     # via boto3-stubs
 build==0.8.0
     # via pip-tools
@@ -20,7 +20,7 @@ click==8.1.3
     # via
     #   black
     #   pip-tools
-coverage[toml]==6.4.2
+coverage[toml]==6.4.4
     # via
     #   -r requirements-dev.in
     #   pytest-cov
@@ -102,9 +102,9 @@ tomli==2.0.1
     #   mypy
     #   pylint
     #   pytest
-tomlkit==0.11.1
+tomlkit==0.11.4
     # via pylint
-types-awscrt==0.13.14
+types-awscrt==0.14.0
     # via botocore-stubs
 typing-extensions==4.3.0
     # via
