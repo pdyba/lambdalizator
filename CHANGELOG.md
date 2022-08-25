@@ -287,3 +287,11 @@ Released 2022-08-09
 - General tests improvements
 - Many mypy related improvements for tests
 
+
+### Version 0.5.15
+Released 2022-08-30
+
+- Adds Lambda to Lambda API (client and broker)
+- Unifies API's
+- Adds deprecation wrapper 
+- Deprecates  pre_request_hook and post_request_hook in Resource

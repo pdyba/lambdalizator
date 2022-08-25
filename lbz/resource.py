@@ -67,7 +67,8 @@ class Resource(APIBase):
         """
         deprecated - please use handle and react for full request flow
         """
-        return self.handle()
+        resp: Response = self.react()
+        return resp
 
     def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"
@@ -179,11 +180,11 @@ class CORSResource(Resource):
             "Access-Control-Allow-Methods": ", ".join([*methods, "OPTIONS"]),
         }
 
-    def __call__(self) -> Response:
+    def handle(self) -> Response:
         if self.method == "OPTIONS":
             return Response("", headers=self.resp_headers(), status_code=HTTPStatus.NO_CONTENT)
 
-        resp = super().__call__()
+        resp = super().handle()
         if resp.status_code >= 400 and ALLOW_ORIGIN_HEADER not in resp.headers:
             resp.headers.update(self.resp_headers())
         return resp
@@ -262,7 +263,7 @@ class EventAwareResource(Resource):
         super().__init__(event)
         self.event_api = EventAPI()
 
-    def post_request_hook(self) -> None:
+    def post_handle(self) -> None:
         if self.response.is_ok():
             self.event_api.send()
         else:
