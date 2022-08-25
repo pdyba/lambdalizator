@@ -5,6 +5,7 @@ Misc Helpers of Lambda Framework.
 import copy
 import logging
 import logging.handlers
+import warnings
 from collections.abc import MutableMapping
 from functools import wraps
 from os import environ
@@ -132,3 +133,25 @@ def deep_update(dict_to_update: dict, update_data: dict) -> None:
 
 def is_in_debug_mode() -> bool:
     return environ.get("LBZ_DEBUG_MODE", "").lower() == "true"
+
+
+def deprecated(func: Callable) -> Any:
+    """
+    This is a decorator which can be used to mark functions as deprecated.
+    It will result in a warning being emitted when the function is used.
+
+    Copied from https://stackoverflow.com/a/30253848
+    """
+
+    @wraps(func)
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
+        warnings.simplefilter("always", DeprecationWarning)  # turn off filter
+        warnings.warn(
+            "Call to deprecated function {}.".format(func.__name__),
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+        warnings.simplefilter("default", DeprecationWarning)  # reset filter
+        return func(*args, **kwargs)
+
+    return wrapped

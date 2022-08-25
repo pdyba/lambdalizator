@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 
 from multidict import CIMultiDict
 
+from lbz.api_base import APIBase
 from lbz.authentication import User
 from lbz.collector import authz_collector
 from lbz.events.api import EventAPI
@@ -18,7 +19,7 @@ from lbz.exceptions import (
     Unauthorized,
     UnsupportedMethod,
 )
-from lbz.misc import get_logger, is_in_debug_mode
+from lbz.misc import deprecated, get_logger, is_in_debug_mode
 from lbz.request import Request
 from lbz.response import Response
 from lbz.router import Router
@@ -28,7 +29,7 @@ ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
 logger = get_logger(__name__)
 
 
-class Resource:
+class Resource(APIBase):
     """
     Resource class.
     """
@@ -63,6 +64,51 @@ class Resource:
         self.response: Response = None  # type: ignore
 
     def __call__(self) -> Response:
+        """
+        deprecated - please use handle and react for full request flow
+        """
+        return self.handle()
+
+    def __repr__(self) -> str:
+        return f"<Resource {self.method} @ {self.urn} >"
+
+    def _load_configuration(self) -> None:
+        self.auth_enabled = env.get("ALLOWED_PUBLIC_KEYS") or env.get("ALLOWED_AUDIENCES")
+
+    def _get_user(self, headers: CIMultiDict) -> Union[None, User]:
+        authentication = headers.get("Authentication")
+        if authentication and self.auth_enabled:
+            return User(authentication)
+        if authentication:
+            raise Unauthorized("Authentication method not supported")
+        return None
+
+    def _post_request_hook(self) -> None:
+        """*/
+        Makes the post_request_hook run-time friendly.
+        """
+        try:
+            self.post_request_hook()
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
+
+    @deprecated
+    def pre_request_hook(self) -> None:
+        """
+        Place to configure pre request hooks.
+
+        deprecated - please use pre_handle
+        """
+
+    @deprecated
+    def post_request_hook(self) -> None:
+        """
+        Place to configure post request hooks.
+
+        deprecated - please use post_handle
+        """
+
+    def handle(self) -> Response:
         try:
             self.pre_request_hook()
 
@@ -85,39 +131,6 @@ class Resource:
             self.response = ServerError().get_response(self.request.context["requestId"])
         self._post_request_hook()
         return self.response
-
-    def __repr__(self) -> str:
-        return f"<Resource {self.method} @ {self.urn} >"
-
-    def _load_configuration(self) -> None:
-        self.auth_enabled = env.get("ALLOWED_PUBLIC_KEYS") or env.get("ALLOWED_AUDIENCES")
-
-    def _get_user(self, headers: CIMultiDict) -> Union[None, User]:
-        authentication = headers.get("Authentication")
-        if authentication and self.auth_enabled:
-            return User(authentication)
-        if authentication:
-            raise Unauthorized("Authentication method not supported")
-        return None
-
-    def _post_request_hook(self) -> None:
-        """
-        Makes the post_request_hook run-time friendly.
-        """
-        try:
-            self.post_request_hook()
-        except Exception as err:  # pylint: disable=broad-except
-            logger.exception(err)
-
-    def pre_request_hook(self) -> None:
-        """
-        Place to configure pre request hooks.
-        """
-
-    def post_request_hook(self) -> None:
-        """
-        Place to configure post request hooks.
-        """
 
     @staticmethod
     def get_guest_authorization() -> dict:
