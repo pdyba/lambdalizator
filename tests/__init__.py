@@ -14,3 +14,4 @@ os.environ["ALLOWED_PUBLIC_KEYS"] = json.dumps({"keys": [SAMPLE_PUBLIC_KEY]})
 os.environ["ALLOWED_AUDIENCES"] = ",".join([str(uuid4()), str(uuid4())])
 os.environ["ALLOWED_ISS"] = "test-issuer"
 os.environ["AWS_LAMBDA_FUNCTION_NAME"] = "million-dollar-lambda"
+os.environ["AWS_DEFAULT_REGION"] = "us-west-2"

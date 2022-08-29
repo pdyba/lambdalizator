@@ -1,11 +1,9 @@
-from os import environ
 from unittest.mock import MagicMock, patch
 
 from lbz.aws_boto3 import client
 from lbz.configuration import SSM
 
 
-@patch.dict(environ, {"AWS_DEFAULT_REGION": "us-west-2"}, clear=True)
 @patch.object(client.ssm, "get_parameter")
 def test_get_parameter(mocked_get_parameter: MagicMock) -> None:
     mocked_get_parameter.return_value = {"Parameter": {"Value": "x"}}
