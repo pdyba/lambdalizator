@@ -6,15 +6,16 @@ from lbz.exceptions import ConfigurationMissingKey
 
 class PreLoadConfigManager:
     def __init__(self, configs: List[BaseConfig]) -> None:
-        self.configs: Dict[str, Any] = {}
+        self.configs: Dict[str, BaseConfig] = {cfg.key: cfg for cfg in configs}
+        self.loaded_configs: Dict[str, Any] = {}
         for cfg in configs:
             value = cfg.get_value()
             if value is cfg.default is None:
                 raise ConfigurationMissingKey(cfg.key)
-            self.configs[cfg.key] = value
+            self.loaded_configs[cfg.key] = value
 
     def __getattr__(self, item: str) -> Any:
-        return self.configs[item]
+        return self.loaded_configs[item]
 
 
 class LazyLoadConfigManager:
