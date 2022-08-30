@@ -290,6 +290,6 @@ Released 2022-08-09
 
 
 ### Version 0.5.15
-Released 2022-08-25
+Released 2022-08-30
 
-- Add the all_lbz_errors function
+- Adds the all_lbz_errors function

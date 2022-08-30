@@ -5,7 +5,9 @@ import pytest
 
 from lbz.exceptions import (
     BadRequestError,
+    LambdaFWClientException,
     LambdaFWException,
+    LambdaFWServerException,
     ServerError,
     UnsupportedMethod,
     all_lbz_errors,
@@ -82,8 +84,11 @@ def test__custom_exception__contains_message_and_status_code_according_to_its_do
     assert exception.status_code == int(code)
 
 
-def test__all_lbz_errors__returns_all_subclasses_of_lambda_fw_exception():
+def test__all_lbz_errors__returns_all_subclasses_of_lambda_fw_exception() -> None:
     result = list(all_lbz_errors())
 
     assert BadRequestError in result
     assert ServerError in result
+    assert LambdaFWException not in result
+    assert LambdaFWClientException not in result
+    assert LambdaFWServerException not in result
