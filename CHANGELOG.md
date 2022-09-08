@@ -291,6 +291,12 @@ Released 2022-08-09
 ### Version 0.5.15
 Released 2022-08-30
 
+- Adds the all_lbz_errors function
+
+
+### Version 0.5.16
+Released 2022-09-09
+
 - Adds Lambda to Lambda API (client and broker)
 - Unifies APIs
 - Adds deprecation wrapper 
