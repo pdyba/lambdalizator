@@ -1,13 +1,32 @@
 # coding=utf-8
 
 from http import HTTPStatus
-from typing import Optional
+from typing import TYPE_CHECKING, Optional, Union
 
 from lbz.response import Response
+
+if TYPE_CHECKING:
+    from mypy_boto3_lambda.type_defs import InvocationResponseTypeDef
+else:
+    InvocationResponseTypeDef = dict
 
 
 class SecurityError(Exception):
     """Request did not match security requirements expected by server."""
+
+
+class LambdaError(Exception):
+    def __init__(
+        self,
+        function_name: str,
+        op: str,
+        result: str,
+        response: Union[InvocationResponseTypeDef, dict],
+    ) -> None:
+        super().__init__(f"Error response from {function_name} Lambda (op: {op}): {result}")
+
+        self.result = result
+        self.response = response
 
 
 class LambdaFWException(Exception):
@@ -333,16 +352,3 @@ class NetworkAuthenticationRequired(LambdaFWServerException):
 
     message = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.description
     status_code = HTTPStatus.NETWORK_AUTHENTICATION_REQUIRED.value
-
-
-class ConfigurationMissingKey(LambdaFWServerException):
-    def __init__(self, config_key: str) -> None:
-        super().__init__(message=f"Missing {config_key} in configuration")
-
-
-class LambdaErrorResponse(Exception):
-    def __init__(self, function_name: str, op: str, result: str, response: dict) -> None:
-        super().__init__(f"Error response from {function_name} Lambda (op: {op}): {result}")
-
-        self.result = result
-        self.response = response

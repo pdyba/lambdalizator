@@ -1,10 +1,17 @@
 """This file has an underscore at the end because just 'lambda' is a keyword in Python."""
 import json
-from typing import Any, Iterable, Optional, Type
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Type, Union, cast
+
+from lbz.consts import DIRECT_LAMBDA_REQUEST
+
+if TYPE_CHECKING:
+    from mypy_boto3_lambda.type_defs import InvocationResponseTypeDef
+else:
+    InvocationResponseTypeDef = dict
 
 from lbz.aws_boto3 import client
-from lbz.exceptions import LambdaErrorResponse
-from lbz.lambda_to_lambda.enums import LambdaResult
+from lbz.exceptions import LambdaError
+from lbz.lambdas.enums import LambdaResult
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
@@ -18,18 +25,13 @@ class SetsEncoder(json.JSONEncoder):
 
 
 class LambdaClient:
-    def __init__(
-        self,
-        encoder: Type[json.JSONEncoder] = SetsEncoder,
-        op_key: str = "op",
-        data_key: str = "data",
-    ):
-        self.encoder = encoder
-        self.op_key = op_key
-        self.data_key = data_key
+    encoder: Type[json.JSONEncoder] = SetsEncoder
+    op_key: str = "op"
+    data_key: str = "data"
 
+    @classmethod
     def invoke(
-        self,
+        cls,
         function_name: str,
         op: str,
         data: Optional[dict] = None,
@@ -37,13 +39,13 @@ class LambdaClient:
         allowed_error_results: Iterable[str] = None,
         raise_if_error_resp: bool = False,
         asynchronous: bool = False,
-    ) -> dict:
+    ) -> Union[InvocationResponseTypeDef, dict]:
         allowed_error_results = set(allowed_error_results or []) & set(LambdaResult.soft_errors())
 
-        payload = {"invoke_type": "direct_lambda_request", self.op_key: op, self.data_key: data}
+        payload = {"invoke_type": DIRECT_LAMBDA_REQUEST, cls.op_key: op, cls.data_key: data}
         response = client.lambda_.invoke(
             FunctionName=function_name,
-            Payload=json.dumps(payload, cls=self.encoder).encode("utf-8"),
+            Payload=json.dumps(payload, cls=cls.encoder).encode("utf-8"),
             InvocationType="Event" if asynchronous else "RequestResponse",
         )
 
@@ -60,13 +62,13 @@ class LambdaClient:
             )
             raise
 
-        lambda_result = response.get("result")
+        lambda_result: str = cast(str, response.get("result"))
         if lambda_result in LambdaResult.successes():
             return response
         if lambda_result in allowed_error_results:
             return response
         if raise_if_error_resp:
-            raise LambdaErrorResponse(function_name, op, lambda_result, response)
+            raise LambdaError(function_name, op, lambda_result, response)
 
         # f-string used directly to keep messages unique, especially from the Sentry perspective
         error_message = f"Error response from {function_name} Lambda (op: {op}): {lambda_result}"

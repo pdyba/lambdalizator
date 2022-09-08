@@ -1,14 +1,14 @@
 from copy import deepcopy
 from typing import Callable, Dict, List
 
-from lbz.api_base import APIBase
 from lbz.events.event import Event
+from lbz.handler_base import HandlerBase
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
 
 
-class EventBroker(APIBase):
+class EventBroker(HandlerBase):
     def __init__(
         self,
         mapper: Dict[str, List[Callable]],

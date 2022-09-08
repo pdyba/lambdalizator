@@ -292,6 +292,6 @@ Released 2022-08-09
 Released 2022-08-30
 
 - Adds Lambda to Lambda API (client and broker)
-- Unifies API's
+- Unifies APIs
 - Adds deprecation wrapper 
-- Deprecates  pre_request_hook and post_request_hook in Resource
+- Deprecates pre_request_hook and post_request_hook in Resource

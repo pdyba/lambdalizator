@@ -135,23 +135,27 @@ def is_in_debug_mode() -> bool:
     return environ.get("LBZ_DEBUG_MODE", "").lower() == "true"
 
 
-def deprecated(func: Callable) -> Any:
+def deprecated(message: str = "") -> Any:
     """
     This is a decorator which can be used to mark functions as deprecated.
     It will result in a warning being emitted when the function is used.
 
-    Copied from https://stackoverflow.com/a/30253848
+    Based on https://stackoverflow.com/a/30253848
     """
 
-    @wraps(func)
-    def wrapped(*args: Any, **kwargs: Any) -> Any:
+    def decorator(func: Callable) -> Callable:
         warnings.simplefilter("always", DeprecationWarning)  # turn off filter
         warnings.warn(
-            "Call to deprecated function {}.".format(func.__name__),
+            f"Call to deprecated function {func.__name__}. {message}",
             category=DeprecationWarning,
             stacklevel=2,
         )
         warnings.simplefilter("default", DeprecationWarning)  # reset filter
-        return func(*args, **kwargs)
 
-    return wrapped
+        @wraps(func)
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
+            return func(*args, **kwargs)
+
+        return wrapped
+
+    return decorator
