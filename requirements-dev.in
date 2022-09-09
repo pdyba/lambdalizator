@@ -10,4 +10,4 @@ pip-tools
 pylint
 pytest
 pytest-cov
-pytest_mock
+pytest-mock

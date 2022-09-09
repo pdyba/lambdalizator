@@ -18,7 +18,7 @@ from lbz.exceptions import (
     Unauthorized,
     UnsupportedMethod,
 )
-from lbz.handler_base import HandlerBase
+from lbz.handlers import BaseHandler
 from lbz.misc import deprecated, get_logger, is_in_debug_mode
 from lbz.request import Request
 from lbz.response import Response
@@ -29,7 +29,7 @@ ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
 logger = get_logger(__name__)
 
 
-class Resource(HandlerBase):
+class Resource(BaseHandler):
     """
     Resource class.
     """
@@ -42,8 +42,9 @@ class Resource(HandlerBase):
     def get_name(cls) -> str:
         return cls._name or cls.__name__.lower()
 
-    def __init__(self, event: dict):
+    def __init__(self, event: dict, context: object = None):
         self._load_configuration()
+        self.context = context
         self.urn = event["path"]  # TODO: Variables should match corresponding event fields
         self.path = event.get("requestContext", {}).get("resourcePath")
         self.path_params = event.get("pathParameters") or {}  # DO NOT refactor
@@ -66,10 +67,14 @@ class Resource(HandlerBase):
     def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"
 
+    def __call__(self) -> Response:
+        self.pre_request_hook()
+        response = self.handle()
+        self._post_request_hook()
+        return response
+
     def handle(self) -> Response:
         try:
-            self.pre_request_hook()
-
             if self.path is None or self.path not in self._router:
                 logger.warning("Couldn't find %s in current paths: %s", self.path, self._router)
                 raise NotFound
@@ -87,14 +92,13 @@ class Resource(HandlerBase):
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
             self.response = ServerError().get_response(self.request.context["requestId"])
-        self._post_request_hook()
         return self.response
 
-    @deprecated(message="Please use pre_handle")
+    @deprecated(message="Please use pre_handle", version="0.6.0")
     def pre_request_hook(self) -> None:
         """deprecated - please use pre_handle"""
 
-    @deprecated(message="Please use post_handle")
+    @deprecated(message="Please use post_handle", version="0.6.0")
     def post_request_hook(self) -> None:
         """deprecated - please use post_handle"""
 
@@ -122,7 +126,7 @@ class Resource(HandlerBase):
         return None
 
     def _post_request_hook(self) -> None:
-        """*/
+        """
         Makes the post_request_hook run-time friendly.
         """
         try:

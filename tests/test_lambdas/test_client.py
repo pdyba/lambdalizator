@@ -26,7 +26,7 @@ def lambda_client_fixture(mocker: MockerFixture) -> MagicMock:
         (None, b"null"),
     ],
 )
-def test__invoke_lambda__returns_response_sending_provided_data_as_payload(
+def test__invoke__returns_response_sending_provided_data_as_payload(
     lambda_client: MagicMock, data: Optional[dict], expected_data_bytes: bytes
 ) -> None:
     response_payload = {"result": LambdaResult.OK, "data": "test"}
@@ -58,7 +58,7 @@ def test__invoke_lambda__returns_response_sending_provided_data_as_payload(
         LambdaResult.SERVER_ERROR,
     ],
 )
-def test__invoke_lambda__returns_response_by_default_even_if_there_is_error_but_logging_it(
+def test__invoke__returns_response_by_default_even_if_there_is_error_but_logging_it(
     result: str, lambda_client: MagicMock, caplog: LogCaptureFixture
 ) -> None:
     response_payload = {"result": result, "message": "test"}
@@ -78,7 +78,7 @@ def test__invoke_lambda__returns_response_by_default_even_if_there_is_error_but_
 
 
 @pytest.mark.parametrize("result", LambdaResult.soft_errors())
-def test__invoke_lambda__does_not_log_message_about_soft_errors_when_they_are_allowed_directly(
+def test__invoke__does_not_log_message_about_soft_errors_when_they_are_allowed_directly(
     result: str, lambda_client: MagicMock, caplog: LogCaptureFixture
 ) -> None:
     lambda_client.invoke.return_value = {"Payload": BytesIO(b'{"result": "%s"}' % result.encode())}
@@ -88,7 +88,7 @@ def test__invoke_lambda__does_not_log_message_about_soft_errors_when_they_are_al
     assert caplog.messages == []
 
 
-def test__invoke_lambda__respects_list_of_allowed_errors_by_logging_all_others(
+def test__invoke__respects_list_of_allowed_errors_by_logging_all_others(
     lambda_client: MagicMock, caplog: LogCaptureFixture
 ) -> None:
     result = LambdaResult.BAD_REQUEST
@@ -100,7 +100,7 @@ def test__invoke_lambda__respects_list_of_allowed_errors_by_logging_all_others(
 
 
 @pytest.mark.parametrize("result", LambdaResult.hard_errors())
-def test__invoke_lambda__does_not_allow_to_bypass_logging_of_hard_errors(
+def test__invoke__does_not_allow_to_bypass_logging_of_hard_errors(
     result: str, lambda_client: MagicMock, caplog: LogCaptureFixture
 ) -> None:
     lambda_client.invoke.return_value = {"Payload": BytesIO(b'{"result": "%s"}' % result.encode())}
@@ -111,7 +111,7 @@ def test__invoke_lambda__does_not_allow_to_bypass_logging_of_hard_errors(
 
 
 @pytest.mark.parametrize("result", LambdaResult.successes())
-def test__invoke_lambda__returns_response_when_result_is_recognized_as_success(
+def test__invoke__returns_response_when_result_is_recognized_as_success(
     result: str, lambda_client: MagicMock, caplog: LogCaptureFixture
 ) -> None:
     response_payload = {"result": result, "message": "test"}
@@ -135,7 +135,7 @@ def test__invoke_lambda__returns_response_when_result_is_recognized_as_success(
         LambdaResult.SERVER_ERROR,
     ],
 )
-def test__invoke_lambda__raises_exception_on_error_response_when_requested_directly(
+def test__invoke__raises_exception_on_error_response_when_requested_directly(
     result: str, lambda_client: MagicMock
 ) -> None:
     response_payload = {"result": result, "message": "test"}
@@ -153,7 +153,7 @@ def test__invoke_lambda__raises_exception_on_error_response_when_requested_direc
 
 
 @pytest.mark.parametrize("result", LambdaResult.soft_errors())
-def test__invoke_lambda__does_not_raise_soft_errors_when_they_are_allowed_directly(
+def test__invoke__does_not_raise_soft_errors_when_they_are_allowed_directly(
     result: str, lambda_client: MagicMock
 ) -> None:
     lambda_client.invoke.return_value = {"Payload": BytesIO(b'{"result": "%s"}' % result.encode())}
@@ -166,7 +166,7 @@ def test__invoke_lambda__does_not_raise_soft_errors_when_they_are_allowed_direct
     )
 
 
-def test__invoke_lambda__respects_list_of_allowed_errors_by_raising_all_others(
+def test__invoke__respects_list_of_allowed_errors_by_raising_all_others(
     lambda_client: MagicMock,
 ) -> None:
     result = LambdaResult.BAD_REQUEST
@@ -182,7 +182,7 @@ def test__invoke_lambda__respects_list_of_allowed_errors_by_raising_all_others(
 
 
 @pytest.mark.parametrize("result", LambdaResult.hard_errors())
-def test__invoke_lambda__does_not_allow_to_bypass_raising_of_hard_errors(
+def test__invoke__does_not_allow_to_bypass_raising_of_hard_errors(
     result: str, lambda_client: MagicMock
 ) -> None:
     lambda_client.invoke.return_value = {"Payload": BytesIO(b'{"result": "%s"}' % result.encode())}
@@ -196,7 +196,7 @@ def test__invoke_lambda__does_not_allow_to_bypass_raising_of_hard_errors(
         )
 
 
-def test__invoke_lambda__raises_error_when_response_could_not_be_read_correctly(
+def test__invoke__raises_error_when_response_could_not_be_read_correctly(
     lambda_client: MagicMock, caplog: LogCaptureFixture
 ) -> None:
     response = {"StatusCode": 200, "Payload": "invalid-payload"}
@@ -211,7 +211,7 @@ def test__invoke_lambda__raises_error_when_response_could_not_be_read_correctly(
     assert logged_record.response == response
 
 
-def test__invoke_lambda__returns_accepted_result_when_invoked_asynchronously(
+def test__invoke__returns_accepted_result_when_invoked_asynchronously(
     lambda_client: MagicMock, caplog: LogCaptureFixture
 ) -> None:
     # Lambda invoked asynchronously only includes a status code in the response

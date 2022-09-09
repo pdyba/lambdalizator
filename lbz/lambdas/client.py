@@ -1,8 +1,7 @@
-"""This file has an underscore at the end because just 'lambda' is a keyword in Python."""
 import json
 from typing import TYPE_CHECKING, Any, Iterable, Optional, Type, Union, cast
 
-from lbz.consts import DIRECT_LAMBDA_REQUEST
+from lbz.lambdas.enums import LambdaSource
 
 if TYPE_CHECKING:
     from mypy_boto3_lambda.type_defs import InvocationResponseTypeDef
@@ -25,9 +24,10 @@ class SetsEncoder(json.JSONEncoder):
 
 
 class LambdaClient:
-    encoder: Type[json.JSONEncoder] = SetsEncoder
+    json_encoder: Type[json.JSONEncoder] = SetsEncoder
     op_key: str = "op"
     data_key: str = "data"
+    result_key: str = "result"
 
     @classmethod
     def invoke(
@@ -42,10 +42,10 @@ class LambdaClient:
     ) -> Union[InvocationResponseTypeDef, dict]:
         allowed_error_results = set(allowed_error_results or []) & set(LambdaResult.soft_errors())
 
-        payload = {"invoke_type": DIRECT_LAMBDA_REQUEST, cls.op_key: op, cls.data_key: data}
+        payload = {"invoke_type": LambdaSource.DIRECT, cls.op_key: op, cls.data_key: data}
         response = client.lambda_.invoke(
             FunctionName=function_name,
-            Payload=json.dumps(payload, cls=cls.encoder).encode("utf-8"),
+            Payload=json.dumps(payload, cls=cls.json_encoder).encode("utf-8"),
             InvocationType="Event" if asynchronous else "RequestResponse",
         )
 
@@ -56,13 +56,11 @@ class LambdaClient:
         try:
             response = json.loads(response["Payload"].read().decode("utf-8"))
         except Exception:
-            error_message = "Invalid response received from %s Lambda (op: %s)"
-            logger.error(
-                error_message, function_name, op, extra=dict(data=data, response=response)
-            )
+            error_msg = "Invalid response received from %s Lambda (op: %s)"
+            logger.error(error_msg, function_name, op, extra=dict(data=data, response=response))
             raise
 
-        lambda_result: str = cast(str, response.get("result"))
+        lambda_result: str = cast(str, response.get(cls.result_key))
         if lambda_result in LambdaResult.successes():
             return response
         if lambda_result in allowed_error_results:

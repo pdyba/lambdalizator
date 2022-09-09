@@ -1,6 +1,4 @@
-from typing import Iterable, cast
-
-from lbz.consts import DIRECT_LAMBDA_REQUEST
+from typing import Iterable
 
 
 class LambdaResult:
@@ -30,43 +28,32 @@ class LambdaResult:
         return cls.CONTRACT_ERROR, cls.SERVER_ERROR
 
 
-class LambdaSources:
-    dynamodb = "dynamodb"
-    s3 = "s3"
-    sqs = "sqs"
-    api_gw = "api_gw"
-    event_bridge = "event_bridge"
-    lambda_api = DIRECT_LAMBDA_REQUEST
+class LambdaSource:
+    API_GW = "api_gw"
+    DIRECT = "direct_lambda_request"
+    DYNAMODB = "dynamodb"
+    EVENT_BRIDGE = "event_bridge"
+    S3 = "s3"
+    SQS = "sqs"
 
     @classmethod
-    def standard_aws_events(cls) -> Iterable:
-        return cls.dynamodb, cls.s3, cls.sqs
-
-    @staticmethod
-    def is_from_lambda_api(event: dict) -> bool:
-        return event.get("invoke_type") == DIRECT_LAMBDA_REQUEST
-
-    @staticmethod
-    def is_from_api_gateway(event: dict) -> bool:
-        return event.get("httpMethod") is not None
-
-    @staticmethod
-    def is_from_event_bridge(event: dict) -> bool:
-        return event.get("detail-type") is not None
+    def standard_aws_sources(cls) -> Iterable[str]:
+        return cls.DYNAMODB, cls.S3, cls.SQS
 
     @classmethod
     def get_source(cls, event: dict) -> str:
-        if cls.is_from_api_gateway(event):
-            return cls.api_gw
-        if cls.is_from_lambda_api(event):
-            return cls.lambda_api
-        if cls.is_from_event_bridge(event):
-            return cls.event_bridge
-        if event.get("Records"):
-            event = event["Records"][0]
-        if (evt := event.get("eventSource", "").replace("aws:", "")) in cls.standard_aws_events():
-            return cast(str, evt)
-        raise NotImplementedError("Unsupported event type")
+        # FYI: AWS is very inconsistent in its way to provide the source information
+        if event.get("httpMethod") is not None:
+            return cls.API_GW
+        if event.get("invoke_type") == cls.DIRECT:
+            return cls.DIRECT
+        if event.get("detail-type") is not None:
+            return cls.EVENT_BRIDGE
+        event = event["Records"][0] if event.get("Records") else event
+        event_source: str = event.get("eventSource", "").replace("aws:", "")
+        if event_source in cls.standard_aws_sources():
+            return event_source
+        raise NotImplementedError(f"Unsupported event type: {event_source}")
 
     @classmethod
     def is_from(cls, event: dict, expected_type: str) -> bool:

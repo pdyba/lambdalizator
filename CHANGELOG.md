@@ -301,3 +301,12 @@ Released 2022-09-09
 - Unifies APIs
 - Adds deprecation wrapper 
 - Deprecates pre_request_hook and post_request_hook in Resource
+
+
+### Version 0.6.0
+Release ETA 2022-10-015
+
+- Moves rest related modules into one package
+- Moves exceptions to related packages
+- Redesigns authorization from ground up adds helpers and reduces jwt-related operations.
+- Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource

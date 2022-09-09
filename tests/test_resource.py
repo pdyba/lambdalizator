@@ -107,7 +107,7 @@ class TestResource:
         get_user.assert_called_once_with({})
 
     def test_not_found_returned_when_path_not_defined(self) -> None:
-        response = Resource(event_wrong_uri)()
+        response = Resource(event_wrong_uri).react()
         assert isinstance(response, Response)
         assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -117,7 +117,7 @@ class TestResource:
             def test_method(self) -> None:
                 raise NotFound
 
-        response = TestAPI(event)()
+        response = TestAPI(event).react()
 
         assert response.body == {
             "message": NotFound.message,
@@ -134,7 +134,7 @@ class TestResource:
             def test_method(self) -> Response:
                 return Response("x")
 
-        resp = XResource({**event, "headers": {"authentication": "dummy"}})()
+        resp = XResource({**event, "headers": {"authentication": "dummy"}}).react()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     @patch.object(User, "__init__", return_value=None)
@@ -150,7 +150,7 @@ class TestResource:
         key_id = key["kid"]
         authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
 
-        XResource({**event, "headers": {"authentication": authentication_token}})()
+        XResource({**event, "headers": {"authentication": authentication_token}}).react()
         load_user.assert_called_once_with(authentication_token)
 
     def test_unauthorized_when_jwt_header_lacks_kid(self) -> None:
@@ -160,7 +160,7 @@ class TestResource:
                 return Response("x")
 
         authentication_token = jwt.encode({"foo": "bar"}, "")
-        resp = XResource({**event, "headers": {"authentication": authentication_token}})()
+        resp = XResource({**event, "headers": {"authentication": authentication_token}}).react()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     def test_unauthorized_when_no_matching_key_in_env_variable(self) -> None:
@@ -170,7 +170,7 @@ class TestResource:
                 return Response("x")
 
         authentication_token = jwt.encode({"kid": "foobar"}, "")
-        resp = XResource({**event, "headers": {"authentication": authentication_token}})()
+        resp = XResource({**event, "headers": {"authentication": authentication_token}}).react()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     def test_unauthorized_when_jwt_header_malformed(self) -> None:
@@ -179,42 +179,42 @@ class TestResource:
             def test_method(self) -> Response:
                 return Response("x")
 
-        resp = XResource({**event, "headers": {"authentication": "12345"}})()
+        resp = XResource({**event, "headers": {"authentication": "12345"}}).react()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     def test_pre_request_hook(self) -> None:
-        pre_request_called = False
+        pre_handle_called = False
 
         class TestAPI(Resource):
             @add_route("/")
             def test_method(self) -> Response:
                 return Response("OK")
 
-            def pre_request_hook(self) -> None:
-                nonlocal pre_request_called
-                pre_request_called = True
+            def pre_handle(self) -> None:
+                nonlocal pre_handle_called
+                pre_handle_called = True
 
-        response = TestAPI(event)()
+        response = TestAPI(event).react()
 
         assert response.body == "OK"
-        assert pre_request_called
+        assert pre_handle_called
 
     def test_post_request_hook(self) -> None:
-        post_request_called = False
+        post_handle_called = False
 
         class TestAPI(Resource):
             @add_route("/")
             def test_method(self) -> None:
                 raise ServerError("test")
 
-            def post_request_hook(self) -> None:
-                nonlocal post_request_called
-                post_request_called = True
+            def post_handle(self) -> None:
+                nonlocal post_handle_called
+                post_handle_called = True
 
-        response = TestAPI(event)()
+        response = TestAPI(event).react()
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-        assert post_request_called
+        assert post_handle_called
 
     def test_post_request_hook_fails_but_response_is_still_sent(
         self, caplog: LogCaptureFixture
@@ -224,15 +224,15 @@ class TestResource:
             def test_method(self) -> Response:
                 return Response("OK")
 
-            def post_request_hook(self) -> None:
+            def post_handle(self) -> None:
                 raise TypeError("xxx")
 
-        response = TestAPI(event)()
+        response = TestAPI(event).react()
 
         assert response.status_code == HTTPStatus.OK
         assert caplog.record_tuples == [
             (
-                "lbz.resource",
+                "lbz.handlers",
                 logging.ERROR,
                 "xxx",
             )
@@ -244,7 +244,7 @@ class TestResource:
             def test_method(self) -> None:
                 raise RuntimeError("test")
 
-        resp = XResource(event)()
+        resp = XResource(event).react()
         assert isinstance(resp, Response), resp
         assert resp.to_dict() == {
             "headers": {"Content-Type": "application/json"},
@@ -350,7 +350,7 @@ class TestCORSResource:
     def test_options_request(self) -> None:
         inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE)
         inst.method = "OPTIONS"
-        assert inst().headers == {
+        assert inst.react().headers == {
             "Access-Control-Allow-Headers": ", ".join(
                 CORSResource._cors_headers  # pylint: disable=protected-access
             ),
@@ -361,7 +361,7 @@ class TestCORSResource:
     def test_cors_headers_param_request(self) -> None:
         inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE, cors_headers=["X-PRN-KEY"])
         inst.method = "OPTIONS"
-        assert inst().headers == {
+        assert inst.react().headers == {
             "Access-Control-Allow-Headers": (
                 "Content-Type, X-Amz-Date, Authentication, Authorization, X-Api-Key, "
                 "X-Amz-Security-Token, X-PRN-KEY"
@@ -374,7 +374,7 @@ class TestCORSResource:
     def test_cors_headers_env_request(self) -> None:
         inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE)
         inst.method = "OPTIONS"
-        assert inst().headers == {
+        assert inst.react().headers == {
             "Access-Control-Allow-Headers": (
                 "Content-Type, X-Amz-Date, Authentication, Authorization, "
                 "X-Api-Key, X-Amz-Security-Token, X-PRN-KEY, X-PRN-TOKEN"
@@ -387,7 +387,7 @@ class TestCORSResource:
     def test_cors_headers_param_more_important_than_env_request(self) -> None:
         inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE, cors_headers=["X-PRN-XXX"])
         inst.method = "OPTIONS"
-        assert inst().headers == {
+        assert inst.react().headers == {
             "Access-Control-Allow-Headers": (
                 "Content-Type, X-Amz-Date, Authentication, Authorization, "
                 "X-Api-Key, X-Amz-Security-Token, X-PRN-XXX"
@@ -483,7 +483,7 @@ class TestEventAwareResource:
             def test_method(self) -> Response:
                 return Response({"message": "x"})
 
-        XResource(event)()
+        XResource(event).react()
 
         mocked_event_api_send.assert_called_once()
         mocked_event_api_clear.assert_not_called()
@@ -498,7 +498,7 @@ class TestEventAwareResource:
             def test_method(self) -> None:
                 raise TypeError
 
-        XResource(event)()
+        XResource(event).react()
 
         mocked_event_api_send.assert_not_called()
         mocked_event_api_clear.assert_called_once()

@@ -2,19 +2,19 @@ from copy import deepcopy
 from typing import Callable, Dict, List
 
 from lbz.events.event import Event
-from lbz.handler_base import HandlerBase
+from lbz.handlers import BaseHandler
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
 
 
-class EventBroker(HandlerBase):
+class EventBroker(BaseHandler):
     def __init__(
         self,
         mapper: Dict[str, List[Callable]],
         event: dict,
-        *,
         context: object = None,
+        *,
         type_key: str = "detail-type",
         data_key: str = "detail",
     ) -> None:
