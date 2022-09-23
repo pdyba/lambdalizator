@@ -351,7 +351,7 @@ def api_gw_event() -> dict:
 
 
 @pytest.fixture()
-def dirct_lambda_event() -> dict:
+def direct_lambda_event() -> dict:
     return {"invoke_type": "direct_lambda_request", "op": "test-op", "data": {"data": 1}}
 
 

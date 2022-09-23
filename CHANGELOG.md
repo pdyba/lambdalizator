@@ -304,9 +304,10 @@ Released 2022-09-09
 
 
 ### Version 0.6.0
-Release ETA 2022-10-015
+Release ETA 2022-10-15
 
 - Moves rest related modules into one package
 - Moves exceptions to related packages
-- Redesigns authorization from ground up adds helpers and reduces jwt-related operations.
+- Redesigns authorization from ground up
+- Adds helpers and reduces jwt-related operations.
 - Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource

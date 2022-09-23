@@ -51,7 +51,7 @@ class LambdaClient:
 
         if asynchronous:
             # Lambda invoked asynchronously only includes a status code in the response
-            return {"result": LambdaResult.ACCEPTED}
+            return {cls.result_key: LambdaResult.ACCEPTED}
 
         try:
             response = json.loads(response["Payload"].read().decode("utf-8"))

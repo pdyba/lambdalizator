@@ -8,8 +8,8 @@ class MyBaseHandler(BaseHandler):
         return None
 
 
-@patch.object(MyBaseHandler, "post_handle")
-@patch.object(MyBaseHandler, "pre_handle")
+@patch.object(MyBaseHandler, "post_handle", autospec=True)
+@patch.object(MyBaseHandler, "pre_handle", autospec=True)
 def test_pre_and_post_hooks_are_triggered(pre_handle: MagicMock, post_handle: MagicMock) -> None:
     response = MyBaseHandler().react()
 

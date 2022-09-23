@@ -18,7 +18,6 @@ class LambdaBroker(BaseHandler):
         self,
         mapper: Dict[str, Callable[..., LambdaResponse]],
         event: dict,
-        *,
         context: object = None,
     ) -> None:
         self.event = event

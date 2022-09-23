@@ -147,7 +147,7 @@ def deprecated(message: str, version: str) -> Callable:
         warnings.warn(
             (
                 f"Call to deprecated function {func.__name__}. {message}. "
-                f"Function will be removed in {version}"
+                f"Function will be removed in {version}."
             ),
             category=DeprecationWarning,
             stacklevel=2,

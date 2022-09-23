@@ -30,9 +30,7 @@ class BaseHandler(Generic[T], metaclass=ABCMeta):
         pass
 
     def _post_handle(self) -> None:
-        """
-        Makes the post_request_hook run-time friendly.
-        """
+        """Makes the post_handle runtime friendly."""
         try:
             self.post_handle()
         except Exception as err:  # pylint: disable=broad-except
