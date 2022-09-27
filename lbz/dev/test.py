@@ -83,7 +83,7 @@ class Client:
                     query_params[key] = [str(value)]
                 else:
                     query_params[key] = [str(elem) for elem in value]
-        return self.resource(
+        response: Response = self.resource(
             APIGatewayEvent(
                 resource_path=path,
                 method=method,
@@ -92,4 +92,5 @@ class Client:
                 query_params=query_params,
                 headers=headers,
             )
-        )()
+        ).react()
+        return response

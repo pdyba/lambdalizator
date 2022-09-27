@@ -18,7 +18,8 @@ from lbz.exceptions import (
     Unauthorized,
     UnsupportedMethod,
 )
-from lbz.misc import get_logger, is_in_debug_mode
+from lbz.handlers import BaseHandler
+from lbz.misc import deprecated, get_logger, is_in_debug_mode
 from lbz.request import Request
 from lbz.response import Response
 from lbz.router import Router
@@ -28,7 +29,7 @@ ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
 logger = get_logger(__name__)
 
 
-class Resource:
+class Resource(BaseHandler):
     """
     Resource class.
     """
@@ -41,8 +42,9 @@ class Resource:
     def get_name(cls) -> str:
         return cls._name or cls.__name__.lower()
 
-    def __init__(self, event: dict):
+    def __init__(self, event: dict, context: object = None):
         self._load_configuration()
+        self.context = context
         self.urn = event["path"]  # TODO: Variables should match corresponding event fields
         self.path = event.get("requestContext", {}).get("resourcePath")
         self.path_params = event.get("pathParameters") or {}  # DO NOT refactor
@@ -62,15 +64,28 @@ class Resource:
         self._authz_collector.set_guest_permissions(self.get_guest_authorization())
         self.response: Response = None  # type: ignore
 
-    def __call__(self) -> Response:
-        try:
-            self.pre_request_hook()
+    def __repr__(self) -> str:
+        return f"<Resource {self.method} @ {self.urn} >"
 
-            if self.path is None or self.path not in self._router:
-                logger.warning("Couldn't find %s in current paths: %s", self.path, self._router)
-                raise NotFound
-            if self.method not in self._router[self.path]:
-                raise UnsupportedMethod(method=self.method)
+    @deprecated(message="Please use react", version="0.6.0")
+    def __call__(self) -> Response:
+        self._pre_request_hook()
+        self.handle()
+        self._post_request_hook()
+        return self.response
+
+    def validate_path_and_method(self) -> None:
+        if self.path is None or self.path not in self._router:
+            logger.warning("Couldn't find %s in current paths: %s", self.path, self._router)
+            raise NotFound
+        if self.method not in self._router[self.path]:
+            raise UnsupportedMethod(method=self.method)
+
+    def handle(self) -> Response:
+        if self.response:
+            return self.response
+        try:
+            self.validate_path_and_method()
             self.request.user = self._get_user(self.request.headers)
             endpoint: Callable = getattr(self, self._router[self.path][self.method])
             self.response = endpoint(**self.path_params)
@@ -83,11 +98,27 @@ class Resource:
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
             self.response = ServerError().get_response(self.request.context["requestId"])
-        self._post_request_hook()
         return self.response
 
-    def __repr__(self) -> str:
-        return f"<Resource {self.method} @ {self.urn} >"
+    @deprecated(message="Please use pre_handle", version="0.6.0")
+    def pre_request_hook(self) -> None:
+        pass
+
+    @deprecated(message="Please use post_handle", version="0.6.0")
+    def post_request_hook(self) -> None:
+        pass
+
+    @staticmethod
+    def get_guest_authorization() -> dict:
+        """
+        Place to configure default authorization.
+
+        That will be used when Authorization Header is not in place.
+        """
+        return {}
+
+    def get_authz_data(self) -> dict:
+        return self._authz_collector.dump()
 
     def _load_configuration(self) -> None:
         self.auth_enabled = env.get("ALLOWED_PUBLIC_KEYS") or env.get("ALLOWED_AUDIENCES")
@@ -109,27 +140,19 @@ class Resource:
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
 
-    def pre_request_hook(self) -> None:
-        """
-        Place to configure pre request hooks.
-        """
+    def _pre_handle(self) -> None:
+        try:
+            self.pre_handle()
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
+            self.response = ServerError().get_response(self.request.context["requestId"])
 
-    def post_request_hook(self) -> None:
-        """
-        Place to configure post request hooks.
-        """
-
-    @staticmethod
-    def get_guest_authorization() -> dict:
-        """
-        Place to configure default authorization.
-
-        That will be used when Authorization Header is not in place.
-        """
-        return {}
-
-    def get_authz_data(self) -> dict:
-        return self._authz_collector.dump()
+    def _pre_request_hook(self) -> None:
+        try:
+            self.pre_request_hook()
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
+            self.response = ServerError().get_response(self.request.context["requestId"])
 
 
 class CORSResource(Resource):
@@ -166,11 +189,11 @@ class CORSResource(Resource):
             "Access-Control-Allow-Methods": ", ".join([*methods, "OPTIONS"]),
         }
 
-    def __call__(self) -> Response:
+    def handle(self) -> Response:
         if self.method == "OPTIONS":
             return Response("", headers=self.resp_headers(), status_code=HTTPStatus.NO_CONTENT)
 
-        resp = super().__call__()
+        resp = super().handle()
         if resp.status_code >= 400 and ALLOW_ORIGIN_HEADER not in resp.headers:
             resp.headers.update(self.resp_headers())
         return resp
@@ -249,8 +272,11 @@ class EventAwareResource(Resource):
         super().__init__(event)
         self.event_api = EventAPI()
 
-    def post_request_hook(self) -> None:
+    def post_handle(self) -> None:
         if self.response.is_ok():
             self.event_api.send()
         else:
             self.event_api.clear()
+
+    def post_request_hook(self) -> None:
+        self.post_handle()
