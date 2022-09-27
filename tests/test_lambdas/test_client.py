@@ -9,8 +9,7 @@ from pytest import LogCaptureFixture
 from pytest_mock import MockerFixture
 
 from lbz.aws_boto3 import Boto3Client
-from lbz.exceptions import LambdaError
-from lbz.lambdas import LambdaClient, LambdaResult
+from lbz.lambdas import LambdaClient, LambdaError, LambdaResult
 
 
 @pytest.fixture(name="lambda_client")

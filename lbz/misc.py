@@ -140,7 +140,6 @@ def deprecated(message: str, version: str) -> Callable:
     This is a decorator which can be used to mark functions as deprecated.
 
     It will result in a warning being emitted when the function is used.
-    Based on https://stackoverflow.com/a/30253848
     """
 
     def decorator(func: Callable) -> Callable:

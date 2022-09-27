@@ -67,19 +67,25 @@ class Resource(BaseHandler):
     def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"
 
+    @deprecated(message="Please use react", version="0.6.0")
     def __call__(self) -> Response:
-        self.pre_request_hook()
-        response = self.handle()
+        self._pre_request_hook()
+        self.handle()
         self._post_request_hook()
-        return response
+        return self.response
+
+    def validate_path_and_method(self) -> None:
+        if self.path is None or self.path not in self._router:
+            logger.warning("Couldn't find %s in current paths: %s", self.path, self._router)
+            raise NotFound
+        if self.method not in self._router[self.path]:
+            raise UnsupportedMethod(method=self.method)
 
     def handle(self) -> Response:
+        if self.response:
+            return self.response
         try:
-            if self.path is None or self.path not in self._router:
-                logger.warning("Couldn't find %s in current paths: %s", self.path, self._router)
-                raise NotFound
-            if self.method not in self._router[self.path]:
-                raise UnsupportedMethod(method=self.method)
+            self.validate_path_and_method()
             self.request.user = self._get_user(self.request.headers)
             endpoint: Callable = getattr(self, self._router[self.path][self.method])
             self.response = endpoint(**self.path_params)
@@ -96,11 +102,11 @@ class Resource(BaseHandler):
 
     @deprecated(message="Please use pre_handle", version="0.6.0")
     def pre_request_hook(self) -> None:
-        """deprecated - please use pre_handle"""
+        pass
 
     @deprecated(message="Please use post_handle", version="0.6.0")
     def post_request_hook(self) -> None:
-        """deprecated - please use post_handle"""
+        pass
 
     @staticmethod
     def get_guest_authorization() -> dict:
@@ -133,6 +139,20 @@ class Resource(BaseHandler):
             self.post_request_hook()
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
+
+    def _pre_handle(self) -> None:
+        try:
+            self.pre_handle()
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
+            self.response = ServerError().get_response(self.request.context["requestId"])
+
+    def _pre_request_hook(self) -> None:
+        try:
+            self.pre_request_hook()
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
+            self.response = ServerError().get_response(self.request.context["requestId"])
 
 
 class CORSResource(Resource):
@@ -257,3 +277,6 @@ class EventAwareResource(Resource):
             self.event_api.send()
         else:
             self.event_api.clear()
+
+    def post_request_hook(self) -> None:
+        self.post_handle()

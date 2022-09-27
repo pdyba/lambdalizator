@@ -10,7 +10,7 @@ T = TypeVar("T")
 
 class BaseHandler(Generic[T], metaclass=ABCMeta):
     def react(self) -> T:
-        self.pre_handle()
+        self._pre_handle()
         response = self.handle()
         self._post_handle()
         return response
@@ -28,6 +28,9 @@ class BaseHandler(Generic[T], metaclass=ABCMeta):
 
     def post_handle(self) -> None:
         pass
+
+    def _pre_handle(self) -> None:
+        self.pre_handle()
 
     def _post_handle(self) -> None:
         """Makes the post_handle runtime friendly."""

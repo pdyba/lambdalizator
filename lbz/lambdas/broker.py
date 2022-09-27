@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Callable, Dict, Union
 
 from lbz.handlers import BaseHandler
@@ -11,9 +9,6 @@ logger = get_logger(__name__)
 
 
 class LambdaBroker(BaseHandler):
-    op_key: str = "op"
-    data_key: str = "data"
-
     def __init__(
         self,
         mapper: Dict[str, Callable[..., LambdaResponse]],
@@ -23,7 +18,7 @@ class LambdaBroker(BaseHandler):
         self.event = event
         self.context = context
         self.mapper = mapper
-        self.data = event.get(self.data_key)
+        self.data = event.get("data")
 
     def handle(self) -> LambdaResponse:
         handler = self._get_handler()
@@ -36,15 +31,12 @@ class LambdaBroker(BaseHandler):
         return response
 
     def _get_handler(self) -> Union[Callable[..., LambdaResponse], LambdaResponse]:
-        if (op := self.event.get(self.op_key)) is None:
+        if (op := self.event.get("op")) is None:
             return lambda_error_response(
                 result=LambdaResult.BAD_REQUEST,
-                error="Lambda execution error: Missing 'op' field in the event.",
+                error_message="Lambda execution error: Missing 'op' field in the event.",
             )
         try:
             return self.mapper[op]
-        except KeyError:
-            return lambda_error_response(
-                result=LambdaResult.BAD_REQUEST,
-                error=f"Lambda execution error: No handler implemented for operation: {op}",
-            )
+        except KeyError as error:
+            raise NotImplementedError(f"{op} was no implemented") from error
