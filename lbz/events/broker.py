@@ -6,6 +6,7 @@ from lbz.misc import get_logger
 
 logger = get_logger(__name__)
 
+
 # TODO: type_key and data_key will be const for EventBridge and different set for Cognito Events
 class EventBroker:
     def __init__(

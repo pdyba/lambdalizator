@@ -40,7 +40,9 @@ def test__lambda_source__correctly_recognizes_source_based_on_provided_event_ful
         ({"invoke_type": "direct_lambda_request"}, LambdaSource.DIRECT),
     ],
 )
-def test__lambda_source__correctly_recognizes_source_based_on_provided_event_minimal(source_event: dict, expected_type: str) -> None:
+def test__lambda_source__correctly_recognizes_source_based_on_provided_event_minimal(
+    source_event: dict, expected_type: str
+) -> None:
     assert LambdaSource.get_source(source_event) == expected_type
     assert LambdaSource.is_from(source_event, expected_type)
     assert not LambdaSource.is_from(source_event, "covid")
