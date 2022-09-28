@@ -16,7 +16,7 @@ class TestEventBroker:
         assert resp == "some_data"
         func_1.assert_called_once_with({"y": 1})
 
-    def test_broker_responds_raises_implemented_when_event_type_is_not_recognized(self) -> None:
+    def test_broker_raises_error_when_event_type_is_not_recognized(self) -> None:
         func_1 = MagicMock()
         mapper = {"x": func_1}
         event = {"op": "y", "data": {"z": 1}}
