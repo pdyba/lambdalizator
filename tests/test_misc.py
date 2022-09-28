@@ -1,9 +1,19 @@
 # coding=utf-8
+import logging
 from collections.abc import MutableMapping
 
+import pytest
 from pytest import LogCaptureFixture
 
-from lbz.misc import MultiDict, NestedDict, Singleton, deep_update, error_catcher, get_logger
+from lbz.misc import (
+    MultiDict,
+    NestedDict,
+    Singleton,
+    deep_update,
+    deprecated,
+    error_catcher,
+    get_logger,
+)
 
 
 def test_nested_dict() -> None:
@@ -176,3 +186,28 @@ def test__deep_update__overwrite_strings() -> None:
         },
         "deny": {},
     }
+
+
+def test_deprecated_logs_warning_for_function(caplog: LogCaptureFixture) -> None:
+    caplog.set_level(logging.WARNING)
+    expected_warning = (
+        "Call to deprecated function smth. dont use me. Function will be removed in 9.9.9."
+    )
+
+    with pytest.warns(DeprecationWarning, match=expected_warning):
+
+        @deprecated("dont use me", "9.9.9")
+        def smth() -> None:
+            pass
+
+
+def test_deprecated_logs_warning_for_method(caplog: LogCaptureFixture) -> None:
+    caplog.set_level(logging.WARNING)
+    expected_warning = "Call to deprecated function smth. NOPE. Function will be removed in 9.9.7."
+
+    with pytest.warns(DeprecationWarning, match=expected_warning):
+
+        class SMTH:  # pylint: disable=unused-variable
+            @deprecated("NOPE", "9.9.7")
+            def smth(self) -> None:
+                pass
