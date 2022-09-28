@@ -188,7 +188,7 @@ def test__deep_update__overwrite_strings() -> None:
     }
 
 
-def test_deprecated_logs_warning_for_function(caplog: LogCaptureFixture) -> None:
+def test__deprecated__logs_warning_for_function(caplog: LogCaptureFixture) -> None:
     caplog.set_level(logging.WARNING)
     expected_warning = (
         "Call to deprecated function smth. dont use me. Function will be removed in 9.9.9."
@@ -201,7 +201,7 @@ def test_deprecated_logs_warning_for_function(caplog: LogCaptureFixture) -> None
             pass
 
 
-def test_deprecated_logs_warning_for_method(caplog: LogCaptureFixture) -> None:
+def test__deprecated__logs_warning_for_method(caplog: LogCaptureFixture) -> None:
     caplog.set_level(logging.WARNING)
     expected_warning = "Call to deprecated function smth. NOPE. Function will be removed in 9.9.7."
 

@@ -135,7 +135,7 @@ def is_in_debug_mode() -> bool:
     return environ.get("LBZ_DEBUG_MODE", "").lower() == "true"
 
 
-def deprecated(message: str, version: str) -> Callable:
+def deprecated(*, message: str, version: str) -> Callable:
     """
     This is a decorator which can be used to mark functions as deprecated.
 
@@ -144,10 +144,7 @@ def deprecated(message: str, version: str) -> Callable:
 
     def decorator(func: Callable) -> Callable:
         warnings.warn(
-            (
-                f"Call to deprecated function {func.__name__}. {message}. "
-                f"Function will be removed in {version}."
-            ),
+            f"{func.__name__} - {message} (will be removed in v{version}).",
             category=DeprecationWarning,
             stacklevel=2,
         )
