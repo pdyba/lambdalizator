@@ -1,5 +1,4 @@
 # coding=utf-8
-import logging
 from collections.abc import MutableMapping
 
 import pytest
@@ -188,26 +187,24 @@ def test__deep_update__overwrite_strings() -> None:
     }
 
 
-def test__deprecated__logs_warning_for_function(caplog: LogCaptureFixture) -> None:
-    caplog.set_level(logging.WARNING)
-    expected_warning = (
-        "Call to deprecated function smth. dont use me. Function will be removed in 9.9.9."
-    )
+def test__deprecated__logs_warning_for_function() -> None:
+    expected_warning = r"smth - dont use me \(will be removed in 9.9.9\)."
 
-    with pytest.warns(DeprecationWarning, match=expected_warning):
+    @deprecated(message="dont use me", version="9.9.9")
+    def smth() -> None:
+        pass
 
-        @deprecated("dont use me", "9.9.9")
-        def smth() -> None:
+    with pytest.deprecated_call(match=expected_warning):
+        smth()
+
+
+def test__deprecated__logs_warning_for_method() -> None:
+    expected_warning = r"smth - NOPE \(will be removed in 9.9.7\)."
+
+    class SMTH:  # pylint: disable=unused-variable
+        @deprecated(message="NOPE", version="9.9.7")
+        def smth(self) -> None:
             pass
 
-
-def test__deprecated__logs_warning_for_method(caplog: LogCaptureFixture) -> None:
-    caplog.set_level(logging.WARNING)
-    expected_warning = "Call to deprecated function smth. NOPE. Function will be removed in 9.9.7."
-
-    with pytest.warns(DeprecationWarning, match=expected_warning):
-
-        class SMTH:  # pylint: disable=unused-variable
-            @deprecated("NOPE", "9.9.7")
-            def smth(self) -> None:
-                pass
+    with pytest.deprecated_call(match=expected_warning):
+        SMTH().smth()

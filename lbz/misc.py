@@ -143,14 +143,13 @@ def deprecated(*, message: str, version: str) -> Callable:
     """
 
     def decorator(func: Callable) -> Callable:
-        warnings.warn(
-            f"{func.__name__} - {message} (will be removed in v{version}).",
-            category=DeprecationWarning,
-            stacklevel=2,
-        )
-
         @wraps(func)
         def wrapped(*args: Any, **kwargs: Any) -> Any:
+            warnings.warn(
+                f"{func.__name__} - {message} (will be removed in {version}).",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
             return func(*args, **kwargs)
 
         return wrapped
