@@ -293,3 +293,9 @@ Released 2022-08-09
 Released 2022-08-30
 
 - Adds the all_lbz_errors function
+
+### Version 0.5.16
+Released 2022-10-03
+
+- Adds Configuration Management
+- Allows passing context to Resource and stores it within the class
