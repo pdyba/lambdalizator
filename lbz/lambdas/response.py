@@ -1,13 +1,13 @@
-from typing import Any, Optional, TypedDict
+from typing import TypedDict, Union
 
 from lbz.lambdas.enums import LambdaResult
 
 
 class LambdaResponse(TypedDict, total=False):
     result: str
-    data: Optional[Any]
-    message: Optional[str]
-    error_code: Optional[str]
+    data: Union[list, dict, str]
+    message: str
+    error_code: str
 
 
 def lambda_ok_response(data: dict = None) -> LambdaResponse:
@@ -20,4 +20,7 @@ def lambda_ok_response(data: dict = None) -> LambdaResponse:
 def lambda_error_response(
     result: str, error_message: str, error_code: str = None
 ) -> LambdaResponse:
-    return LambdaResponse(result=result, message=error_message, error_code=error_code)
+    err_response = LambdaResponse(result=result, message=error_message)
+    if error_code:
+        err_response["error_code"] = error_code
+    return err_response

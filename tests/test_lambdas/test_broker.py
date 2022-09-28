@@ -34,7 +34,6 @@ class TestEventBroker:
 
         func_1.assert_not_called()
         assert resp == {
-            "error_code": None,
             "result": "BAD_REQUEST",
             "message": "Lambda execution error: Missing 'op' field in the event.",
         }
