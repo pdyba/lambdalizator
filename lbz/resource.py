@@ -1,4 +1,3 @@
-# coding=utf-8
 """Resource Handler."""
 from copy import deepcopy
 from http import HTTPStatus

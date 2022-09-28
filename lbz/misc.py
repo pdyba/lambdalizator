@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 Misc Helpers of Lambda Framework.
 """
