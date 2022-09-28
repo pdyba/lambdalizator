@@ -52,6 +52,7 @@ jobs:
   check_version:
     name: Check if version was updated
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@master
