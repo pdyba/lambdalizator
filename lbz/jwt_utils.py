@@ -1,39 +1,49 @@
-# coding=utf-8
 """
 JWT helpers module.
 """
 import json
-import os
-from typing import List
+from typing import Any
 
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 
+from lbz.configuration import EnvValue
 from lbz.exceptions import SecurityError, Unauthorized
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
 
-PUBLIC_KEYS: List[dict] = []
-ALLOWED_AUDIENCES = []
-ALLOWED_ISS = os.environ.get("ALLOWED_ISS", "")
 
-if allowed_pubkeys_str := os.environ.get("ALLOWED_PUBLIC_KEYS"):
-    PUBLIC_KEYS.extend(json.loads(allowed_pubkeys_str)["keys"])
-if allowed_audiences_str := os.environ.get("ALLOWED_AUDIENCES"):
-    ALLOWED_AUDIENCES.extend(allowed_audiences_str.split(","))
+PUBLIC_KEYS = EnvValue(
+    "ALLOWED_PUBLIC_KEYS", parser=lambda a: json.loads(a)["keys"]
+)
+ALLOWED_AUDIENCES = EnvValue("ALLOWED_AUDIENCES", parser=lambda a: a.split(","))
+ALLOWED_ISS = EnvValue("ALLOWED_ISS", default="")
 
-if any("kid" not in public_key for public_key in PUBLIC_KEYS):
-    raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
+def public_keys() -> Any:
+    keys = PUBLIC_KEYS.value
+    if not keys:
+        msg = "Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable"
+        raise RuntimeError(msg)
+    if any("kid" not in public_key for public_key in keys):
+        raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
+    return keys
+
+
+def allowed_audiences() -> Any:
+    if not ALLOWED_AUDIENCES.value:
+        raise RuntimeError("ALLOWED_AUDIENCES were not defined")
+    return ALLOWED_AUDIENCES.value
 
 
 def get_matching_jwk(auth_jwt_token: str) -> dict:
     """
     Checks provided JWT token against allowed tokens.
     """
+    keys = public_keys()
     try:
         kid_from_jwt_header = jwt.get_unverified_header(auth_jwt_token)["kid"]
-        for key in PUBLIC_KEYS:
+        for key in keys:
             if key["kid"] == kid_from_jwt_header:
                 return key
 
@@ -55,7 +65,7 @@ def validate_jwt_properties(decoded_jwt: dict) -> None:
     if "iss" not in decoded_jwt:
         raise SecurityError("The auth token doesn't have the 'iss' field.")
     issuer = decoded_jwt["iss"]
-    if not issuer or issuer not in ALLOWED_ISS:
+    if not issuer or issuer not in JWTConfig.ALLOWED_ISS.value:
         raise Unauthorized(f"{issuer} is not an allowed token issuer")
 
 
@@ -63,21 +73,15 @@ def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
     """
     Decodes JWT token.
     """
-    if not PUBLIC_KEYS:
-        msg = "Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable"
-        raise RuntimeError(msg)
-
-    if not ALLOWED_AUDIENCES:
-        raise RuntimeError("ALLOWED_AUDIENCES were not defined")
-
     jwk = get_matching_jwk(auth_jwt_token)
-    for idx, aud in enumerate(ALLOWED_AUDIENCES or [], start=1):
+    audiences = allowed_audiences()
+    for idx, aud in enumerate(audiences or [], start=1):
         try:
             decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
             validate_jwt_properties(decoded_jwt)
             return decoded_jwt
         except JWTClaimsError as error:
-            if idx == len(ALLOWED_AUDIENCES):
+            if idx == len(audiences):
                 logger.warning("Failed decoding JWT with any of JWK - details: %r", error)
                 raise Unauthorized() from error
         except ExpiredSignatureError as error:

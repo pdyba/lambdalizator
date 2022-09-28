@@ -1,4 +1,6 @@
+import json
 from datetime import datetime, timedelta
+from os import environ
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -64,9 +66,9 @@ class TestDecodeJWT:
             decode_jwt(jwt_token)
 
     @patch("lbz.jwt_utils.get_matching_jwk", MagicMock(return_value={}))
-    @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [])
+    @patch.dict(environ, {}, clear=True)
     def test_empty_allowed_audiences(self) -> None:
-        with pytest.raises(RuntimeError, match="ALLOWED_AUDIENCES"):
+        with pytest.raises(RuntimeError, match="ALLOWED_AUDIENCES were not defined"):
             decode_jwt("x")
 
     def test_missing_correct_audiences(self, caplog: pytest.LogCaptureFixture) -> None:
@@ -78,9 +80,12 @@ class TestDecodeJWT:
             decode_jwt(jwt_token)
         assert "Failed decoding JWT with any of JWK - details" in caplog.text
 
-    @patch("lbz.jwt_utils.PUBLIC_KEYS", [])
+    @patch.dict(environ, {}, clear=True)
     def test_empty_public_keys(self) -> None:
-        with pytest.raises(RuntimeError):
+        with pytest.raises(
+            RuntimeError,
+            match="Invalid configuration - no keys in the ALLOWED_PUBLIC_KEYS env variable",
+        ):
             decode_jwt("x")
 
     def test_validate_missing_iss_exception(self) -> None:
