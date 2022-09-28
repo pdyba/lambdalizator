@@ -36,7 +36,7 @@ class BaseConfig:
         return self.get_value()
 
 
-class KeyValueConfig(BaseConfig):
+class KeyValue(BaseConfig):
     def __init__(
         self,
         value: Any,
@@ -48,11 +48,11 @@ class KeyValueConfig(BaseConfig):
         return self._value
 
 
-class EnvConfig(BaseConfig):
+class EnvValue(BaseConfig):
     def getter(self) -> Any:
         return getenv(self.key)
 
 
-class SSMConfig(BaseConfig):
+class SSMValue(BaseConfig):
     def getter(self) -> Any:
         return SSM.get_parameter(self.key)
