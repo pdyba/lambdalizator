@@ -24,7 +24,7 @@ class LambdaBroker(BaseHandler):
         if not (op := self.event.get("op")):
             return lambda_error_response(
                 result=LambdaResult.BAD_REQUEST,
-                error_message="Lambda execution error: Missing 'op' field in the event.",
+                error_message="Missing 'op' field in the event.",
             )
         try:
             handler = self._get_handler(op)
@@ -33,10 +33,10 @@ class LambdaBroker(BaseHandler):
             else:
                 response = handler()
         except LambdaFWException as err:
-            logger.exception('Unexpected error in "%s" operation!', op)
+            logger.exception('Unexpected error during "%s" operation!', op)
             return lambda_error_response(LambdaResult.SERVER_ERROR, err.message, err.error_code)
         except Exception as err:  # pylint: disable=broad-except
-            logger.exception('Unexpected error in "%s" operation!', op)
+            logger.exception('Unexpected error during "%s" operation!', op)
             return lambda_error_response(LambdaResult.SERVER_ERROR, repr(err))
 
         return response

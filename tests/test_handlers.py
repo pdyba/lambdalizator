@@ -28,6 +28,7 @@ def test_pre_handle_raises(pre_handle: MagicMock) -> None:
         MyBaseHandler().react()
 
     pre_handle.assert_called_once()
+    post_handle.assert_not_called()
 
 
 @patch.object(MyBaseHandler, "post_handle", autospec=True)

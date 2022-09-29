@@ -32,11 +32,7 @@ class LambdaClient:
     ) -> dict:
         allowed_error_results = set(allowed_error_results or []) & set(LambdaResult.soft_errors())
 
-        payload = {
-            "invoke_type": LambdaSource.DIRECT,
-            "op": op,
-            "data": data,
-        }
+        payload = {"invoke_type": LambdaSource.DIRECT, "op": op, "data": data}
         raw_response = client.lambda_.invoke(
             FunctionName=function_name,
             Payload=json.dumps(payload, cls=cls.json_encoder).encode("utf-8"),
@@ -50,13 +46,11 @@ class LambdaClient:
         try:
             response: dict = json.loads(raw_response["Payload"].read().decode("utf-8"))
         except Exception:
-            error_msg = "Invalid response received from %s Lambda (op: %s)"
-            logger.error(
-                error_msg, function_name, op, extra=dict(data=data, response=raw_response)
-            )
+            message = "Invalid response received from %s Lambda (op: %s)"
+            logger.error(message, function_name, op, extra=dict(data=data, response=raw_response))
             raise
 
-        lambda_result: str = cast(str, response.get("result"))
+        lambda_result = response.get("result", LambdaResult.SERVER_ERROR)
         if lambda_result in LambdaResult.successes():
             return response
         if lambda_result in allowed_error_results:

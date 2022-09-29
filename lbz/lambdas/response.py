@@ -21,6 +21,6 @@ def lambda_error_response(
     result: str, error_message: str, error_code: str = None
 ) -> LambdaResponse:
     err_response = LambdaResponse(result=result, message=error_message)
-    if error_code:
+    if error_code is not None:
         err_response["error_code"] = error_code
     return err_response
