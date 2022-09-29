@@ -1,16 +1,16 @@
-from typing import TypedDict, Union
+from typing import Any, TypedDict
 
 from lbz.lambdas.enums import LambdaResult
 
 
 class LambdaResponse(TypedDict, total=False):
     result: str
-    data: Union[list, dict, str]
+    data: Any
     message: str
     error_code: str
 
 
-def lambda_ok_response(data: dict = None) -> LambdaResponse:
+def lambda_ok_response(data: Any = None) -> LambdaResponse:
     resp = LambdaResponse(result=LambdaResult.OK)
     if data is not None:
         resp["data"] = data

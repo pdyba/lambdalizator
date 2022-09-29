@@ -1,9 +1,10 @@
 import json
-from typing import Any, Iterable, Optional, Type, cast
+from typing import Any, Iterable, Optional, Type
 
 from lbz.aws_boto3 import client
 from lbz.lambdas.enums import LambdaResult, LambdaSource
 from lbz.lambdas.exceptions import LambdaError
+from lbz.lambdas.response import LambdaResponse
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
@@ -29,7 +30,7 @@ class LambdaClient:
         allowed_error_results: Iterable[str] = None,
         raise_if_error_resp: bool = False,
         asynchronous: bool = False,
-    ) -> dict:
+    ) -> LambdaResponse:
         allowed_error_results = set(allowed_error_results or []) & set(LambdaResult.soft_errors())
 
         payload = {"invoke_type": LambdaSource.DIRECT, "op": op, "data": data}
@@ -44,7 +45,7 @@ class LambdaClient:
             return {"result": LambdaResult.ACCEPTED}
 
         try:
-            response: dict = json.loads(raw_response["Payload"].read().decode("utf-8"))
+            response: LambdaResponse = json.loads(raw_response["Payload"].read().decode("utf-8"))
         except Exception:
             message = "Invalid response received from %s Lambda (op: %s)"
             logger.error(message, function_name, op, extra=dict(data=data, response=raw_response))

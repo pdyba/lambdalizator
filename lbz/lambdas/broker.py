@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional, cast
 
 from lbz.exceptions import LambdaFWException
 from lbz.handlers import BaseHandler
@@ -19,30 +19,39 @@ class LambdaBroker(BaseHandler):
         self.event = event
         self.context = context
         self.mapper = mapper
+        self.response: Optional[LambdaResponse] = None
+        self.op: Optional[str] = None
+        self.handler: Callable[..., LambdaResponse]
+        self.validate_request()
 
     def handle(self) -> LambdaResponse:
-        if not (op := self.event.get("op")):
-            return lambda_error_response(
-                result=LambdaResult.BAD_REQUEST,
-                error_message="Missing 'op' field in the event.",
-            )
+        if self.response:
+            return self.response
         try:
-            handler = self._get_handler(op)
             if data := self.event.get("data"):
-                response = handler(data)
+                response = self.handler(data)
             else:
-                response = handler()
+                response = self.handler()
         except LambdaFWException as err:
-            logger.exception('Unexpected error during "%s" operation!', op)
+            logger.exception('Unexpected error during "%s" operation!', self.op)
             return lambda_error_response(LambdaResult.SERVER_ERROR, err.message, err.error_code)
         except Exception as err:  # pylint: disable=broad-except
-            logger.exception('Unexpected error during "%s" operation!', op)
+            logger.exception('Unexpected error during "%s" operation!', self.op)
             return lambda_error_response(LambdaResult.SERVER_ERROR, repr(err))
 
         return response
 
-    def _get_handler(self, op: str) -> Callable[..., LambdaResponse]:
-        try:
-            return self.mapper[op]
-        except KeyError as error:
-            raise NotImplementedError(f"{op} was no implemented") from error
+    def validate_request(self) -> None:
+        self.op = cast(str, self.event.get("op"))
+        if not self.op:
+            self.response = lambda_error_response(
+                result=LambdaResult.BAD_REQUEST,
+                error_message="Missing 'op' field in the event.",
+            )
+        else:
+            try:
+                self.handler = self.mapper[self.op]
+            except KeyError:
+                msg = f"Handler for {self.op} was no implemented"
+                logger.exception(msg)
+                self.response = lambda_error_response(LambdaResult.BAD_REQUEST, msg)

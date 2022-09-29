@@ -72,8 +72,8 @@ def test__invoke__returns_response_by_default_even_if_there_is_error_but_logging
     logged_record = caplog.records[0]
     assert logged_record.levelno == logging.ERROR
     assert logged_record.message == f"Error response from test-func Lambda (op: test-op): {result}"
-    assert logged_record.data == {"test": "data"}
-    assert logged_record.response == response_payload
+    assert logged_record.data == {"test": "data"}  # type: ignore
+    assert logged_record.response == response_payload  # type: ignore
 
 
 @pytest.mark.parametrize("result", LambdaResult.soft_errors())
@@ -206,8 +206,8 @@ def test__invoke__raises_error_when_response_could_not_be_read_correctly(
 
     logged_record = caplog.records[0]
     assert logged_record.message == "Invalid response received from test-func Lambda (op: test-op)"
-    assert logged_record.data is None
-    assert logged_record.response == response
+    assert logged_record.data is None  # type: ignore
+    assert logged_record.response == response  # type: ignore
 
 
 def test__invoke__returns_accepted_result_when_invoked_asynchronously(

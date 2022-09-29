@@ -1,63 +1,92 @@
-from unittest.mock import MagicMock
-
 from lbz.exceptions import NotFound
-from lbz.lambdas import LambdaBroker, LambdaResult
+from lbz.lambdas import LambdaBroker, LambdaResponse, LambdaResult, lambda_ok_response
+
+
+def simple_func(*_event: dict) -> LambdaResponse:
+    return lambda_ok_response()
 
 
 class TestEventBroker:
-    def test_broker_works_properly(self) -> None:
-        func_1 = MagicMock(return_value="some_data")
-        mapper = {"x": func_1}
+    def test_broker_works_properly_when_data_is_provided(self) -> None:
+        def func(_event: dict) -> LambdaResponse:
+            return lambda_ok_response({"some": "data"})
+
+        mapper = {"x": func}
         event = {"op": "x", "data": {"y": 1}}
 
-        resp = LambdaBroker(mapper, event).react()  # type: ignore
+        resp = LambdaBroker(mapper, event).react()
 
-        assert resp == "some_data"
-        func_1.assert_called_once_with({"y": 1})
+        assert resp == {
+            "result": LambdaResult.OK,
+            "data": {"some": "data"},
+        }
 
-    def test_broker_raises_error_when_event_type_is_not_recognized(self) -> None:
-        func_1 = MagicMock()
-        mapper = {"x": func_1}
+    def test_broker_works_properly_when_no_data_is_provided(self) -> None:
+        mapper = {"x": simple_func}
+        event = {"op": "x"}
+
+        resp = LambdaBroker(mapper, event).react()
+
+        assert resp == {
+            "result": LambdaResult.OK,
+        }
+
+    def test_broker_responds_with_bad_request_event_type_is_not_recognized(self) -> None:
+        mapper = {"x": simple_func}
         event = {"op": "y", "data": {"z": 1}}
 
-        response = LambdaBroker(mapper, event).react()  # type: ignore
+        response = LambdaBroker(mapper, event).react()
 
         assert response == {
-            "result": LambdaResult.SERVER_ERROR,
-            "message": "NotImplementedError('y was no implemented')",
+            "result": LambdaResult.BAD_REQUEST,
+            "message": "Handler for y was no implemented",
         }
 
     def test_broker_responds_no_op_key(self) -> None:
-        func_1 = MagicMock()
-
-        mapper = {"x": func_1}
+        mapper = {"x": simple_func}
         event = {"data": {"y": 1}}
 
-        resp = LambdaBroker(mapper, event).react()  # type: ignore
+        resp = LambdaBroker(mapper, event).react()
 
-        func_1.assert_not_called()
         assert resp == {
             "result": LambdaResult.BAD_REQUEST,
-            "message": "Lambda execution error: Missing 'op' field in the event.",
+            "message": "Missing 'op' field in the event.",
         }
 
-    def test_broker_handles_expected_error_outcome(self) -> None:
-        def func_1(_event: dict) -> None:
+    def test_broker_handles_unexpected_lbfw_error_outcome(self) -> None:
+        def func(_event: dict) -> LambdaResponse:
             raise NotFound()
 
-        mapper = {"x": func_1}
+        mapper = {"x": func}
         event = {"op": "x", "data": {"y": 1}}
-        resp = LambdaBroker(mapper, event).react()  # type: ignore
+        resp = LambdaBroker(mapper, event).react()
 
         assert resp == {"result": LambdaResult.SERVER_ERROR, "message": NotFound.message}
 
+    def test_broker_handles_unexpected_lbfw_error_outcome_with_error_code(self) -> None:
+        class MyNotFound(NotFound):
+            error_code = "NN404"
+
+        def func(_event: dict) -> LambdaResponse:
+            raise MyNotFound()
+
+        mapper = {"x": func}
+        event = {"op": "x", "data": {"y": 1}}
+        resp = LambdaBroker(mapper, event).react()
+
+        assert resp == {
+            "result": LambdaResult.SERVER_ERROR,
+            "message": NotFound.message,
+            "error_code": "NN404",
+        }
+
     def test_broker_handles_unexpected_error_outcome(self) -> None:
-        def func_1(_event: dict) -> None:
+        def func(_event: dict) -> LambdaResponse:
             raise EOFError("oops")
 
-        mapper = {"x": func_1}
+        mapper = {"x": func}
         event = {"op": "x", "data": {"y": 1}}
-        resp = LambdaBroker(mapper, event).react()  # type: ignore
+        resp = LambdaBroker(mapper, event).react()
 
         assert resp == {
             "result": LambdaResult.SERVER_ERROR,
