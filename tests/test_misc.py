@@ -201,7 +201,7 @@ def test__deprecated__logs_warning_for_function() -> None:
 def test__deprecated__logs_warning_for_method() -> None:
     expected_warning = r"smth - NOPE \(will be removed in 9.9.7\)."
 
-    class SMTH:  # pylint: disable=unused-variable
+    class SMTH:
         @deprecated(message="NOPE", version="9.9.7")
         def smth(self) -> None:
             pass
