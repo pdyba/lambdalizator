@@ -1,5 +1,3 @@
-# coding=utf-8
-
 from http import HTTPStatus
 from typing import Generator, Optional, Type
 
