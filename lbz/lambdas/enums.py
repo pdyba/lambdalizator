@@ -26,6 +26,8 @@ class LambdaResult:
     def hard_errors(cls) -> Iterable[str]:
         """Critical errors affecting communication - except in rare cases, they should be raised"""
         return cls.CONTRACT_ERROR, cls.SERVER_ERROR
+
+
 class LambdaSource:
     API_GW = "api_gw"
     DIRECT = "direct_lambda_request"

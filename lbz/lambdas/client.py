@@ -2,7 +2,7 @@ import json
 from typing import Any, Iterable, Optional, Type, cast
 
 from lbz.aws_boto3 import client
-from lbz.lambdas.enums import LambdaResult
+from lbz.lambdas.enums import LambdaResult, LambdaSource
 from lbz.lambdas.exceptions import LambdaError
 from lbz.misc import get_logger
 
@@ -33,8 +33,7 @@ class LambdaClient:
         allowed_error_results = set(allowed_error_results or []) & set(LambdaResult.soft_errors())
 
         payload = {
-            # "invoke_type": LambdaSource.DIRECT,
-            "invoke_type": "direct_lambda_request",
+            "invoke_type": LambdaSource.DIRECT,
             "op": op,
             "data": data,
         }

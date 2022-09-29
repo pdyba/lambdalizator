@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar
 
-from lbz.misc import get_logger  # deprecated,
+from lbz.misc import deprecated, get_logger
 
 logger = get_logger(__name__)
 
@@ -15,7 +15,7 @@ class BaseHandler(Generic[T], metaclass=ABCMeta):
         self._post_handle()
         return response
 
-    # @deprecated(message="Please use react() for full request flow", version="0.6.0")
+    @deprecated(message="Please use react() for full request flow", version="0.6.0")
     def __call__(self) -> T:
         return self.react()
 

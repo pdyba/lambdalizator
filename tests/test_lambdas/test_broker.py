@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock
 
-
 from lbz.lambdas import LambdaBroker, LambdaResult
 
 
@@ -20,7 +19,7 @@ class TestEventBroker:
         mapper = {"x": func_1}
         event = {"op": "y", "data": {"z": 1}}
 
-        response =    LambdaBroker(mapper, event).react()  # type: ignore
+        response = LambdaBroker(mapper, event).react()  # type: ignore
 
         assert response == {
             "result": LambdaResult.SERVER_ERROR,
@@ -38,5 +37,5 @@ class TestEventBroker:
         func_1.assert_not_called()
         assert resp == {
             "result": LambdaResult.BAD_REQUEST,
-            "message":  "Lambda execution error: Missing 'op' field in the event.",
+            "message": "Lambda execution error: Missing 'op' field in the event.",
         }
