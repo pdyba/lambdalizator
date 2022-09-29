@@ -1,9 +1,18 @@
 # coding=utf-8
 from collections.abc import MutableMapping
 
+import pytest
 from pytest import LogCaptureFixture
 
-from lbz.misc import MultiDict, NestedDict, Singleton, deep_update, error_catcher, get_logger
+from lbz.misc import (
+    MultiDict,
+    NestedDict,
+    Singleton,
+    deep_update,
+    deprecated,
+    error_catcher,
+    get_logger,
+)
 
 
 def test_nested_dict() -> None:
@@ -176,3 +185,26 @@ def test__deep_update__overwrite_strings() -> None:
         },
         "deny": {},
     }
+
+
+def test__deprecated__logs_warning_for_function() -> None:
+    expected_warning = r"smth - dont use me \(will be removed in 9.9.9\)."
+
+    @deprecated(message="dont use me", version="9.9.9")
+    def smth() -> None:
+        pass
+
+    with pytest.deprecated_call(match=expected_warning):
+        smth()
+
+
+def test__deprecated__logs_warning_for_method() -> None:
+    expected_warning = r"smth - NOPE \(will be removed in 9.9.7\)."
+
+    class SMTH:
+        @deprecated(message="NOPE", version="9.9.7")
+        def smth(self) -> None:
+            pass
+
+    with pytest.deprecated_call(match=expected_warning):
+        SMTH().smth()
