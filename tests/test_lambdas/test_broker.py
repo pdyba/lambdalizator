@@ -1,8 +1,7 @@
 from unittest.mock import MagicMock
 
-import pytest
 
-from lbz.lambdas.broker import LambdaBroker
+from lbz.lambdas import LambdaBroker, LambdaResult
 
 
 class TestEventBroker:
@@ -21,8 +20,12 @@ class TestEventBroker:
         mapper = {"x": func_1}
         event = {"op": "y", "data": {"z": 1}}
 
-        with pytest.raises(NotImplementedError, match="y was no implemented"):
-            LambdaBroker(mapper, event).react()  # type: ignore
+        response =    LambdaBroker(mapper, event).react()  # type: ignore
+
+        assert response == {
+            "result": LambdaResult.SERVER_ERROR,
+            "message": "NotImplementedError('y was no implemented')",
+        }
 
     def test_broker_responds_no_op_key(self) -> None:
         func_1 = MagicMock()
@@ -34,6 +37,6 @@ class TestEventBroker:
 
         func_1.assert_not_called()
         assert resp == {
-            "result": "BAD_REQUEST",
-            "message": "Lambda execution error: Missing 'op' field in the event.",
+            "result": LambdaResult.BAD_REQUEST,
+            "message":  "Lambda execution error: Missing 'op' field in the event.",
         }

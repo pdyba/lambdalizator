@@ -1,5 +1,6 @@
 from typing import Callable, Dict
 
+from lbz.exceptions import LambdaFWException
 from lbz.handlers import BaseHandler
 from lbz.lambdas.enums import LambdaResult
 from lbz.lambdas.response import LambdaResponse, lambda_error_response
@@ -25,11 +26,19 @@ class LambdaBroker(BaseHandler):
                 result=LambdaResult.BAD_REQUEST,
                 error_message="Lambda execution error: Missing 'op' field in the event.",
             )
-        handler = self._get_handler(op)
-        if data := self.event.get("data"):
-            response = handler(data)
-        else:
-            response = handler()
+        try:
+            handler = self._get_handler(op)
+            if data := self.event.get("data"):
+                response = handler(data)
+            else:
+                response = handler()
+        except LambdaFWException as err:
+            logger.exception('Unexpected error in "%s" operation!', op)
+            return lambda_error_response(LambdaResult.SERVER_ERROR, err.message, err.error_code)
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception('Unexpected error in "%s" operation!', op)
+            return lambda_error_response(LambdaResult.SERVER_ERROR, repr(err))
+
         return response
 
     def _get_handler(self, op: str) -> Callable[..., LambdaResponse]:
