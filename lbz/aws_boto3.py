@@ -60,6 +60,7 @@ class Boto3Client:
 
 client = Boto3Client()
 
+
 class SSM:
     @staticmethod
     def get_parameter(name: str) -> str:

@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from lbz.aws_boto3 import client
-from lbz.configuration import SSM
+from lbz.aws_boto3 import SSM, client
 
 
 @patch.object(client.ssm, "get_parameter")
