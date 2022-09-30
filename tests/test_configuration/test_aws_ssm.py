@@ -5,7 +5,7 @@ from lbz.configuration import SSM
 
 
 @patch.object(client.ssm, "get_parameter")
-def test_get_parameter(mocked_get_parameter: MagicMock) -> None:
+def test__get_parameter__returns_value_fetched_from_aws(mocked_get_parameter: MagicMock) -> None:
     mocked_get_parameter.return_value = {"Parameter": {"Value": "x"}}
 
     value = SSM.get_parameter("path/to/param")
