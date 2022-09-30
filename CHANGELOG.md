@@ -294,8 +294,23 @@ Released 2022-08-30
 
 - Adds the all_lbz_errors function
 
+
 ### Version 0.5.16
 Released 2022-10-03
 
+- Adds Lambda to Lambda API (client and broker)
+- Unifies APIs
+- Adds deprecation wrapper 
+- Deprecates pre_request_hook and post_request_hook in Resource
 - Adds Configuration Management
 - Allows passing context to Resource and stores it within the class
+
+
+### Version 0.6.0
+Release ETA 2022-10-31
+
+- Moves rest related modules into one package
+- Moves exceptions to related packages
+- Redesigns authorization from ground up
+- Adds helpers and reduces jwt-related operations.
+- Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource
