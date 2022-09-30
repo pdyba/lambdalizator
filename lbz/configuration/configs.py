@@ -2,7 +2,7 @@ from abc import abstractmethod
 from os import getenv
 from typing import Any, Callable, Optional
 
-from lbz.configuration.aws_ssm import SSM
+from lbz.aws_boto3 import SSM
 
 
 class BaseConfig:
