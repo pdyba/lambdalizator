@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -13,7 +14,9 @@ class MyBaseHandler(BaseHandler):
 
 @patch.object(MyBaseHandler, "post_handle", autospec=True)
 @patch.object(MyBaseHandler, "pre_handle", autospec=True)
-def test_pre_and_post_hooks_are_triggered(pre_handle: MagicMock, post_handle: MagicMock) -> None:
+def test__react__triggers_both_pre_and_post_handle(
+    pre_handle: MagicMock, post_handle: MagicMock
+) -> None:
     response = MyBaseHandler().react()
 
     assert response == "something"
@@ -46,4 +49,4 @@ def test__react__only_logs_error_when_post_handle_fails(
     assert response == "something"
     post_handle.assert_called_once()
 
-    assert caplog.record_tuples == [("lbz.handlers", 40, "xxxx")]
+    assert caplog.record_tuples == [("lbz.handlers", logging.ERROR, "xxxx")]
