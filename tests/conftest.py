@@ -66,7 +66,7 @@ def sample_event() -> APIGatewayEvent:
 
 
 @pytest.fixture(scope="session", name="jwt_partial_payload")
-def jwt_partial_payload_fixture(allowed_audiences: list) -> dict:
+def jwt_partial_payload_fixture(allowed_audiences: List[str]) -> dict:
     return {
         "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
         "iat": int(datetime.utcnow().timestamp()),
