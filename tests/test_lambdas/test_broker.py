@@ -12,7 +12,7 @@ def simple_func(_data: dict = None) -> LambdaResponse:
 
 class TestEventBroker:
     def test_broker_works_properly_when_data_is_provided(self) -> None:
-        def func(_event: dict) -> LambdaResponse:
+        def func(_data: dict) -> LambdaResponse:
             return lambda_ok_response({"some": "data"})
 
         mapper = {"x": func}
@@ -38,7 +38,7 @@ class TestEventBroker:
             "result": LambdaResult.OK,
         }
 
-    def test_broker_responds_with_bad_request_when_op_is_not_recognized(
+    def test_broker_responds_with_contract_error_when_op_is_not_recognized(
         self, caplog: LogCaptureFixture
     ) -> None:
         mapper = {"x": simple_func}
@@ -47,8 +47,8 @@ class TestEventBroker:
         response = LambdaBroker(mapper, event).react()
 
         assert response == {
-            "result": LambdaResult.BAD_REQUEST,
-            "message": '"y" is not implemented.',
+            "result": LambdaResult.CONTRACT_ERROR,
+            "message": '"y" not implemented.',
         }
         assert caplog.record_tuples == [
             (
@@ -58,7 +58,7 @@ class TestEventBroker:
             )
         ]
 
-    def test_broker_responds_with_bad_request_when_no_op_key(
+    def test_broker_responds_with_contract_error_when_no_op_key(
         self, caplog: LogCaptureFixture
     ) -> None:
         mapper = {"x": simple_func}
@@ -67,8 +67,8 @@ class TestEventBroker:
         resp = LambdaBroker(mapper, event).react()
 
         assert resp == {
-            "result": LambdaResult.BAD_REQUEST,
-            "message": 'Missing "op" field in event.',
+            "result": LambdaResult.CONTRACT_ERROR,
+            "message": 'Missing "op" field.',
         }
         assert caplog.record_tuples == [
             (
@@ -81,7 +81,7 @@ class TestEventBroker:
     def test_broker_handles_unexpected_lbz_exception_outcome(
         self, caplog: LogCaptureFixture
     ) -> None:
-        def func(_event: dict) -> LambdaResponse:
+        def func(_data: dict) -> LambdaResponse:
             raise NotFound()
 
         mapper = {"x": func}
@@ -97,7 +97,7 @@ class TestEventBroker:
             )
         ]
 
-    def test_broker_handles_unexpected_lbfw_error_outcome_with_error_code(
+    def test_broker_handles_unexpected_lbz_exception_outcome_with_error_code(
         self, caplog: LogCaptureFixture
     ) -> None:
         def func(_data: dict) -> LambdaResponse:
@@ -121,7 +121,7 @@ class TestEventBroker:
         ]
 
     def test_broker_handles_unexpected_error_outcome(self, caplog: LogCaptureFixture) -> None:
-        def func(_event: dict) -> LambdaResponse:
+        def func(_data: dict) -> LambdaResponse:
             raise EOFError("oops")
 
         mapper = {"x": func}
