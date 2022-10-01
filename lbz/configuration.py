@@ -3,7 +3,7 @@ from os import getenv
 from typing import Any, Callable, Generic, Optional, TypeVar
 
 from lbz.aws_ssm import SSM
-from lbz.exceptions import ConfigurationError
+from lbz.exceptions import ConfigurationMissingError, ConfigurationParsingError
 
 T = TypeVar("T")
 
@@ -38,7 +38,7 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
             elif self._default is not None:
                 self._value = self._default
             else:
-                raise ConfigurationError(f"{self._key} was not defined.")
+                raise ConfigurationMissingError(f"'{self._key}' was not defined.")
 
         return self._value
 
@@ -46,8 +46,8 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
         try:
             return self._parser(value)
         except Exception as error:
-            message = f"{self._key} could not be parsed with {self._parser}"
-            raise ConfigurationError(message) from error
+            message = f"'{self._key}' could not be parsed with '{self._parser}'"
+            raise ConfigurationParsingError(message) from error
 
 
 class EnvValue(ConfigValue):

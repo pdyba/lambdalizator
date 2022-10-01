@@ -8,7 +8,11 @@ class SecurityError(Exception):
     """Request did not match security requirements expected by server."""
 
 
-class ConfigurationError(RuntimeError):
+class ConfigurationMissingError(RuntimeError):
+    pass
+
+
+class ConfigurationParsingError(RuntimeError):
     pass
 
 

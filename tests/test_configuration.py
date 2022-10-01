@@ -2,8 +2,11 @@ import json
 from os import environ
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from lbz.aws_ssm import SSM
 from lbz.configuration import ConfigValue, EnvValue, SSMValue
+from lbz.exceptions import ConfigurationMissingError, ConfigurationParsingError
 
 
 class MyConfigValue(ConfigValue):
@@ -29,12 +32,18 @@ class TestBaseConfig:
 
         assert cfg.value == 42
 
+    def test_raises_missing_congiration_when_value_is_none(self) -> None:
+        cfg = MyNoneConfigValue("test")
+
+        with pytest.raises(ConfigurationMissingError, match="'test' was not defined."):
+            cfg.value  # pylint: disable=pointless-statement
+
     def test_if_parser_was_used(self) -> None:
         class MyIntConfigValue(ConfigValue):
             def getter(self) -> int:
                 return 1
 
-        cfg = MyIntConfigValue("key", parser=str)
+        cfg = MyIntConfigValue("key")
 
         assert cfg.value == "1"
 
@@ -44,8 +53,22 @@ class TestBaseConfig:
         cfg = MyConfigValue("key")
 
         assert cfg.value == "42"
+        assert cfg.value == "42"
 
         mocked_getter.assert_called_once()
+
+    def test_raises_if_parser_failed(self) -> None:
+        class MyFailingConfigValue(ConfigValue):
+            def getter(self) -> tuple:
+                return (1, 2)
+
+        cfg = MyFailingConfigValue("key", parser=int)
+
+        with pytest.raises(
+            ConfigurationParsingError,
+            match="'key' could not be parsed with '<class 'int'>'",
+        ):
+            cfg.value  # pylint: disable=pointless-statement
 
 
 class TestEnvConfig:
@@ -78,8 +101,8 @@ class TestSSMConfig:
     @patch.object(SSM, "get_parameter")
     def test_getter_calls_ssn_with_specific_key(self, mocked_get_parameter: MagicMock) -> None:
         mocked_get_parameter.return_value = "test_value"
-        cfg = SSMValue("path/to/key")
+        cfg = SSMValue("key_name")
 
         assert cfg.value == "test_value"
 
-        mocked_get_parameter.assert_called_once_with("path/to/key")
+        mocked_get_parameter.assert_called_once_with("key_name")
