@@ -9,7 +9,7 @@ from tests.fixtures.rsa_pair import (  # noqa:F401
     SAMPLE_PUBLIC_KEY,
 )
 
-# TODO: move those vairables to a fixture
+# TODO: move those variables to a fixture
 # JWT related test config
 os.environ["AUTH_REMOVE_PREFIXES"] = "1"
 os.environ["ALLOWED_PUBLIC_KEYS"] = json.dumps({"keys": [SAMPLE_PUBLIC_KEY]})

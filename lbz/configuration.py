@@ -7,16 +7,16 @@ from lbz.aws_boto3 import SSM
 T = TypeVar("T")
 
 
-class ConfigValue(Generic[T]):
+class BaseValue(Generic[T]):
     def __init__(
         self,
         key: str,
         parser: Optional[Callable[[str], T]] = None,
         default: T = None,
     ):
-        self.key = key
-        self.parser = parser
-        self.default = default
+        self._key = key
+        self._parser = parser
+        self._default = default
         self._value: T
 
     @abstractmethod
@@ -36,7 +36,7 @@ class ConfigValue(Generic[T]):
 
 
 class EnvValue(ConfigValue):
-    def getter(self) -> Optional[Any]:
+    def getter(self) -> Optional[str]:
         return getenv(self.key)
 
 
