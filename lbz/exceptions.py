@@ -8,6 +8,10 @@ class SecurityError(Exception):
     """Request did not match security requirements expected by server."""
 
 
+class ConfigurationError(RuntimeError):
+    pass
+
+
 class LambdaFWException(Exception):
     """Standardised for AWS Lambda exception class."""
 

@@ -2,44 +2,48 @@ import json
 from os import environ
 from unittest.mock import MagicMock, patch
 
-from lbz.aws_boto3 import SSM
+from lbz.aws_ssm import SSM
 from lbz.configuration import ConfigValue, EnvValue, SSMValue
 
 
+class MyConfigValue(ConfigValue):
+    def getter(self) -> str:
+        return "test-value"
+
+
+class MyNoneConfigValue(ConfigValue):
+    def getter(self) -> None:
+        return None
+
+
 class TestBaseConfig:
-    @patch.object(ConfigValue, "getter", autospec=True)
-    def test_if_getter_was_used(self, mocked_getter: MagicMock) -> None:
-        cfg = ConfigValue("key")  # type: ignore
+    def test_if_getter_was_used(
+        self,
+    ) -> None:
+        cfg = MyConfigValue("key")
 
-        cfg.value  # pylint: disable=pointless-statement
-
-        mocked_getter.assert_called_once()
-
-    def test_returns_none_when_no_value_set(self) -> None:
-        cfg = ConfigValue("test")  # type: ignore
-
-        assert cfg.value is None
+        assert cfg.value == "test-value"
 
     def test_returns_default_when_no_value_set(self) -> None:
-        cfg = ConfigValue("test", default=42)  # type: ignore
+        cfg = MyNoneConfigValue("test", default=42, parser=int)
 
         assert cfg.value == 42
 
     def test_if_parser_was_used(self) -> None:
-        class MyConfigValue(ConfigValue):
+        class MyIntConfigValue(ConfigValue):
             def getter(self) -> int:
                 return 1
 
-        cfg = MyConfigValue("key", parser=str)
+        cfg = MyIntConfigValue("key", parser=str)
 
         assert cfg.value == "1"
 
-    @patch.object(ConfigValue, "getter", autospec=True)
+    @patch.object(MyConfigValue, "getter", autospec=True)
     def test_if_getter_was_used_only_once(self, mocked_getter: MagicMock) -> None:
-        mocked_getter.return_value = 42
-        cfg = ConfigValue("key")  # type: ignore
+        mocked_getter.return_value = "42"
+        cfg = MyConfigValue("key")
 
-        assert cfg.value == 42
+        assert cfg.value == "42"
 
         mocked_getter.assert_called_once()
 
@@ -78,4 +82,4 @@ class TestSSMConfig:
 
         assert cfg.value == "test_value"
 
-        mocked_get_parameter.assert_called_once_with(cfg.key)
+        mocked_get_parameter.assert_called_once_with("path/to/key")
