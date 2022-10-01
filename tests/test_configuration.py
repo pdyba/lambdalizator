@@ -3,41 +3,41 @@ from os import environ
 from unittest.mock import MagicMock, patch
 
 from lbz.aws_boto3 import SSM
-from lbz.configuration import BaseValue, EnvValue, SSMValue
+from lbz.configuration import ConfigValue, EnvValue, SSMValue
 
 
 class TestBaseConfig:
-    @patch.object(BaseValue, "getter", autospec=True)
+    @patch.object(ConfigValue, "getter", autospec=True)
     def test_if_getter_was_used(self, mocked_getter: MagicMock) -> None:
-        cfg = BaseValue("key")  # type: ignore
+        cfg = ConfigValue("key")  # type: ignore
 
         cfg.value  # pylint: disable=pointless-statement
 
         mocked_getter.assert_called_once()
 
     def test_returns_none_when_no_value_set(self) -> None:
-        cfg = BaseValue("test")  # type: ignore
+        cfg = ConfigValue("test")  # type: ignore
 
         assert cfg.value is None
 
     def test_returns_default_when_no_value_set(self) -> None:
-        cfg = BaseValue("test", default=42)  # type: ignore
+        cfg = ConfigValue("test", default=42)  # type: ignore
 
         assert cfg.value == 42
 
     def test_if_parser_was_used(self) -> None:
-        class MyBaseValue(BaseValue):
+        class MyConfigValue(ConfigValue):
             def getter(self) -> int:
                 return 1
 
-        cfg = MyBaseValue("key", parser=str)
+        cfg = MyConfigValue("key", parser=str)
 
         assert cfg.value == "1"
 
-    @patch.object(BaseValue, "getter", autospec=True)
+    @patch.object(ConfigValue, "getter", autospec=True)
     def test_if_getter_was_used_only_once(self, mocked_getter: MagicMock) -> None:
         mocked_getter.return_value = 42
-        cfg = BaseValue("key")  # type: ignore
+        cfg = ConfigValue("key")  # type: ignore
 
         assert cfg.value == 42
 

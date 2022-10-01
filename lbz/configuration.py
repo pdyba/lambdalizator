@@ -7,11 +7,11 @@ from lbz.aws_boto3 import SSM
 T = TypeVar("T")
 
 
-class BaseValue(Generic[T]):
+class ConfigValue(Generic[T]):
     def __init__(
         self,
         key: str,
-        parser: Optional[Callable[..., T]] = None,
+        parser: Optional[Callable[[str], T]] = None,
         default: T = None,
     ):
         self.key = key
@@ -35,11 +35,11 @@ class BaseValue(Generic[T]):
         return self._value
 
 
-class EnvValue(BaseValue):
+class EnvValue(ConfigValue):
     def getter(self) -> Optional[Any]:
         return getenv(self.key)
 
 
-class SSMValue(BaseValue):
+class SSMValue(ConfigValue):
     def getter(self) -> Optional[str]:
         return SSM.get_parameter(self.key)
