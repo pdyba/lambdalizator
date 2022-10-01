@@ -13,6 +13,7 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
 
     This class is not supporting None as outcome value.
     """
+
     def __init__(
         self,
         key: str,
@@ -22,7 +23,7 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
         self._key = key
         self._parser = parser
         self._default = default
-        self._value: T
+        self._value: Optional[T] = None
 
     @abstractmethod
     def getter(self) -> Any:
@@ -30,20 +31,23 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
 
     @property
     def value(self) -> T:
-        if not hasattr(self, "_value"):
+        if self._value is None:
             val = self.getter()
             if val is not None:
-                try:
-                    self._value = self._parser(val)
-                except Exception as error:
-                    message = f"{self._key} could not be parsed with {self._parser}"
-                    raise ConfigurationError(message) from error
+                self._value = self._parse_value(val)
             elif self._default is not None:
                 self._value = self._default
             else:
                 raise ConfigurationError(f"{self._key} was not defined.")
 
         return self._value
+
+    def _parse_value(self, value: Any) -> T:
+        try:
+            return self._parser(value)
+        except Exception as error:
+            message = f"{self._key} could not be parsed with {self._parser}"
+            raise ConfigurationError(message) from error
 
 
 class EnvValue(ConfigValue):
