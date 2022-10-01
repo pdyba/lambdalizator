@@ -60,7 +60,7 @@ class TestBaseConfig:
     def test_raises_if_parser_failed(self) -> None:
         class MyFailingConfigValue(ConfigValue):
             def getter(self) -> tuple:
-                return (1, 2)
+                return 1, 2
 
         cfg = MyFailingConfigValue("key", parser=int)
 
