@@ -14,9 +14,9 @@ class BaseValue(Generic[T]):
         parser: Optional[Callable[..., T]] = None,
         default: T = None,
     ):
-        self.key = key
-        self.parser = parser
-        self.default = default
+        self._key = key
+        self._parser = parser
+        self._default = default
         self._value: T
 
     @abstractmethod
@@ -36,7 +36,7 @@ class BaseValue(Generic[T]):
 
 
 class EnvValue(BaseValue):
-    def getter(self) -> Optional[Any]:
+    def getter(self) -> Optional[str]:
         return getenv(self.key)
 
 
