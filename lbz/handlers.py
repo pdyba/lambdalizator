@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Generic, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from lbz.misc import deprecated, get_logger
 
@@ -8,12 +8,21 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
-class BaseHandler(Generic[T], metaclass=ABCMeta):
+class BaseBroker(Generic[T], metaclass=ABCMeta):
+    def __init__(
+        self,
+        event: dict,
+        context: object = None,
+    ) -> None:
+        self.raw_event = event
+        self.context = context
+        self.response: Optional[T] = None
+
     def react(self) -> T:
         self.pre_handle()
-        response = self.handle()
+        self.response = self.handle()
         self._post_handle()
-        return response
+        return self.response
 
     @deprecated(message="Please use react() for full request flow", version="0.6.0")
     def __call__(self) -> T:
