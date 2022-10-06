@@ -2,6 +2,7 @@ import pathlib
 
 from setuptools import setup
 
+# TODO: Add auto discovery for packages.
 setup(
     name="lbz",
     version=pathlib.Path("version").read_text("utf-8"),

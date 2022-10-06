@@ -20,8 +20,8 @@ from tests import SAMPLE_PRIVATE_KEY
 from tests.utils import encode_token
 
 
-@pytest.fixture(scope="session")
-def allowed_audiences() -> List[str]:
+@pytest.fixture(scope="session", name="allowed_audiences")
+def allowed_audiences_fixture() -> List[str]:
     return os.environ["ALLOWED_AUDIENCES"].split(",")
 
 
@@ -66,12 +66,12 @@ def sample_event() -> APIGatewayEvent:
 
 
 @pytest.fixture(scope="session", name="jwt_partial_payload")
-def jwt_partial_payload_fixture() -> dict:
+def jwt_partial_payload_fixture(allowed_audiences: List[str]) -> dict:
     return {
         "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
         "iat": int(datetime.utcnow().timestamp()),
         "iss": "test-issuer",
-        "aud": os.environ["ALLOWED_AUDIENCES"].split(",")[0],
+        "aud": allowed_audiences[0],
     }
 
 
