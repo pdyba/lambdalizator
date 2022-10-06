@@ -1,11 +1,13 @@
+import json
 from datetime import datetime, timedelta
+from os import environ
 from unittest.mock import MagicMock, patch
 
 import pytest
 from jose import jwt
 
 from lbz.authz.authorizer import Authorizer
-from lbz.exceptions import SecurityError, Unauthorized
+from lbz.exceptions import MissingConfigValue, SecurityError, Unauthorized
 from lbz.jwt_utils import decode_jwt, get_matching_jwk, validate_jwt_properties
 from tests import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 
@@ -75,6 +77,18 @@ class TestDecodeJWT:
     def test_validate_missing_iss_exception(self) -> None:
         with pytest.raises(SecurityError, match="'exp'"):
             validate_jwt_properties({"allow": "*", "deny": {}})
+
+    @patch.dict(environ, {}, clear=True)
+    def test_empty_public_keys(self) -> None:
+        with pytest.raises(MissingConfigValue, match="ALLOWED_PUBLIC_KEYS"):
+            decode_jwt("x")
+
+    @patch.dict(
+        environ, {"ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [SAMPLE_PUBLIC_KEY]})}, clear=True
+    )
+    def test_empty_allowed_audiences(self) -> None:
+        with pytest.raises(MissingConfigValue, match="ALLOWED_AUDIENCES"):
+            decode_jwt("x")
 
     def test_validate_missing_exp_exception(self) -> None:
         with pytest.raises(SecurityError, match="'iss'"):
