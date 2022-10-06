@@ -6,14 +6,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from lbz.aws_ssm import SSM
-from lbz.configuration import ConfigValue, EnvValue, SSMValue
+from lbz.configuration import EnvValue, SSMValue
 from lbz.exceptions import ConfigValueParsingFailed, MissingConfigValue
 
 
 class TestConfigValue:
     # We are using EnvValue instead ConfigValue in order to not create artificial class
     # that wouldn't add any value.
-    @patch.dict(environ, {"key": "42"}, clear=True)
+    @patch.dict(environ, {"key": "42"})
     def test_if_getter_was_used_only_once(self) -> None:
         cfg = EnvValue("key")
 
@@ -34,40 +34,34 @@ class TestConfigValue:
         with pytest.raises(MissingConfigValue, match="'test' was not defined."):
             cfg.value  # pylint: disable=pointless-statement
 
+    @patch.object(EnvValue, "getter", MagicMock(return_value=1))
     def test_modifies_config_value_using_declared_parser_function(self) -> None:
-        class MyIntConfigValue(ConfigValue):
-            def getter(self) -> int:
-                return 1
-
-        cfg = MyIntConfigValue("key", lambda a: a * 10)
+        cfg = EnvValue("RANDOM_VAR", lambda a: a * 10)
 
         assert cfg.value == 10
 
+    @patch.object(EnvValue, "getter", MagicMock(return_value=(1, 2)))
     def test_raises_if_parser_failed(self) -> None:
-        class MyFailingConfigValue(ConfigValue):
-            def getter(self) -> tuple:
-                return 1, 2
-
         msg = re.escape("'key' could not parse '(1, 2)'")
 
-        cfg = MyFailingConfigValue("key", parser=int)
+        cfg = EnvValue("key", parser=int)
 
         with pytest.raises(ConfigValueParsingFailed, match=msg):
             cfg.value  # pylint: disable=pointless-statement
 
-    @patch.dict(environ, {"RANDOM_VAR": "12"}, clear=True)
+    @patch.dict(environ, {"RANDOM_VAR": "12"})
     def test_gets_value_from_env_with_int_parser(self) -> None:
         env_cfg = EnvValue("RANDOM_VAR", parser=int)
 
         assert env_cfg.value == 12
 
-    @patch.dict(environ, {"RANDOM_VAR": "12"}, clear=True)
+    @patch.dict(environ, {"RANDOM_VAR": "12"})
     def test_gets_value_from_env_with_list_parser(self) -> None:
         env_cfg = EnvValue("RANDOM_VAR", parser=list)
 
         assert env_cfg.value == ["1", "2"]
 
-    @patch.dict(environ, {"RANDOM_VAR": '{"test": "ttt"}'}, clear=True)
+    @patch.dict(environ, {"RANDOM_VAR": '{"test": "ttt"}'})
     def test_gets_value_from_env_with_json_parser(self) -> None:
         env_cfg = EnvValue("RANDOM_VAR", parser=json.loads)
 
@@ -75,7 +69,7 @@ class TestConfigValue:
 
 
 class TestEnvConfig:
-    @patch.dict(environ, {"RANDOM_VAR": "12.2.1"}, clear=True)
+    @patch.dict(environ, {"RANDOM_VAR": "12.2.1"})
     def test_gets_value_from_env(self) -> None:
         env_cfg = EnvValue("RANDOM_VAR")
 
