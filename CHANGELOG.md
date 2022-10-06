@@ -312,5 +312,4 @@ Release ETA 2022-10-31
 - Moves exceptions to related packages
 - Redesigns authorization from ground up
 - Adds helpers and reduces jwt-related operations.
-- 
-- Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource 
+- Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource

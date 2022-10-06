@@ -83,7 +83,7 @@ class TestEnvConfig:
 
 
 class TestSSMConfig:
-    @patch.object(SSM, "get_parameter")
+    @patch.object(SSM, "get_parameter", autospec=True)
     def test_getter_calls_ssm_with_specific_key(self, mocked_get_parameter: MagicMock) -> None:
         mocked_get_parameter.return_value = "test_value"
         cfg = SSMValue("key_name")
