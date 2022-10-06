@@ -1,14 +1,12 @@
 # Lambdalizator
+![Python 3.8+](https://img.shields.io/badge/python-v3.8-blue) ![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 AWS Lambda Toolbox inspired by Flask. Currently supporting:
 - REST API
 - Event API (AWS Event Bridge)
-- TBA: Lambda API
-
-Created and Open Sourced thanks to [LocalBini.com](http://Localbini.com) by [pdyba](https://github.com/pdyba) and [songofroland](https://github.com/songofroland).
+- Lambda API
 
 
-![Python 3.8+](https://img.shields.io/badge/python-v3.8-blue) ![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 ## Authentication
 
