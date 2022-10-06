@@ -1,7 +1,7 @@
 # coding=utf-8
 import os
 from datetime import datetime, timedelta
-from typing import Iterator, List, Type
+from typing import Any, Iterator, List, Type
 from uuid import uuid4
 
 import pytest
@@ -11,6 +11,7 @@ from lbz.authentication import User
 from lbz.authz.authorizer import Authorizer
 from lbz.authz.decorators import authorization
 from lbz.collector import authz_collector
+from lbz.configuration import ConfigValue
 from lbz.dev.misc import APIGatewayEvent
 from lbz.request import Request
 from lbz.resource import Resource
@@ -18,6 +19,11 @@ from lbz.response import Response
 from lbz.router import Router, add_route
 from tests import SAMPLE_PRIVATE_KEY
 from tests.utils import encode_token
+
+
+class MockedConfig(ConfigValue):
+    def getter(self) -> Any:
+        return self._key
 
 
 @pytest.fixture(scope="session", name="allowed_audiences")

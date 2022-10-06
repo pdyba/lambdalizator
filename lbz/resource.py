@@ -1,17 +1,18 @@
 """Resource Handler."""
 from copy import deepcopy
 from http import HTTPStatus
-from os import environ as env
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Union, cast
 from urllib.parse import urlencode
 
 from multidict import CIMultiDict
 
+from lbz._cfg import CORS_HEADERS, CORS_ORIGIN, PUBLIC_KEYS
 from lbz.authentication import User
 from lbz.collector import authz_collector
 from lbz.events.api import EventAPI
 from lbz.exceptions import (
     LambdaFWException,
+    MissingConfigValue,
     NotFound,
     ServerError,
     Unauthorized,
@@ -89,7 +90,11 @@ class Resource:
         return f"<Resource {self.method} @ {self.urn} >"
 
     def _load_configuration(self) -> None:
-        self.auth_enabled = env.get("ALLOWED_PUBLIC_KEYS") or env.get("ALLOWED_AUDIENCES")
+        try:
+            PUBLIC_KEYS.value  # pylint: disable=pointless-statement
+            self.auth_enabled = True
+        except MissingConfigValue:
+            self.auth_enabled = False
 
     def _get_user(self, headers: CIMultiDict) -> Union[None, User]:
         authentication = headers.get("Authentication")
@@ -154,13 +159,10 @@ class CORSResource(Resource):
     ):
         # TODO: adjust the rest of the arguments in the near future too.
         super().__init__(event)
-        cors_headers = cors_headers or []
-        if not cors_headers and (env_headers := env.get("CORS_HEADERS")):
-            cors_headers = env_headers.split(",")
+        if not cors_headers:
+            cors_headers = cast(list, CORS_HEADERS.value)
         self._resp_headers = {
-            ALLOW_ORIGIN_HEADER: self._get_allowed_origins(
-                origins or env.get("CORS_ORIGIN", "").split(",")
-            ),
+            ALLOW_ORIGIN_HEADER: self._get_allowed_origins(origins or CORS_ORIGIN.value),
             "Access-Control-Allow-Headers": ", ".join([*self._cors_headers, *cors_headers]),
             "Access-Control-Allow-Methods": ", ".join([*methods, "OPTIONS"]),
         }

@@ -27,6 +27,7 @@ from lbz.resource import (
 )
 from lbz.response import Response
 from lbz.router import Router, add_route
+from tests.conftest import MockedConfig
 from tests.fixtures.cognito_auth import env_mock
 
 # TODO: Use fixtures yielded from conftest.py
@@ -370,7 +371,10 @@ class TestCORSResource:
             ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
         }
 
-    @patch.dict(environ, {"CORS_HEADERS": "X-PRN-KEY,X-PRN-TOKEN"})
+    @patch(
+        "lbz.resource.CORS_HEADERS",
+        MockedConfig("x", parser=lambda _a: ["X-PRN-KEY", "X-PRN-TOKEN"]),
+    )
     def test_cors_headers_env_request(self) -> None:
         inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE)
         inst.method = "OPTIONS"

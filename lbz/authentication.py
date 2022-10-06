@@ -1,13 +1,10 @@
 """
 JWT based Authentication module.
 """
-import os
-
+from lbz._cfg import REMOVE_PREFIXES
 from lbz.jwt_utils import decode_jwt
 
 STANDARD_CLAIMS = ("sub", "aud", "auth_time", "iss", "exp", "iat", "token_use")
-
-REMOVE_PREFIXES = os.environ.get("AUTH_REMOVE_PREFIXES") == "1"
 
 
 def remove_prefix(text: str) -> str:
