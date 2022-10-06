@@ -2,14 +2,14 @@ from copy import deepcopy
 from typing import Callable, Dict, List
 
 from lbz.events.event import Event
-from lbz.handlers import BaseBroker
+from lbz.handlers import BaseHandler
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
 
 
 # TODO: type_key and data_key will be const for EventBridge and different set for Cognito Events
-class EventBroker(BaseBroker):
+class EventBroker(BaseHandler):
     def __init__(
         self,
         mapper: Dict[str, List[Callable[[Event], None]]],

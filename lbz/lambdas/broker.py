@@ -1,7 +1,7 @@
 from typing import Callable, Dict
 
 from lbz.exceptions import LambdaFWException
-from lbz.handlers import BaseBroker
+from lbz.handlers import BaseHandler
 from lbz.lambdas.enums import LambdaResult
 from lbz.lambdas.response import LambdaResponse, lambda_error_response
 from lbz.misc import get_logger
@@ -9,7 +9,7 @@ from lbz.misc import get_logger
 logger = get_logger(__name__)
 
 
-class LambdaBroker(BaseBroker):
+class LambdaBroker(BaseHandler):
     def __init__(
         self,
         mapper: Dict[str, Callable[..., LambdaResponse]],

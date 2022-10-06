@@ -8,7 +8,7 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
-class BaseBroker(Generic[T], metaclass=ABCMeta):
+class BaseHandler(Generic[T], metaclass=ABCMeta):
     def __init__(self, event: dict, context: object = None) -> None:
         self.raw_event = event
         self.context = context
