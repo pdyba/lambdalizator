@@ -1,4 +1,3 @@
-# coding=utf-8
 import json
 import logging
 from collections import defaultdict
@@ -11,7 +10,6 @@ from jose import jwt
 from multidict import CIMultiDict
 from pytest import LogCaptureFixture
 
-from lbz._cfg import CORS_HEADERS
 from lbz.authentication import User
 from lbz.collector import AuthzCollector
 from lbz.dev.misc import APIGatewayEvent
@@ -28,7 +26,6 @@ from lbz.resource import (
 )
 from lbz.response import Response
 from lbz.router import Router, add_route
-
 # TODO: Use fixtures yielded from conftest.py
 from tests import SAMPLE_PUBLIC_KEY
 

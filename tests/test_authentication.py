@@ -1,4 +1,3 @@
-# coding=utf-8
 import json
 import time
 from os import environ
@@ -7,7 +6,6 @@ from uuid import uuid4
 
 import pytest
 
-from lbz._cfg import ALLOWED_AUDIENCES, ALLOWED_PUBLIC_KEYS
 from lbz.authentication import User
 from lbz.exceptions import Unauthorized
 from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
