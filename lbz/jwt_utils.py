@@ -6,7 +6,7 @@ from typing import cast
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 
-from lbz._cfg import ALLOWED_AUDIENCES, ALLOWED_ISS, PUBLIC_KEYS
+from lbz._cfg import ALLOWED_AUDIENCES, ALLOWED_ISS, ALLOWED_PUBLIC_KEYS
 from lbz.exceptions import SecurityError, Unauthorized
 from lbz.misc import get_logger
 
@@ -19,7 +19,7 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
     """
     try:
         kid_from_jwt_header = jwt.get_unverified_header(auth_jwt_token)["kid"]
-        for key in PUBLIC_KEYS.value:
+        for key in ALLOWED_PUBLIC_KEYS.value:
             if key["kid"] == kid_from_jwt_header:
                 return cast(dict, key)
 
@@ -49,7 +49,7 @@ def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
     """
     Decodes JWT token.
     """
-    if any("kid" not in public_key for public_key in PUBLIC_KEYS.value):
+    if any("kid" not in public_key for public_key in ALLOWED_PUBLIC_KEYS.value):
         raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
 
     jwk = get_matching_jwk(auth_jwt_token)

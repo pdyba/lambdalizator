@@ -7,7 +7,7 @@ import logging.handlers
 import warnings
 from collections.abc import MutableMapping
 from functools import wraps
-from typing import Any, Callable, Hashable, Iterable, Iterator, List, Optional, cast
+from typing import Any, Callable, Hashable, Iterable, Iterator, List, Optional
 
 from lbz._cfg import LBZ_DEBUG_MODE, LOGGING_LEVEL
 
@@ -130,7 +130,8 @@ def deep_update(dict_to_update: dict, update_data: dict) -> None:
 
 
 def is_in_debug_mode() -> bool:
-    return cast(bool, LBZ_DEBUG_MODE.value)
+    # TODO: make sure that this type is correct without bool function
+    return bool(LBZ_DEBUG_MODE.value)
 
 
 def deprecated(*, message: str, version: str) -> Callable:

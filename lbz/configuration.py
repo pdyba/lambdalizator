@@ -1,11 +1,28 @@
+import json
 from abc import ABCMeta, abstractmethod
 from os import getenv
-from typing import Any, Callable, Generic, Optional, TypeVar
+from typing import Any, Callable, Generic, List, Optional, TypeVar, cast
 
 from lbz.aws_ssm import SSM
 from lbz.exceptions import ConfigValueParsingFailed, MissingConfigValue
 
 T = TypeVar("T")
+
+
+class ConfigParser:
+    @staticmethod
+    def split_by_comma(cfg: str) -> List[str]:
+        return cfg.split(",")
+
+    @staticmethod
+    def env_bool(cfg: str) -> bool:
+        if cfg.lower() in ("true", "1"):
+            return True
+        return False
+
+    @staticmethod
+    def load_jwt_keys(cfg: str) -> List[dict]:
+        return cast(list, json.loads(cfg)["keys"])
 
 
 class ConfigValue(Generic[T], metaclass=ABCMeta):
@@ -46,6 +63,9 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
             return self._parser(value)
         except Exception as error:
             raise ConfigValueParsingFailed(self._key, value) from error
+
+    def reset(self) -> None:
+        self._value = None
 
 
 class EnvValue(ConfigValue):

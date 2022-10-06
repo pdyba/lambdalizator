@@ -1,18 +1,17 @@
 """Resource Handler."""
 from copy import deepcopy
 from http import HTTPStatus
-from typing import Callable, List, Optional, Union, cast
+from typing import Callable, List, Optional, Union
 from urllib.parse import urlencode
 
 from multidict import CIMultiDict
 
-from lbz._cfg import CORS_HEADERS, CORS_ORIGIN, PUBLIC_KEYS
+from lbz._cfg import ALLOWED_PUBLIC_KEYS, CORS_HEADERS, CORS_ORIGIN
 from lbz.authentication import User
 from lbz.collector import authz_collector
 from lbz.events.api import EventAPI
 from lbz.exceptions import (
     LambdaFWException,
-    MissingConfigValue,
     NotFound,
     ServerError,
     Unauthorized,
@@ -42,7 +41,6 @@ class Resource:
         return cls._name or cls.__name__.lower()
 
     def __init__(self, event: dict):
-        self._load_configuration()
         self.urn = event["path"]  # TODO: Variables should match corresponding event fields
         self.path = event.get("requestContext", {}).get("resourcePath")
         self.path_params = event.get("pathParameters") or {}  # DO NOT refactor
@@ -89,16 +87,9 @@ class Resource:
     def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"
 
-    def _load_configuration(self) -> None:
-        try:
-            PUBLIC_KEYS.value  # pylint: disable=pointless-statement
-            self.auth_enabled = True
-        except MissingConfigValue:
-            self.auth_enabled = False
-
     def _get_user(self, headers: CIMultiDict) -> Union[None, User]:
         authentication = headers.get("Authentication")
-        if authentication and self.auth_enabled:
+        if authentication and ALLOWED_PUBLIC_KEYS.value:
             return User(authentication)
         if authentication:
             raise Unauthorized("Authentication method not supported")
@@ -141,14 +132,14 @@ class CORSResource(Resource):
     CORS capable resource.
     """
 
-    _cors_headers = [
+    _cors_headers = (
         "Content-Type",
         "X-Amz-Date",
         "Authentication",
         "Authorization",
         "X-Api-Key",
         "X-Amz-Security-Token",
-    ]
+    )
 
     def __init__(
         self,
@@ -159,8 +150,8 @@ class CORSResource(Resource):
     ):
         # TODO: adjust the rest of the arguments in the near future too.
         super().__init__(event)
-        if not cors_headers:
-            cors_headers = cast(list, CORS_HEADERS.value)
+        if cors_headers is None:
+            cors_headers = CORS_HEADERS.value
         self._resp_headers = {
             ALLOW_ORIGIN_HEADER: self._get_allowed_origins(origins or CORS_ORIGIN.value),
             "Access-Control-Allow-Headers": ", ".join([*self._cors_headers, *cors_headers]),

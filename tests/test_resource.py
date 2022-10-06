@@ -11,6 +11,7 @@ from jose import jwt
 from multidict import CIMultiDict
 from pytest import LogCaptureFixture
 
+from lbz._cfg import CORS_HEADERS
 from lbz.authentication import User
 from lbz.collector import AuthzCollector
 from lbz.dev.misc import APIGatewayEvent
@@ -27,10 +28,10 @@ from lbz.resource import (
 )
 from lbz.response import Response
 from lbz.router import Router, add_route
-from tests.conftest import MockedConfig
-from tests.fixtures.cognito_auth import env_mock
 
 # TODO: Use fixtures yielded from conftest.py
+from tests import SAMPLE_PUBLIC_KEY
+
 req = Request(
     body="",
     headers=CIMultiDict({"Content-Type": "application/json"}),
@@ -147,8 +148,7 @@ class TestResource:
             def test_method(self) -> Response:
                 return Response("x")
 
-        key = json.loads(env_mock["ALLOWED_PUBLIC_KEYS"])["keys"][0]
-        key_id = key["kid"]
+        key_id = SAMPLE_PUBLIC_KEY["kid"]
         authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
 
         XResource({**event, "headers": {"authentication": authentication_token}})()
@@ -371,10 +371,7 @@ class TestCORSResource:
             ALLOW_ORIGIN_HEADER: ORIGIN_EXAMPLE,
         }
 
-    @patch(
-        "lbz.resource.CORS_HEADERS",
-        MockedConfig("x", parser=lambda _a: ["X-PRN-KEY", "X-PRN-TOKEN"]),
-    )
+    @patch.dict(environ, {"CORS_HEADERS": "X-PRN-KEY,X-PRN-TOKEN"})
     def test_cors_headers_env_request(self) -> None:
         inst = self.make_cors_handler(req_origin=ORIGIN_EXAMPLE)
         inst.method = "OPTIONS"

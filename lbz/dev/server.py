@@ -6,11 +6,17 @@ import logging
 import urllib.parse
 from abc import ABCMeta, abstractmethod
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from os import environ
 from threading import Thread
 from typing import Tuple, Type, Union
 
+from lbz._cfg import LBZ_DEBUG_MODE
 from lbz.dev.misc import APIGatewayEvent
 from lbz.resource import Resource
+
+if not LBZ_DEBUG_MODE.value:
+    environ["LBZ_DEBUG_MODE"] = "1"
+    LBZ_DEBUG_MODE.reset()
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
@@ -31,7 +37,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
         """
         Parses route and params.
         :param org_path:
-        :return: standarised route, url params / None
+        :return: standardised route, url params / None
         """
         router = self.cls._router  # pylint: disable=protected-access
         if org_path in router:

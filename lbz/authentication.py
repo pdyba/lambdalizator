@@ -1,7 +1,7 @@
 """
 JWT based Authentication module.
 """
-from lbz._cfg import REMOVE_PREFIXES
+from lbz._cfg import AUTH_REMOVE_PREFIXES
 from lbz.jwt_utils import decode_jwt
 
 STANDARD_CLAIMS = ("sub", "aud", "auth_time", "iss", "exp", "iat", "token_use")
@@ -37,7 +37,7 @@ class User:
         self._validate_attributes(attributes)
         for key, value in attributes.items():
             if key not in STANDARD_CLAIMS:
-                parsed_user[remove_prefix(key) if REMOVE_PREFIXES else key] = value
+                parsed_user[remove_prefix(key) if AUTH_REMOVE_PREFIXES.value else key] = value
         return parsed_user
 
     def _validate_attributes(self, attributes: dict) -> None:
