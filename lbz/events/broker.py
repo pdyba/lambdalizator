@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 class EventBroker(BaseBroker):
     def __init__(
         self,
-        mapper: Dict[str, List[Callable]],
+        mapper: Dict[str, List[Callable[[Event], None]]],
         event: dict,
         context: object = None,
         *,
