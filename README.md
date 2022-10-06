@@ -25,6 +25,8 @@ environment variables.
 ## Configuration
 
 Lambdalizator can be configured using the following environment variables: 
+
+### Authorization configuration
 - `ALLOWED_PUBLIC_KEYS` - a list of public keys that can be used for decoding auth tokens send in the
   `Authentication` and `Authorization` headers. If you are using Cognito, you can use public keys from:
   https://cognito-idp.{your aws region}.amazonaws.com/{your pool id}/.well-known/jwks.json.
@@ -34,8 +36,14 @@ Lambdalizator can be configured using the following environment variables:
 - `ALLOWED_ISS` - allowed issuer of JWT - Security feature. If not set, issuer will not be checked.
 - `AUTH_REMOVE_PREFIXES` - if enabled, all fields starting with a prefix (like `cognito:`) in the
   auth token will have the prefix removed. Defaults to False (set as "0" or "1").
+
+### Lambdalizator configuration 
 - `LOGGING_LEVEL` - log level used in the application. Defaults to INFO.
-- `EXPIRATION_KEY` - for defining the expiration key used in authorization default "exp" according to JWT standard.
+- `LBZ_DEBUG_MODE` - set lbz to work in debug mode.
+- `CORS_HEADERS` - set additional headers that should be supported.
+- `CORS_ORIGIN` - set additional allowed origins.
+
+### AWS related configuration
 - `AWS_LAMBDA_FUNCTION_NAME` - defined by AWS Lambda environment used ATM only in EventAPI
 - `EVENTS_BUS_NAME` - expected by EventAPI Event Bridge Events Bus Name. Defaults to Lambda name 
   taken from AWS_LAMBDA_FUNCTION_NAME and extended with `-event-bus`
@@ -87,7 +95,7 @@ if __name__ == '__main__':
 
 ```
 
-### 4. Don't forget to unit test ⌨️ 
+### 4. Don't forget to unit test
 
 ```python
 # pytest simple_resource_test.py
