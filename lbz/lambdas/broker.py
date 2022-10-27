@@ -16,20 +16,19 @@ class LambdaBroker(BaseHandler):
         event: dict,
         context: object = None,
     ) -> None:
-        self.event = event
-        self.context = context
+        super().__init__(event, context)
         self.mapper = mapper
 
     def handle(self) -> LambdaResponse:
-        if not (op := self.event.get("op")):
-            logger.error('Missing "op" field in the processed event: %r', self.event)
+        if not (op := self.raw_event.get("op")):
+            logger.error('Missing "op" field in the processed event: %r', self.raw_event)
             return lambda_error_response(LambdaResult.CONTRACT_ERROR, 'Missing "op" field.')
         if not (handler := self.mapper.get(op)):
             logger.error('No handler declared for requested operation: "%s"', op)
             return lambda_error_response(LambdaResult.CONTRACT_ERROR, f'"{op}" not implemented.')
 
         try:
-            if (data := self.event.get("data")) is not None:
+            if (data := self.raw_event.get("data")) is not None:
                 return handler(data)
             return handler()
         except LambdaFWException as err:
