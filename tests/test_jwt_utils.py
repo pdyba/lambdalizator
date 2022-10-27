@@ -9,7 +9,7 @@ from jose import jwt
 from lbz.authz.authorizer import Authorizer
 from lbz.exceptions import MissingConfigValue, SecurityError, Unauthorized
 from lbz.jwt_utils import decode_jwt, get_matching_jwk, validate_jwt_properties
-from tests import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
+from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 
 
 class TestGetMatchingJWK:

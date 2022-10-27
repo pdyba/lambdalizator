@@ -15,7 +15,7 @@ class TestConfigValue:
     # that wouldn't add any value.
     @patch.dict(environ, {"key": "42"})
     def test_if_getter_was_used_only_once(self) -> None:
-        cfg = EnvValue("key")
+        cfg = EnvValue[str]("key")
 
         with patch.object(EnvValue, "getter", wraps=cfg.getter) as mocked_getter:
             assert cfg.value == "42"
@@ -29,14 +29,17 @@ class TestConfigValue:
         assert cfg.value == 42
 
     def test_raises_missing_configuration_when_value_is_none(self) -> None:
-        cfg = EnvValue("test")
+        cfg = EnvValue[str]("test")
 
         with pytest.raises(MissingConfigValue, match="'test' was not defined."):
             cfg.value  # pylint: disable=pointless-statement
 
     @patch.object(EnvValue, "getter", MagicMock(return_value=1))
     def test_modifies_config_value_using_declared_parser_function(self) -> None:
-        cfg = EnvValue("RANDOM_VAR", lambda a: a * 10)
+        def times_10_parser(value: int) -> int:
+            return value * 10
+
+        cfg = EnvValue[int]("RANDOM_VAR", times_10_parser)
 
         assert cfg.value == 10
 
@@ -71,7 +74,7 @@ class TestConfigValue:
 class TestEnvConfig:
     @patch.dict(environ, {"RANDOM_VAR": "12.2.1"})
     def test_gets_value_from_env(self) -> None:
-        env_cfg = EnvValue("RANDOM_VAR")
+        env_cfg = EnvValue[str]("RANDOM_VAR")
 
         assert env_cfg.value == "12.2.1"
 
@@ -80,7 +83,7 @@ class TestSSMConfig:
     @patch.object(SSM, "get_parameter", autospec=True)
     def test_getter_calls_ssm_with_specific_key(self, mocked_get_parameter: MagicMock) -> None:
         mocked_get_parameter.return_value = "test_value"
-        cfg = SSMValue("key_name")
+        cfg = SSMValue[str]("key_name")
 
         assert cfg.value == "test_value"
 

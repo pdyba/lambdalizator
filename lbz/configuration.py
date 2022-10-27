@@ -1,7 +1,7 @@
 import json
 from abc import ABCMeta, abstractmethod
 from os import getenv
-from typing import Any, Callable, Generic, List, Optional, TypeVar, cast
+from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
 
 from lbz.aws_ssm import SSM
 from lbz.exceptions import ConfigValueParsingFailed, MissingConfigValue
@@ -11,18 +11,19 @@ T = TypeVar("T")
 
 class ConfigParser:
     @staticmethod
-    def split_by_comma(cfg: str) -> List[str]:
-        return cfg.split(",")
+    def split_by_comma(value: str) -> List[str]:
+        return value.split(",")
 
     @staticmethod
-    def env_bool(cfg: str) -> bool:
-        if cfg.lower() in ("true", "1"):
+    def cast_to_bool(value: str) -> bool:
+        if value.lower() in ("true", "1"):
             return True
         return False
 
     @staticmethod
-    def load_jwt_keys(cfg: str) -> List[dict]:
-        return cast(list, json.loads(cfg)["keys"])
+    def load_jwt_keys(value: str) -> List[dict]:
+        deserialized_value: Dict[str, List[dict]] = json.loads(value)
+        return deserialized_value["keys"]
 
 
 class ConfigValue(Generic[T], metaclass=ABCMeta):
@@ -68,11 +69,11 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
         self._value = None
 
 
-class EnvValue(ConfigValue):
+class EnvValue(ConfigValue[T]):
     def getter(self) -> Optional[str]:
         return getenv(self._key)
 
 
-class SSMValue(ConfigValue):
+class SSMValue(ConfigValue[T]):
     def getter(self) -> Optional[str]:
         return SSM.get_parameter(self._key)

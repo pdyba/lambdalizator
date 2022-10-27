@@ -10,13 +10,11 @@ from os import environ
 from threading import Thread
 from typing import Tuple, Type, Union
 
-from lbz._cfg import LBZ_DEBUG_MODE
 from lbz.dev.misc import APIGatewayEvent
 from lbz.resource import Resource
 
-if not LBZ_DEBUG_MODE.value:
-    environ["LBZ_DEBUG_MODE"] = "1"
-    LBZ_DEBUG_MODE.reset()
+if environ.get("LBZ_DEBUG_MODE") is None:
+    environ["LBZ_DEBUG_MODE"] = "true"
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):

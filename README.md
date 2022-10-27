@@ -38,8 +38,8 @@ Lambdalizator can be configured using the following environment variables:
 #### Lambdalizator configuration 
 - `LOGGING_LEVEL` - log level used in the application. Defaults to INFO.
 - `LBZ_DEBUG_MODE` - set lbz to work in debug mode.
-- `CORS_HEADERS` - set additional headers that should be supported.
-- `CORS_ORIGIN` - set additional allowed origins.
+- `CORS_HEADERS` - a list of additional headers that should be supported.
+- `CORS_ORIGIN` - a list of allowed origins that should be supported.
 
 #### AWS related configuration
 - `AWS_LAMBDA_FUNCTION_NAME` - defined by AWS Lambda environment used ATM only in EventAPI

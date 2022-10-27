@@ -131,7 +131,7 @@ def deep_update(dict_to_update: dict, update_data: dict) -> None:
 
 def is_in_debug_mode() -> bool:
     # TODO: make sure that this type is correct without bool function
-    return bool(LBZ_DEBUG_MODE.value)
+    return LBZ_DEBUG_MODE.value
 
 
 def deprecated(*, message: str, version: str) -> Callable:

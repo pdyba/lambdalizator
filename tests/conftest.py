@@ -38,21 +38,18 @@ def allowed_audiences_fixture() -> List[str]:
     return [str(uuid4()), str(uuid4())]
 
 
-@pytest.fixture(autouse=True, name="patch_environ")
+@pytest.fixture(autouse=True)
 def patch_environ_fixture(allowed_audiences: List[str]) -> Iterator[None]:
-    with patch.dict(
-        environ,
-        {
-            "AUTH_REMOVE_PREFIXES": "1",
-            "ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [SAMPLE_PUBLIC_KEY]}),
-            "ALLOWED_AUDIENCES": ",".join(allowed_audiences),
-            "ALLOWED_ISS": "test-issuer",
-            "AWS_LAMBDA_FUNCTION_NAME": "million-dollar-lambda",
-            "EVENTS_BUS_NAME": "million-dollar-lambda-event-bus",
-            "AWS_DEFAULT_REGION": "us-west-2",
-        },
-        clear=True,
-    ):
+    patched_environ = {
+        "AUTH_REMOVE_PREFIXES": "1",
+        "ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [SAMPLE_PUBLIC_KEY]}),
+        "ALLOWED_AUDIENCES": ",".join(allowed_audiences),
+        "ALLOWED_ISS": "test-issuer",
+        "AWS_LAMBDA_FUNCTION_NAME": "million-dollar-lambda",
+        "EVENTS_BUS_NAME": "million-dollar-lambda-event-bus",
+        "AWS_DEFAULT_REGION": "us-west-2",
+    }
+    with patch.dict(environ, patched_environ, clear=True):
         LBZ_DEBUG_MODE.reset()
         LOGGING_LEVEL.reset()
         CORS_HEADERS.reset()
