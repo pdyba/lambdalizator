@@ -26,7 +26,6 @@ from lbz.resource import (
 )
 from lbz.response import Response
 from lbz.router import Router, add_route
-# TODO: Use fixtures yielded from conftest.py
 from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 
 req = Request(
