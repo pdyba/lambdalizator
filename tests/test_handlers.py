@@ -17,7 +17,7 @@ class MyBaseHandler(BaseHandler):
 def test__react__triggers_both_pre_and_post_handle(
     pre_handle: MagicMock, post_handle: MagicMock
 ) -> None:
-    response = MyBaseHandler({}).react()
+    response = MyBaseHandler({}, None).react()
 
     assert response == "something"
     pre_handle.assert_called_once()
@@ -32,7 +32,7 @@ def test__react__raises_error_when_pre_handle_fails(
     pre_handle.side_effect = ValueError
 
     with pytest.raises(ValueError):
-        MyBaseHandler({}).react()
+        MyBaseHandler({}, None).react()
 
     pre_handle.assert_called_once()
     post_handle.assert_not_called()
@@ -44,7 +44,7 @@ def test__react__only_logs_error_when_post_handle_fails(
 ) -> None:
     post_handle.side_effect = ValueError("xxxx")
 
-    response = MyBaseHandler({}).react()
+    response = MyBaseHandler({}, None).react()
 
     assert response == "something"
     post_handle.assert_called_once()

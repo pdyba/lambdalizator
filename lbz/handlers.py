@@ -9,7 +9,7 @@ T = TypeVar("T")
 
 
 class BaseHandler(Generic[T], metaclass=ABCMeta):
-    def __init__(self, event: dict, context: object = None) -> None:
+    def __init__(self, event: dict, context: object) -> None:
         self.raw_event = event
         self.context = context
         self.response: Optional[T] = None
