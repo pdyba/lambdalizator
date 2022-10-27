@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from lbz.aws_ssm import SSM
-from lbz.configuration import EnvValue, SSMValue
+from lbz.configuration import ConfigParser, EnvValue, SSMValue
 from lbz.exceptions import ConfigValueParsingFailed, MissingConfigValue
 
 
@@ -70,6 +70,17 @@ class TestConfigValue:
 
         assert env_cfg.value == {"test": "ttt"}
 
+    @patch.dict(environ, {"RANDOM_VAR": "not-none"})
+    def test_reset_sets_value_to_none_forcing_fetching_it_once_again(self) -> None:
+        env_cfg = EnvValue[str]("RANDOM_VAR")
+        assert env_cfg.value == "not-none"
+
+        env_cfg.reset()
+
+        with patch.dict(environ, {"RANDOM_VAR": "still-not-none"}):
+            env_cfg = EnvValue[str]("RANDOM_VAR")
+            assert env_cfg.value == "still-not-none"
+
 
 class TestEnvConfig:
     @patch.dict(environ, {"RANDOM_VAR": "12.2.1"})
@@ -88,3 +99,29 @@ class TestSSMConfig:
         assert cfg.value == "test_value"
 
         mocked_get_parameter.assert_called_once_with("key_name")
+
+
+class TestConfigParser:
+    def test_split_by_comma_returns_list(self) -> None:
+        assert ConfigParser.split_by_comma("a,b") == ["a", "b"]
+
+    @pytest.mark.parametrize(
+        "input_value, expected_value",
+        [
+            ("1", True),
+            ("true", True),
+            ("TRUE", True),
+            ("TruE", True),
+            ("0", False),
+            ("False", False),
+            ("fLase", False),
+            ("not-true", False),
+            ("N/A", False),
+            ("xxxxx", False),
+        ],
+    )
+    def test_cast_to_bool_returns_bool(self, input_value: str, expected_value: bool) -> None:
+        assert ConfigParser.cast_to_bool(input_value) == expected_value
+
+    def test_load_jwt_keys_return_value_of_keys(self) -> None:
+        assert ConfigParser.load_jwt_keys('{"keys": [{"key": "a"}]}') == [{"key": "a"}]

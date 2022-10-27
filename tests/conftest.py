@@ -39,7 +39,7 @@ def allowed_audiences_fixture() -> List[str]:
 
 
 @pytest.fixture(autouse=True)
-def patch_environ_fixture(allowed_audiences: List[str]) -> Iterator[None]:
+def setting_initial_lbz_configuration(allowed_audiences: List[str]) -> Iterator[None]:
     patched_environ = {
         "AUTH_REMOVE_PREFIXES": "1",
         "ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [SAMPLE_PUBLIC_KEY]}),
