@@ -37,7 +37,7 @@ class TestConfigValue:
     @patch.dict(environ, {"RANDOM_VAR": "1"})
     def test_modifies_config_value_using_declared_parser_function(self) -> None:
         def times_10_parser(value: str) -> int:
-            return value * 10
+            return int(value) * 10
 
         cfg = EnvValue("RANDOM_VAR", times_10_parser)
 

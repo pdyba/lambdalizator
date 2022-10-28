@@ -1,8 +1,6 @@
 """
 JWT helpers module.
 """
-from typing import cast
-
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 
@@ -21,7 +19,7 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
         kid_from_jwt_header = jwt.get_unverified_header(auth_jwt_token)["kid"]
         for key in ALLOWED_PUBLIC_KEYS.value:
             if key["kid"] == kid_from_jwt_header:
-                return cast(dict, key)
+                return key
 
         logger.warning(
             "The key with id=%s was not found in the environment variable.", kid_from_jwt_header

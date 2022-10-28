@@ -32,6 +32,7 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
     This class is not supporting None as outcome value.
     """
 
+    # TODO: There is space for improvement around default str argument
     def __init__(
         self,
         key: str,

@@ -49,7 +49,7 @@ def setting_initial_lbz_configuration(allowed_audiences: List[str]) -> Iterator[
         "EVENTS_BUS_NAME": "million-dollar-lambda-event-bus",
         "AWS_DEFAULT_REGION": "us-west-2",
     }
-    with patch.dict(environ, patched_environ, clear=True):
+    with patch.dict(environ, patched_environ):
         LBZ_DEBUG_MODE.reset()
         LOGGING_LEVEL.reset()
         CORS_HEADERS.reset()
