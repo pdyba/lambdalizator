@@ -34,12 +34,12 @@ class TestConfigValue:
         with pytest.raises(MissingConfigValue, match="'test' was not defined."):
             cfg.value  # pylint: disable=pointless-statement
 
-    @patch.object(EnvValue, "getter", MagicMock(return_value=1))
+    @patch.dict(environ, {"RANDOM_VAR": "1"})
     def test_modifies_config_value_using_declared_parser_function(self) -> None:
-        def times_10_parser(value: int) -> int:
+        def times_10_parser(value: str) -> int:
             return value * 10
 
-        cfg = EnvValue[int]("RANDOM_VAR", times_10_parser)
+        cfg = EnvValue("RANDOM_VAR", times_10_parser)
 
         assert cfg.value == 10
 
@@ -102,7 +102,7 @@ class TestSSMConfig:
 
 
 class TestConfigParser:
-    def test_split_by_comma_returns_list(self) -> None:
+    def test__split_by_comma__returns_list(self) -> None:
         assert ConfigParser.split_by_comma("a,b") == ["a", "b"]
 
     @pytest.mark.parametrize(
@@ -120,8 +120,8 @@ class TestConfigParser:
             ("xxxxx", False),
         ],
     )
-    def test_cast_to_bool_returns_bool(self, input_value: str, expected_value: bool) -> None:
+    def test__cast_to_bool__returns_bool(self, input_value: str, expected_value: bool) -> None:
         assert ConfigParser.cast_to_bool(input_value) == expected_value
 
-    def test_load_jwt_keys_return_value_of_keys(self) -> None:
+    def test__load_jwt_keys__return_value_of_keys(self) -> None:
         assert ConfigParser.load_jwt_keys('{"keys": [{"key": "a"}]}') == [{"key": "a"}]

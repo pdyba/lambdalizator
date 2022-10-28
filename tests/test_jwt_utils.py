@@ -80,14 +80,14 @@ class TestDecodeJWT:
 
     @patch.dict(environ, {}, clear=True)
     def test_empty_public_keys(self) -> None:
-        with pytest.raises(MissingConfigValue, match="ALLOWED_PUBLIC_KEYS"):
+        with pytest.raises(MissingConfigValue, match="'ALLOWED_PUBLIC_KEYS' was not defined."):
             decode_jwt("x")
 
     @patch.dict(
         environ, {"ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [SAMPLE_PUBLIC_KEY]})}, clear=True
     )
     def test_empty_allowed_audiences(self) -> None:
-        with pytest.raises(MissingConfigValue, match="ALLOWED_AUDIENCES"):
+        with pytest.raises(MissingConfigValue, match="'ALLOWED_AUDIENCES' was not defined."):
             decode_jwt("x")
 
     def test_validate_missing_exp_exception(self) -> None:

@@ -150,8 +150,7 @@ class CORSResource(Resource):
     ):
         # TODO: adjust the rest of the arguments in the near future too.
         super().__init__(event)
-        if cors_headers is None:
-            cors_headers = CORS_HEADERS.value
+        cors_headers = cors_headers or CORS_HEADERS.value
         self._resp_headers = {
             ALLOW_ORIGIN_HEADER: self._get_allowed_origins(origins or CORS_ORIGIN.value),
             "Access-Control-Allow-Headers": ", ".join([*self._cors_headers, *cors_headers]),
