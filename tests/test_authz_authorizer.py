@@ -8,7 +8,7 @@ from pytest import LogCaptureFixture
 
 from lbz.authz.authorizer import ALL, ALLOW, DENY, LIMITED_ALLOW, Authorizer
 from lbz.exceptions import PermissionDenied, Unauthorized
-from tests import EXPECTED_TOKEN, SAMPLE_PRIVATE_KEY
+from tests.fixtures.rsa_pair import EXPECTED_TOKEN, SAMPLE_PRIVATE_KEY
 
 
 class TestAuthorizerWithoutMockingJWT:

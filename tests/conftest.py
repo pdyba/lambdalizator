@@ -1,12 +1,25 @@
-# coding=utf-8
-import os
+import json
 from datetime import datetime, timedelta
+from os import environ
 from typing import Iterator, List, Type
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
 from multidict import CIMultiDict
 
+from lbz._cfg import (
+    ALLOWED_AUDIENCES,
+    ALLOWED_ISS,
+    ALLOWED_PUBLIC_KEYS,
+    AUTH_REMOVE_PREFIXES,
+    AWS_LAMBDA_FUNCTION_NAME,
+    CORS_HEADERS,
+    CORS_ORIGIN,
+    EVENTS_BUS_NAME,
+    LBZ_DEBUG_MODE,
+    LOGGING_LEVEL,
+)
 from lbz.authentication import User
 from lbz.authz.authorizer import Authorizer
 from lbz.authz.decorators import authorization
@@ -16,13 +29,38 @@ from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
 from lbz.router import Router, add_route
-from tests import SAMPLE_PRIVATE_KEY
+from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token
 
 
 @pytest.fixture(scope="session", name="allowed_audiences")
 def allowed_audiences_fixture() -> List[str]:
-    return os.environ["ALLOWED_AUDIENCES"].split(",")
+    return [str(uuid4()), str(uuid4())]
+
+
+@pytest.fixture(autouse=True)
+def setting_initial_lbz_configuration(allowed_audiences: List[str]) -> Iterator[None]:
+    patched_environ = {
+        "AUTH_REMOVE_PREFIXES": "1",
+        "ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [SAMPLE_PUBLIC_KEY]}),
+        "ALLOWED_AUDIENCES": ",".join(allowed_audiences),
+        "ALLOWED_ISS": "test-issuer",
+        "AWS_LAMBDA_FUNCTION_NAME": "million-dollar-lambda",
+        "EVENTS_BUS_NAME": "million-dollar-lambda-event-bus",
+        "AWS_DEFAULT_REGION": "us-west-2",
+    }
+    with patch.dict(environ, patched_environ):
+        LBZ_DEBUG_MODE.reset()
+        LOGGING_LEVEL.reset()
+        CORS_HEADERS.reset()
+        CORS_ORIGIN.reset()
+        AWS_LAMBDA_FUNCTION_NAME.reset()
+        EVENTS_BUS_NAME.reset()
+        ALLOWED_PUBLIC_KEYS.reset()
+        ALLOWED_AUDIENCES.reset()
+        ALLOWED_ISS.reset()
+        AUTH_REMOVE_PREFIXES.reset()
+        yield
 
 
 @pytest.fixture(autouse=True)
@@ -133,7 +171,7 @@ def user_token_fixture(user_cognito: dict) -> str:
     return encode_token(user_cognito)
 
 
-@pytest.fixture(scope="session", name="user")
+@pytest.fixture(name="user")  # scope="session", - TODO: bring that back to reduce run time
 def user_fixture(user_token: str) -> User:
     return User(user_token)
 

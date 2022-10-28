@@ -1,13 +1,15 @@
+import json
 from datetime import datetime, timedelta
+from os import environ
 from unittest.mock import MagicMock, patch
 
 import pytest
 from jose import jwt
 
 from lbz.authz.authorizer import Authorizer
-from lbz.exceptions import SecurityError, Unauthorized
+from lbz.exceptions import MissingConfigValue, SecurityError, Unauthorized
 from lbz.jwt_utils import decode_jwt, get_matching_jwk, validate_jwt_properties
-from tests import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
+from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 
 
 class TestGetMatchingJWK:
@@ -63,12 +65,6 @@ class TestDecodeJWT:
         with pytest.raises(Unauthorized, match="Your token has expired. Please refresh it."):
             decode_jwt(jwt_token)
 
-    @patch("lbz.jwt_utils.get_matching_jwk", MagicMock(return_value={}))
-    @patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [])
-    def test_empty_allowed_audiences(self) -> None:
-        with pytest.raises(RuntimeError, match="ALLOWED_AUDIENCES"):
-            decode_jwt("x")
-
     def test_missing_correct_audiences(self, caplog: pytest.LogCaptureFixture) -> None:
         iat = int(datetime.utcnow().timestamp())
         exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
@@ -78,14 +74,21 @@ class TestDecodeJWT:
             decode_jwt(jwt_token)
         assert "Failed decoding JWT with any of JWK - details" in caplog.text
 
-    @patch("lbz.jwt_utils.PUBLIC_KEYS", [])
-    def test_empty_public_keys(self) -> None:
-        with pytest.raises(RuntimeError):
-            decode_jwt("x")
-
     def test_validate_missing_iss_exception(self) -> None:
         with pytest.raises(SecurityError, match="'exp'"):
             validate_jwt_properties({"allow": "*", "deny": {}})
+
+    @patch.dict(environ, {}, clear=True)
+    def test_empty_public_keys(self) -> None:
+        with pytest.raises(MissingConfigValue, match="'ALLOWED_PUBLIC_KEYS' was not defined."):
+            decode_jwt("x")
+
+    @patch.dict(
+        environ, {"ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [SAMPLE_PUBLIC_KEY]})}, clear=True
+    )
+    def test_empty_allowed_audiences(self) -> None:
+        with pytest.raises(MissingConfigValue, match="'ALLOWED_AUDIENCES' was not defined."):
+            decode_jwt("x")
 
     def test_validate_missing_exp_exception(self) -> None:
         with pytest.raises(SecurityError, match="'iss'"):

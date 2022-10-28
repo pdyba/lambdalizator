@@ -35,7 +35,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
         """
         Parses route and params.
         :param org_path:
-        :return: standarised route, url params / None
+        :return: standardised route, url params / None
         """
         router = self.cls._router  # pylint: disable=protected-access
         if org_path in router:

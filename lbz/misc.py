@@ -7,10 +7,9 @@ import logging.handlers
 import warnings
 from collections.abc import MutableMapping
 from functools import wraps
-from os import environ
 from typing import Any, Callable, Hashable, Iterable, Iterator, List, Optional
 
-LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
+from lbz._cfg import LBZ_DEBUG_MODE, LOGGING_LEVEL
 
 
 class NestedDict(dict):
@@ -94,7 +93,7 @@ class MultiDict(MutableMapping):
 def get_logger(name: str) -> logging.Logger:
     """Shortcut for creating logger instance."""
     logger_obj = logging.getLogger(name)
-    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
+    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL.value))
     return logger_obj
 
 
@@ -131,7 +130,7 @@ def deep_update(dict_to_update: dict, update_data: dict) -> None:
 
 
 def is_in_debug_mode() -> bool:
-    return environ.get("LBZ_DEBUG_MODE", "").lower() == "true"
+    return LBZ_DEBUG_MODE.value
 
 
 def deprecated(*, message: str, version: str) -> Callable:
