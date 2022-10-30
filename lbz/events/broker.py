@@ -4,6 +4,7 @@ from typing import Callable, Dict, List
 from lbz.events.event import Event
 from lbz.handlers import BaseHandler
 from lbz.misc import get_logger
+from lbz.types import LambdaContext
 
 logger = get_logger(__name__)
 
@@ -14,7 +15,7 @@ class EventBroker(BaseHandler):
         self,
         mapper: Dict[str, List[Callable[[Event], None]]],
         event: dict,
-        context: object = None,
+        context: LambdaContext,
         *,
         type_key: str = "detail-type",
         data_key: str = "detail",

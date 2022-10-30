@@ -4,6 +4,7 @@ from pytest import LogCaptureFixture
 
 from lbz.exceptions import NotFound
 from lbz.lambdas import LambdaBroker, LambdaResponse, LambdaResult, lambda_ok_response
+from lbz.types import LambdaContext
 
 
 def simple_func(_data: dict = None) -> LambdaResponse:
@@ -18,7 +19,7 @@ class TestEventBroker:
         mapper = {"x": func}
         event = {"op": "x", "data": {"y": 1}}
 
-        resp = LambdaBroker(mapper, event).react()
+        resp = LambdaBroker(mapper, event, LambdaContext()).react()
 
         assert resp == {
             "result": LambdaResult.OK,
@@ -32,7 +33,7 @@ class TestEventBroker:
         mapper = {"x": no_data_func}
         event = {"op": "x", "data": None}
 
-        resp = LambdaBroker(mapper, event).react()
+        resp = LambdaBroker(mapper, event, LambdaContext()).react()
 
         assert resp == {
             "result": LambdaResult.OK,
@@ -44,7 +45,7 @@ class TestEventBroker:
         mapper = {"x": simple_func}
         event = {"op": "y", "data": {"z": 1}}
 
-        response = LambdaBroker(mapper, event).react()
+        response = LambdaBroker(mapper, event, LambdaContext()).react()
 
         assert response == {
             "result": LambdaResult.CONTRACT_ERROR,
@@ -64,7 +65,7 @@ class TestEventBroker:
         mapper = {"x": simple_func}
         event = {"data": {"y": 1}}
 
-        resp = LambdaBroker(mapper, event).react()
+        resp = LambdaBroker(mapper, event, LambdaContext()).react()
 
         assert resp == {
             "result": LambdaResult.CONTRACT_ERROR,
@@ -86,7 +87,7 @@ class TestEventBroker:
 
         mapper = {"x": func}
         event = {"op": "x", "data": {"y": 1}}
-        resp = LambdaBroker(mapper, event).react()
+        resp = LambdaBroker(mapper, event, LambdaContext()).react()
 
         assert resp == {"result": LambdaResult.SERVER_ERROR, "message": NotFound.message}
         assert caplog.record_tuples == [
@@ -105,7 +106,7 @@ class TestEventBroker:
 
         mapper = {"x": func}
         event = {"op": "x", "data": {"y": 1}}
-        resp = LambdaBroker(mapper, event).react()
+        resp = LambdaBroker(mapper, event, LambdaContext()).react()
 
         assert resp == {
             "result": LambdaResult.SERVER_ERROR,
@@ -126,7 +127,7 @@ class TestEventBroker:
 
         mapper = {"x": func}
         event = {"op": "x", "data": {"y": 1}}
-        resp = LambdaBroker(mapper, event).react()
+        resp = LambdaBroker(mapper, event, LambdaContext()).react()
 
         assert resp == {
             "result": LambdaResult.SERVER_ERROR,

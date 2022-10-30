@@ -8,6 +8,7 @@ from pytest import LogCaptureFixture
 
 from lbz.events.broker import EventBroker
 from lbz.events.event import Event
+from lbz.types import LambdaContext
 
 
 class TestEventBroker:
@@ -18,7 +19,7 @@ class TestEventBroker:
         mapper = {"x": [func_1, func_2]}
         event = {"detail-type": "x", "detail": {"y": 1}}
 
-        EventBroker(mapper, event).handle()  # type: ignore
+        EventBroker(mapper, event, LambdaContext()).handle()  # type: ignore
 
         func_1.assert_called_once_with(expected_event)
         func_2.assert_called_once_with(expected_event)
@@ -32,6 +33,7 @@ class TestEventBroker:
         EventBroker(
             mapper,  # type: ignore
             event,
+            LambdaContext(),
             type_key="my-type-key",
             data_key="my-data-key",
         ).handle()
@@ -45,7 +47,7 @@ class TestEventBroker:
         event = {"detail-type": "y", "detail": {"y": 1}}
 
         with pytest.raises(NotImplementedError, match="No handlers implemented for y"):
-            EventBroker(mapper, event).handle()  # type: ignore
+            EventBroker(mapper, event, LambdaContext()).handle()  # type: ignore
 
         func_1.assert_not_called()
         func_2.assert_not_called()
@@ -58,7 +60,7 @@ class TestEventBroker:
         mapper = {"x": [func_1, func_2, func_3]}
         event = {"detail-type": "x", "detail": {"y": 1}}
 
-        EventBroker(mapper, event).handle()  # type: ignore
+        EventBroker(mapper, event, LambdaContext()).handle()  # type: ignore
 
         func_1.assert_called_once_with(expected_event)
         func_2.assert_called_once_with(expected_event)
@@ -83,6 +85,6 @@ class TestEventBroker:
         mapper: Dict[str, list] = {"x": [handler, handler, handler]}
         event_payload = {"detail-type": "x", "detail": {"y": 1}}
 
-        EventBroker(mapper, event_payload).handle()
+        EventBroker(mapper, event_payload, LambdaContext()).handle()
 
         assert passed_events == expected_events

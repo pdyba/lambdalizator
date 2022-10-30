@@ -5,6 +5,7 @@ from lbz.handlers import BaseHandler
 from lbz.lambdas.enums import LambdaResult
 from lbz.lambdas.response import LambdaResponse, lambda_error_response
 from lbz.misc import get_logger
+from lbz.types import LambdaContext
 
 logger = get_logger(__name__)
 
@@ -14,7 +15,7 @@ class LambdaBroker(BaseHandler):
         self,
         mapper: Dict[str, Callable[..., LambdaResponse]],
         event: dict,
-        context: object = None,
+        context: LambdaContext,
     ) -> None:
         super().__init__(event, context)
         self.mapper = mapper

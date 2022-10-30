@@ -9,18 +9,19 @@ from lbz.exceptions import LambdaFWException
 from lbz.resource import Resource
 from lbz.response import Response
 from lbz.router import add_route
+from lbz.types import LambdaContext
 
 
 class HelloWorldExample(Resource):
     @add_route("/", method="GET")
-    def list(self):
+    def list(self) -> Response:
         return Response({"message": "HelloWorld"})
 
 
-def handle(event, context):
+def handle(event: dict, context: LambdaContext) -> dict:
     try:
         exp = HelloWorldExample(event)
-        resp = exp()
+        resp = exp().to_dict()
         return resp
     except Exception:  # pylint: disable=broad-except
         return LambdaFWException().get_response(context.aws_request_id).to_dict()
