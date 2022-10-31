@@ -63,7 +63,7 @@ flake8:
 .PHONY: mypy
 mypy:
 	mypy --version
-	mypy lbz tests examples setup.py
+	mypy examples lbz tests setup.py
 
 .PHONY: pylint
 pylint:

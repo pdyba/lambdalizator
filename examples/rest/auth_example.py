@@ -19,10 +19,7 @@ class HelloWorldWithAuthorization(Resource):
 
     @authorization()
     @add_route("/", method="GET")
-    def list(
-        self,
-        restrictions: Optional[dict] = None,  # pylint: disable=unused-argument
-    ) -> Response:
+    def list(self, restrictions: dict) -> Response:  # pylint: disable=unused-argument
         username = self.request.user.username if self.request.user else "no-name"
         return Response({"message": f"Hello, {username} !"})
 

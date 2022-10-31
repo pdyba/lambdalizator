@@ -1,5 +1,5 @@
-"""
-This code is only for static type checking.
+"""This code is only for static type checking.
+
 https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
 """
 from typing import Any, Dict
