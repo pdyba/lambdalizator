@@ -296,17 +296,18 @@ Released 2022-08-30
 
 
 ### Version 0.5.16
-Released 2022-10-11
+Released 2022-11-03
 
 - Adds Lambda to Lambda API (client and broker)
 - Unifies Event and Lambda APIs
 - Adds deprecation wrapper
 - Adds Configuration with lazy-loading
 - Allows passing context to Resource and stores it within the class
-
+- Adds examples for Event aware API, Event handler (broker), and stand-alone Event producer
+- Adds examples for Lambda client and broker. 
 
 ### Version 0.6.0
-Release ETA 2022-10-31
+Release ETA 2022-12-31
 
 - Moves REST (API Gateway) related modules into one package
 - Moves exceptions to related packages

@@ -1,5 +1,6 @@
 # coding=utf-8
 from collections.abc import MutableMapping
+from typing import Any, Dict
 
 import pytest
 from pytest import LogCaptureFixture
@@ -144,7 +145,7 @@ def test__deep_update__does_recursive_updates_based_on_given_data() -> None:
 
 def test__deep_update__creates_copy_of_updated_data() -> None:
     dict_to_update: dict = {}
-    update_data = {"array": [], "dict": {"nested_dict": {}}}
+    update_data: Dict[str, Any] = {"array": [], "dict": {"nested_dict": {}}}
 
     deep_update(dict_to_update, update_data)
     update_data["array"].append("post_update_data")
