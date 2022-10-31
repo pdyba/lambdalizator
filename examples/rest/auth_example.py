@@ -1,10 +1,6 @@
-#!/usr/bin/env python3.8
-# coding=utf-8
 """
 Simple Lambda Handler with authorization
 """
-from typing import Optional
-
 from lbz.authz.decorators import authorization
 from lbz.dev.server import MyDevServer
 from lbz.exceptions import ServerError
