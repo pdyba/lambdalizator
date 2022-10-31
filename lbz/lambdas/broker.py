@@ -28,7 +28,7 @@ class LambdaBroker(BaseHandler[LambdaResponse]):
             logger.error('No handler declared for requested operation: "%s"', op)
             return lambda_error_response(LambdaResult.CONTRACT_ERROR, f'"{op}" not implemented.')
         try:
-            return handler(self.raw_event.get("data", {}))
+            return handler(self.raw_event.get("data") or {})
         except LambdaFWException as err:
             logger.exception('Unexpected error in "%s" function!', handler.__name__)
             return lambda_error_response(LambdaResult.SERVER_ERROR, err.message, err.error_code)

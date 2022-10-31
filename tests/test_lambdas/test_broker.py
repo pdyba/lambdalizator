@@ -26,19 +26,6 @@ class TestEventBroker:
             "data": {"some": "data"},
         }
 
-    def test_broker_works_properly_when_no_data_is_provided(self) -> None:
-        def no_data_func(_data: dict) -> LambdaResponse:
-            return lambda_ok_response()
-
-        mapper = {"x": no_data_func}
-        event = {"op": "x", "data": None}
-
-        resp = LambdaBroker(mapper, event, LambdaContext()).react()
-
-        assert resp == {
-            "result": LambdaResult.OK,
-        }
-
     def test_broker_responds_with_contract_error_when_op_is_not_recognized(
         self, caplog: LogCaptureFixture
     ) -> None:
