@@ -13,7 +13,7 @@ def handle(event: dict, context: LambdaContext) -> Optional[dict]:
         if LambdaSource.is_from(event, LambdaSource.API_GW):
             return HelloWorldExample(event)().to_dict()
         if LambdaSource.is_from(event, LambdaSource.EVENT_BRIDGE):
-            EventBroker(mapper=event_to_handler_map, event=event, context=context)
+            EventBroker(mapper=event_to_handler_map, event=event, context=context).react()
         return None
     except Exception:  # pylint: disable=broad-except
         return LambdaFWException().get_response(context.aws_request_id).to_dict()
