@@ -8,7 +8,7 @@ from pytest import LogCaptureFixture
 
 from lbz.authz.authorizer import ALL, ALLOW, DENY, LIMITED_ALLOW, Authorizer
 from lbz.exceptions import PermissionDenied, Unauthorized
-from tests import EXPECTED_TOKEN, SAMPLE_PRIVATE_KEY
+from tests.fixtures.rsa_pair import EXPECTED_TOKEN, SAMPLE_PRIVATE_KEY
 
 
 class TestAuthorizerWithoutMockingJWT:
@@ -181,16 +181,16 @@ class TestAuthorizerWithMockedJWT:
         self, full_access_authz_payload: dict, jwt_partial_payload: dict
     ) -> None:
         authz = self._make_mocked_authorizer(full_access_authz_payload)
-        permission_payload = {
+        permission_payload: dict = {
             **jwt_partial_payload,
-            "allow": "Lambda",
-            "deny": "Lambda",
+            "allow": {"Lambda": {}},
+            "deny": {"Lambda": {}},
         }
         authz._set_policy(  # pylint: disable=protected-access
             base_permission_policy=permission_payload,
         )
-        assert authz.allow == "Lambda"
-        assert authz.deny == "Lambda"
+        assert authz.allow == {"Lambda": {}}
+        assert authz.deny == {"Lambda": {}}
 
     def test_deny_if_all(self, full_access_authz_payload: dict) -> None:
         authz = self._make_mocked_authorizer(full_access_authz_payload)
@@ -289,7 +289,7 @@ class TestAuthorizerWithMockedJWT:
 
     def test_sign_authz_not_a_dict_error(self) -> None:
         with pytest.raises(ValueError, match="private_key_jwk must be a jwk dict"):
-            Authorizer.sign_authz({}, private_key_jwk="")
+            Authorizer.sign_authz({}, private_key_jwk="")  # type: ignore
 
     def test_sign_authz_no_kid_error(self) -> None:
         with pytest.raises(ValueError, match="private_key_jwk must have the 'kid' field"):

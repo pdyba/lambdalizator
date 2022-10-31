@@ -2,12 +2,13 @@ import pathlib
 
 from setuptools import setup
 
+# TODO: Add auto discovery for packages.
 setup(
     name="lbz",
     version=pathlib.Path("version").read_text("utf-8"),
     author="Piotr Dyba",
     author_email="piotr.dyba@localbini.com",
-    packages=["lbz", "lbz.dev", "lbz.authz", "lbz.events"],
+    packages=["lbz", "lbz.authz", "lbz.dev", "lbz.events", "lbz.lambdas"],
     package_data={"lbz": ["py.typed"]},
     scripts=[],
     url="https://github.com/pdyba/lambdalizator",

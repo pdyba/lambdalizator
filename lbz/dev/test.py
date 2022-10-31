@@ -1,4 +1,3 @@
-# coding=utf-8
 """Helper class for testing."""
 from typing import Optional, Type
 

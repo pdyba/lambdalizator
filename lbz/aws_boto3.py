@@ -1,5 +1,5 @@
 from functools import cached_property
-from os import environ
+from os import getenv
 from typing import TYPE_CHECKING
 
 import boto3
@@ -31,7 +31,7 @@ class Boto3Client:
 
     @cached_property
     def dynamodb(self) -> DynamoDBClient:
-        return boto3.client("dynamodb", endpoint_url=environ.get("DYNAMODB_URL"))
+        return boto3.client("dynamodb", endpoint_url=getenv("DYNAMODB_URL"))
 
     @cached_property
     def eventbridge(self) -> EventBridgeClient:

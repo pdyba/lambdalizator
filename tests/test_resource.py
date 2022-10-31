@@ -1,10 +1,9 @@
-# coding=utf-8
 import json
 import logging
 from collections import defaultdict
 from http import HTTPStatus
 from os import environ
-from typing import Callable, List
+from typing import Any, Callable, Dict, List
 from unittest.mock import ANY, MagicMock, patch
 
 from jose import jwt
@@ -27,9 +26,10 @@ from lbz.resource import (
 )
 from lbz.response import Response
 from lbz.router import Router, add_route
-from tests.fixtures.cognito_auth import env_mock
+from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 
 # TODO: Use fixtures yielded from conftest.py
+
 req = Request(
     body="",
     headers=CIMultiDict({"Content-Type": "application/json"}),
@@ -146,8 +146,7 @@ class TestResource:
             def test_method(self) -> Response:
                 return Response("x")
 
-        key = json.loads(env_mock["ALLOWED_PUBLIC_KEYS"])["keys"][0]
-        key_id = key["kid"]
+        key_id = SAMPLE_PUBLIC_KEY["kid"]
         authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
 
         XResource({**event, "headers": {"authentication": authentication_token}})()
@@ -284,7 +283,7 @@ class TestCORSResource:
     def make_cors_handler(
         self, origins: List[str] = None, req_origin: str = None, cors_headers: list = None
     ) -> CORSResource:
-        an_event = defaultdict(MagicMock())
+        an_event: Dict[Any, MagicMock] = defaultdict(MagicMock())
         an_event["headers"] = {"origin": req_origin} if req_origin is not None else {}
         cors_handler = CORSResource(
             an_event, ["GET", "POST"], origins=origins, cors_headers=cors_headers

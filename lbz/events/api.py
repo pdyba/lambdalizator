@@ -1,8 +1,8 @@
 from copy import deepcopy
 from functools import wraps
-from os import getenv
 from typing import TYPE_CHECKING, Any, Callable, List
 
+from lbz._cfg import AWS_LAMBDA_FUNCTION_NAME, EVENTS_BUS_NAME
 from lbz.aws_boto3 import client
 from lbz.events.event import Event
 from lbz.misc import Singleton, get_logger
@@ -20,12 +20,12 @@ MAX_EVENTS_TO_SEND_AT_ONCE = 10
 
 class EventAPI(metaclass=Singleton):
     def __init__(self) -> None:
-        self._source = getenv("AWS_LAMBDA_FUNCTION_NAME") or "lbz-event-api"
+        self._source = AWS_LAMBDA_FUNCTION_NAME.value
         self._resources: List[str] = []
         self._pending_events: List[Event] = []
         self._sent_events: List[Event] = []
         self._failed_events: List[Event] = []
-        self._bus_name = getenv("EVENTS_BUS_NAME", f"{self._source}-event-bus")
+        self._bus_name = EVENTS_BUS_NAME.value
 
     def __repr__(self) -> str:
         return (

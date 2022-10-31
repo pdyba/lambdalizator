@@ -1,5 +1,6 @@
-# coding=utf-8
+import json
 import time
+from os import environ
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -28,16 +29,22 @@ def test_decoding_user_raises_unauthorized_when_invalid_token(user_token: str) -
         User(user_token + "?")
 
 
+@patch.dict(environ, {"ALLOWED_AUDIENCES": str(uuid4())})
 def test_decoding_user_raises_unauthorized_when_invalid_audience(user_token: str) -> None:
-    with pytest.raises(Unauthorized), patch("lbz.jwt_utils.ALLOWED_AUDIENCES", [str(uuid4())]):
+    with pytest.raises(Unauthorized):
         User(user_token)
 
 
+@patch.dict(
+    environ,
+    {
+        "ALLOWED_PUBLIC_KEYS": json.dumps(
+            {"keys": [{**SAMPLE_PUBLIC_KEY.copy(), "n": str(uuid4())}]}
+        )
+    },
+)
 def test_decoding_user_raises_unauthorized_when_invalid_public_key(user_token: str) -> None:
-    with pytest.raises(Unauthorized), patch(
-        "lbz.jwt_utils.PUBLIC_KEYS",
-        [{**SAMPLE_PUBLIC_KEY.copy(), "n": str(uuid4())}],
-    ):
+    with pytest.raises(Unauthorized):
         User(user_token)
 
 
@@ -80,5 +87,5 @@ def test_user_raises_when_more_attributes_than_1000() -> None:
 
 def test_nth_cognito_client_validated_as_audience(user_cognito: dict) -> None:
     test_allowed_audiences = [str(uuid4()) for _ in range(10)]
-    with patch("lbz.jwt_utils.ALLOWED_AUDIENCES", test_allowed_audiences):
+    with patch.dict(environ, {"ALLOWED_AUDIENCES": ",".join(test_allowed_audiences)}):
         assert User(encode_token({**user_cognito, "aud": test_allowed_audiences[9]}))

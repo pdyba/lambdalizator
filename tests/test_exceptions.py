@@ -75,9 +75,9 @@ def test__custom_exception__contains_message_and_status_code_according_to_its_do
 ) -> None:
     exception = custom_exception()
     try:
-        code, message = exception.__doc__.split(" - ")
+        code, message = exception.__doc__.split(" - ")  # type: ignore
     except ValueError:  # black removes the intentional white space
-        code, message = exception.__doc__.split(" -")
+        code, message = exception.__doc__.split(" -")  # type: ignore
 
     assert issubclass(custom_exception, LambdaFWException)
     assert exception.message == message

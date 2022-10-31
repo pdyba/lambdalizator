@@ -1,16 +1,15 @@
-# coding=utf-8
 """
 Misc Helpers of Lambda Framework.
 """
 import copy
 import logging
 import logging.handlers
+import warnings
 from collections.abc import MutableMapping
 from functools import wraps
-from os import environ
 from typing import Any, Callable, Hashable, Iterable, Iterator, List, Optional
 
-LOGGING_LEVEL = environ.get("LOGGING_LEVEL", "INFO")
+from lbz._cfg import LBZ_DEBUG_MODE, LOGGING_LEVEL
 
 
 class NestedDict(dict):
@@ -94,7 +93,7 @@ class MultiDict(MutableMapping):
 def get_logger(name: str) -> logging.Logger:
     """Shortcut for creating logger instance."""
     logger_obj = logging.getLogger(name)
-    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL))
+    logger_obj.setLevel(logging.getLevelName(LOGGING_LEVEL.value))
     return logger_obj
 
 
@@ -131,4 +130,26 @@ def deep_update(dict_to_update: dict, update_data: dict) -> None:
 
 
 def is_in_debug_mode() -> bool:
-    return environ.get("LBZ_DEBUG_MODE", "").lower() == "true"
+    return LBZ_DEBUG_MODE.value
+
+
+def deprecated(*, message: str, version: str) -> Callable:
+    """
+    This is a decorator which can be used to mark functions as deprecated.
+
+    It will result in a warning being emitted when the function is used.
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
+            warnings.warn(
+                f"{func.__name__} - {message} (will be removed in {version}).",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            return func(*args, **kwargs)
+
+        return wrapped
+
+    return decorator

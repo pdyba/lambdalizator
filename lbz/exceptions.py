@@ -1,13 +1,21 @@
-# coding=utf-8
-
 from http import HTTPStatus
-from typing import Generator, Optional, Type
+from typing import Any, Generator, Optional, Type
 
 from lbz.response import Response
 
 
 class SecurityError(Exception):
     """Request did not match security requirements expected by server."""
+
+
+class MissingConfigValue(Exception):
+    def __init__(self, key: str) -> None:
+        super().__init__(f"'{key}' was not defined.")
+
+
+class ConfigValueParsingFailed(Exception):
+    def __init__(self, key: str, value: Any) -> None:
+        super().__init__(f"'{key}' could not parse '{value}'")
 
 
 class LambdaFWException(Exception):

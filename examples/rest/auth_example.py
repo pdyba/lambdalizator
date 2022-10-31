@@ -1,5 +1,3 @@
-#!/usr/bin/env python3.8
-# coding=utf-8
 """
 Simple Lambda Handler with authorization
 """
@@ -9,6 +7,7 @@ from lbz.exceptions import ServerError
 from lbz.resource import Resource
 from lbz.response import Response
 from lbz.router import add_route
+from lbz.type_defs import LambdaContext
 
 
 class HelloWorldWithAuthorization(Resource):
@@ -16,13 +15,14 @@ class HelloWorldWithAuthorization(Resource):
 
     @authorization()
     @add_route("/", method="GET")
-    def list(self, restrictions=None):  # pylint: disable=unused-argument
-        return Response({"message": f"Hello, {self.request.user.username} !"})
+    def list(self, restrictions: dict) -> Response:  # pylint: disable=unused-argument
+        username = self.request.user.username if self.request.user else "no-name"
+        return Response({"message": f"Hello, {username} !"})
 
 
-def handle(event, context):
+def handle(event: dict, context: LambdaContext) -> dict:
     try:
-        return HelloWorldWithAuthorization(event)()
+        return HelloWorldWithAuthorization(event)().to_dict()
     except Exception:  # pylint: disable=broad-except
         return ServerError().get_response(context.aws_request_id).to_dict()
 

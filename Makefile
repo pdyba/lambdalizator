@@ -63,7 +63,7 @@ flake8:
 .PHONY: mypy
 mypy:
 	mypy --version
-	mypy lbz tests/test_events setup.py  # TODO: start validating the rest of the code by mypy
+	mypy examples lbz tests setup.py
 
 .PHONY: pylint
 pylint:
