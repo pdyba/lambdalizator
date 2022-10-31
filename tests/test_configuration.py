@@ -78,7 +78,6 @@ class TestConfigValue:
         env_cfg.reset()
 
         with patch.dict(environ, {"RANDOM_VAR": "still-not-none"}):
-            env_cfg = EnvValue[str]("RANDOM_VAR")
             assert env_cfg.value == "still-not-none"
 
 

@@ -3,7 +3,7 @@ from lbz.exceptions import LambdaFWException
 from lbz.resource import EventAwareResource
 from lbz.response import Response
 from lbz.router import add_route
-from lbz.types import LambdaContext
+from lbz.type_defs import LambdaContext
 
 
 class SomeEvent(Event):

@@ -1,19 +1,19 @@
 from copy import deepcopy
-from typing import Callable, Dict, List
+from typing import Callable, List, Mapping
 
 from lbz.events.event import Event
 from lbz.handlers import BaseHandler
 from lbz.misc import get_logger
-from lbz.types import LambdaContext
+from lbz.type_defs import LambdaContext
 
 logger = get_logger(__name__)
 
 
 # TODO: type_key and data_key will be const for EventBridge and different set for Cognito Events
-class EventBroker(BaseHandler):
+class EventBroker(BaseHandler[None]):
     def __init__(
         self,
-        mapper: Dict[str, List[Callable[[Event], None]]],
+        mapper: Mapping[str, List[Callable[[Event], None]]],
         event: dict,
         context: LambdaContext,
         *,
@@ -40,9 +40,3 @@ class EventBroker(BaseHandler):
             return self.mapper[self.event.type]
         except KeyError as err:
             raise NotImplementedError(f"No handlers implemented for {self.event.type}") from err
-
-    def pre_handle(self) -> None:
-        pass
-
-    def post_handle(self) -> None:
-        pass

@@ -1,13 +1,13 @@
 from lbz.lambdas import LambdaBroker, LambdaResponse, lambda_ok_response
-from lbz.types import LambdaContext
+from lbz.type_defs import LambdaContext
 
 
 def get_user_data(data: dict) -> LambdaResponse:
     print(data)
-    return lambda_ok_response()
+    return lambda_ok_response({"user_name": "Moszeusz"})
 
 
-def send_spam_to_all_users() -> LambdaResponse:
+def send_spam_to_all_users(_data: dict) -> LambdaResponse:
     return lambda_ok_response()
 
 
@@ -18,4 +18,4 @@ operation_to_handler_map = {
 
 
 def handle(event: dict, context: LambdaContext) -> LambdaResponse:
-    return LambdaBroker(mapper=operation_to_handler_map, event=event, context=context).react()
+    return LambdaBroker(operation_to_handler_map, event, context).react()

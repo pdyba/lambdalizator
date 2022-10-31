@@ -14,7 +14,7 @@ from lbz.resource import Resource
 class MyClass:
     def __init__(self) -> None:
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_socket.connect("0.0.0.0", "8888")
+        self.tcp_socket.connect(("0.0.0.0", "8888"))
 
 
 def test_my_lambda_dev_handler(sample_resource: Type[Resource]) -> None:

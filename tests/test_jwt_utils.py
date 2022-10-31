@@ -43,7 +43,7 @@ class TestDecodeJWT:
     def test_invalid_type(self, get_matching_jwk_mock: MagicMock) -> None:
         msg = "error occurred during decoding"
         with pytest.raises(RuntimeError, match=msg):
-            decode_jwt({"a"})
+            decode_jwt({"a"})  # type: ignore
         get_matching_jwk_mock.assert_called_once_with({"a"})
 
     def test_proper_jwt(

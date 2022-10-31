@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Generic, Optional, TypeVar
 
 from lbz.misc import deprecated, get_logger
-from lbz.types import LambdaContext
+from lbz.type_defs import LambdaContext
 
 logger = get_logger(__name__)
 

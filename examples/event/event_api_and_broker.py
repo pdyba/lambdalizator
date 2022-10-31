@@ -5,7 +5,7 @@ from examples.event.event_broker import event_to_handler_map
 from lbz.events import EventBroker
 from lbz.exceptions import LambdaFWException
 from lbz.lambdas import LambdaSource
-from lbz.types import LambdaContext
+from lbz.type_defs import LambdaContext
 
 
 def handle(event: dict, context: LambdaContext) -> Optional[dict]:

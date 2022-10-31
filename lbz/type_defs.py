@@ -1,5 +1,6 @@
 """
 This code is only for static type checking.
+https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
 """
 from typing import Any, Dict
 
@@ -36,4 +37,4 @@ class LambdaContext:
 
     @staticmethod
     def get_remaining_time_in_millis() -> int:
-        return 0
+        ...

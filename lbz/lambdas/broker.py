@@ -1,19 +1,19 @@
-from typing import Callable, Dict
+from typing import Callable, Mapping
 
 from lbz.exceptions import LambdaFWException
 from lbz.handlers import BaseHandler
 from lbz.lambdas.enums import LambdaResult
 from lbz.lambdas.response import LambdaResponse, lambda_error_response
 from lbz.misc import get_logger
-from lbz.types import LambdaContext
+from lbz.type_defs import LambdaContext
 
 logger = get_logger(__name__)
 
 
-class LambdaBroker(BaseHandler):
+class LambdaBroker(BaseHandler[LambdaResponse]):
     def __init__(
         self,
-        mapper: Dict[str, Callable[..., LambdaResponse]],
+        mapper: Mapping[str, Callable[[dict], LambdaResponse]],
         event: dict,
         context: LambdaContext,
     ) -> None:
@@ -27,11 +27,8 @@ class LambdaBroker(BaseHandler):
         if not (handler := self.mapper.get(op)):
             logger.error('No handler declared for requested operation: "%s"', op)
             return lambda_error_response(LambdaResult.CONTRACT_ERROR, f'"{op}" not implemented.')
-
         try:
-            if (data := self.raw_event.get("data")) is not None:
-                return handler(data)
-            return handler()
+            return handler(self.raw_event.get("data", {}))
         except LambdaFWException as err:
             logger.exception('Unexpected error in "%s" function!', handler.__name__)
             return lambda_error_response(LambdaResult.SERVER_ERROR, err.message, err.error_code)

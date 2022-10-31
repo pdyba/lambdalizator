@@ -4,7 +4,7 @@ from pytest import LogCaptureFixture
 
 from lbz.exceptions import NotFound
 from lbz.lambdas import LambdaBroker, LambdaResponse, LambdaResult, lambda_ok_response
-from lbz.types import LambdaContext
+from lbz.type_defs import LambdaContext
 
 
 def simple_func(_data: dict = None) -> LambdaResponse:
@@ -27,7 +27,7 @@ class TestEventBroker:
         }
 
     def test_broker_works_properly_when_no_data_is_provided(self) -> None:
-        def no_data_func() -> LambdaResponse:
+        def no_data_func(_data: dict) -> LambdaResponse:
             return lambda_ok_response()
 
         mapper = {"x": no_data_func}

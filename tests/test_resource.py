@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 from http import HTTPStatus
 from os import environ
-from typing import Callable, List
+from typing import Any, Callable, Dict, List
 from unittest.mock import ANY, MagicMock, patch
 
 from jose import jwt
@@ -283,7 +283,7 @@ class TestCORSResource:
     def make_cors_handler(
         self, origins: List[str] = None, req_origin: str = None, cors_headers: list = None
     ) -> CORSResource:
-        an_event = defaultdict(MagicMock())
+        an_event: Dict[Any, MagicMock] = defaultdict(MagicMock())
         an_event["headers"] = {"origin": req_origin} if req_origin is not None else {}
         cors_handler = CORSResource(
             an_event, ["GET", "POST"], origins=origins, cors_headers=cors_headers
