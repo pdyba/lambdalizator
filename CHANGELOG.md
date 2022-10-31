@@ -303,7 +303,7 @@ Released 2022-11-03
 - Adds deprecation wrapper
 - Adds Configuration with lazy-loading
 - Allows passing context to Resource and stores it within the class
-- Adds examples for Event aware API, Event handler (broker) and stand alone event producer
+- Adds examples for Event aware API, Event handler (broker), and stand-alone Event producer
 - Adds examples for Lambda client and broker. 
 
 ### Version 0.6.0
