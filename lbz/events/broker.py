@@ -8,17 +8,21 @@ from lbz.type_defs import LambdaContext
 
 logger = get_logger(__name__)
 
+EVENT_BRIDGE_DEFAULT_TYPE_KEY = "detail-type"
+EVENT_BRIDGE_DEFAULT_DATA_KEY = "detail"
+COGNITO_DEFAULT_TYPE_KEY = "triggerSource"
+COGNITO_DEFAULT_DATA_KEY = "request"
 
-# TODO: type_key and data_key will be const for EventBridge and different set for Cognito Events
-class EventBroker(BaseHandler[None]):
+
+class BaseEventBroker(BaseHandler[None]):
     def __init__(
         self,
         mapper: Mapping[str, List[Callable[[Event], None]]],
         event: dict,
         context: LambdaContext,
         *,
-        type_key: str = "detail-type",
-        data_key: str = "detail",
+        type_key: str,
+        data_key: str,
     ) -> None:
         super().__init__(event, context)
         self.mapper = mapper
@@ -42,15 +46,53 @@ class EventBroker(BaseHandler[None]):
             raise NotImplementedError(f"No handlers implemented for {self.event.type}") from err
 
 
-class CognitoEventBroker(EventBroker):
+class EventBroker(BaseEventBroker):
     def __init__(
         self,
         mapper: Mapping[str, List[Callable[[Event], None]]],
         event: dict,
         context: LambdaContext,
         *,
-        type_key: str = "triggerSource",
-        data_key: str = "request",
+        type_key: str = EVENT_BRIDGE_DEFAULT_TYPE_KEY,
+        data_key: str = EVENT_BRIDGE_DEFAULT_DATA_KEY,
     ) -> None:
-        super().__init__(mapper, event, context, type_key=type_key, data_key=data_key)
+        super().__init__(
+            mapper,
+            event,
+            context,
+            type_key=type_key,
+            data_key=data_key,
+        )
+
+
+class EventBridgeBroker(BaseEventBroker):
+    def __init__(
+        self,
+        mapper: Mapping[str, List[Callable[[Event], None]]],
+        event: dict,
+        context: LambdaContext,
+    ) -> None:
+        super().__init__(
+            mapper,
+            event,
+            context,
+            type_key=EVENT_BRIDGE_DEFAULT_TYPE_KEY,
+            data_key=EVENT_BRIDGE_DEFAULT_DATA_KEY,
+        )
+
+
+class CognitoEventBroker(BaseEventBroker):
+    def __init__(
+        self,
+        mapper: Mapping[str, List[Callable[[Event], None]]],
+        event: dict,
+        context: LambdaContext,
+    ) -> None:
+        super().__init__(
+            mapper,
+            event,
+            context,
+            type_key=COGNITO_DEFAULT_TYPE_KEY,
+            data_key=COGNITO_DEFAULT_DATA_KEY,
+        )
         self.event.data["userName"] = event["userName"]
