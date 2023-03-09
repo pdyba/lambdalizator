@@ -6,8 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from pytest import LogCaptureFixture
 
-from lbz.events.broker import EventBroker
-from lbz.events.event import Event
+from lbz.events import CognitoEventBroker, Event, EventBroker
 from lbz.type_defs import LambdaContext
 
 
@@ -88,3 +87,17 @@ class TestEventBroker:
         EventBroker(mapper, event_payload, LambdaContext()).react()
 
         assert passed_events == expected_events
+
+
+class TestCognitoEventBroker:
+    def test_broker_works_properly(self) -> None:
+        func_1 = MagicMock()
+        func_2 = MagicMock()
+        expected_event = Event({"y": 1, "userName": "usr-123"}, event_type="x")
+        mapper = {"x": [func_1, func_2]}
+        event = {"triggerSource": "x", "request": {"y": 1}, "userName": "usr-123"}
+
+        CognitoEventBroker(mapper, event, LambdaContext()).react()  # type: ignore
+
+        func_1.assert_called_once_with(expected_event)
+        func_2.assert_called_once_with(expected_event)
