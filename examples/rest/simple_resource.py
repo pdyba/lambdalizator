@@ -21,6 +21,7 @@ class HelloWorldExample(Resource):
     def get_by_id(self, uid: str) -> Response:
         return Response({"message": f"Hello {uid}"})
 
+
 def handle(event: dict, context: LambdaContext) -> dict:
     try:
         exp = HelloWorldExample(event)
