@@ -29,7 +29,7 @@ class EventAPI(metaclass=Singleton):
 
     def __repr__(self) -> str:
         return (
-            f"<EventAPI bus: {self._bus_name} Events: pending={len(self._pending_events)} "
+            f"<EventAPI bus: {self.bus_name} Events: pending={len(self._pending_events)} "
             f"sent={len(self._sent_events)} failed={len(self._failed_events)}>"
         )
 
@@ -45,6 +45,10 @@ class EventAPI(metaclass=Singleton):
     @property
     def sent_events(self) -> List[Event]:
         return deepcopy(self._sent_events)
+
+    @property
+    def bus_name(self) -> str:
+        return self._bus_name
 
     @property
     def pending_events(self) -> List[Event]:

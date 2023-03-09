@@ -40,3 +40,17 @@ class EventBroker(BaseHandler[None]):
             return self.mapper[self.event.type]
         except KeyError as err:
             raise NotImplementedError(f"No handlers implemented for {self.event.type}") from err
+
+
+class CognitoEventBroker(EventBroker):
+    def __init__(
+        self,
+        mapper: Mapping[str, List[Callable[[Event], None]]],
+        event: dict,
+        context: LambdaContext,
+        *,
+        type_key: str = "triggerSource",
+        data_key: str = "request",
+    ) -> None:
+        super().__init__(mapper, event, context, type_key=type_key, data_key=data_key)
+        self.event.data["userName"] = event["userName"]
