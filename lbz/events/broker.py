@@ -8,11 +8,6 @@ from lbz.type_defs import LambdaContext
 
 logger = get_logger(__name__)
 
-EVENT_BRIDGE_DEFAULT_TYPE_KEY = "detail-type"
-EVENT_BRIDGE_DEFAULT_DATA_KEY = "detail"
-COGNITO_DEFAULT_TYPE_KEY = "triggerSource"
-COGNITO_DEFAULT_DATA_KEY = "request"
-
 
 class BaseEventBroker(BaseHandler[None]):
     def __init__(
@@ -52,32 +47,13 @@ class EventBroker(BaseEventBroker):
         mapper: Mapping[str, List[Callable[[Event], None]]],
         event: dict,
         context: LambdaContext,
-        *,
-        type_key: str = EVENT_BRIDGE_DEFAULT_TYPE_KEY,
-        data_key: str = EVENT_BRIDGE_DEFAULT_DATA_KEY,
     ) -> None:
         super().__init__(
             mapper,
             event,
             context,
-            type_key=type_key,
-            data_key=data_key,
-        )
-
-
-class EventBridgeBroker(BaseEventBroker):
-    def __init__(
-        self,
-        mapper: Mapping[str, List[Callable[[Event], None]]],
-        event: dict,
-        context: LambdaContext,
-    ) -> None:
-        super().__init__(
-            mapper,
-            event,
-            context,
-            type_key=EVENT_BRIDGE_DEFAULT_TYPE_KEY,
-            data_key=EVENT_BRIDGE_DEFAULT_DATA_KEY,
+            type_key="detail-type",
+            data_key="detail",
         )
 
 
@@ -92,7 +68,7 @@ class CognitoEventBroker(BaseEventBroker):
             mapper,
             event,
             context,
-            type_key=COGNITO_DEFAULT_TYPE_KEY,
-            data_key=COGNITO_DEFAULT_DATA_KEY,
+            type_key="triggerSource",
+            data_key="request",
         )
         self.event.data["userName"] = event["userName"]

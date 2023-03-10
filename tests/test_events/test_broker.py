@@ -1,24 +1,30 @@
 import logging
 from copy import deepcopy
-from typing import Dict, List
+from typing import Callable, Dict, List, Mapping
 from unittest.mock import MagicMock
 
 import pytest
 from pytest import LogCaptureFixture
 
-from lbz.events import CognitoEventBroker, Event, EventBroker
+from lbz.events import BaseEventBroker, CognitoEventBroker, Event, EventBroker
 from lbz.type_defs import LambdaContext
 
 
-class TestEventBroker:
+class TestBaseEventBroker:
     def test_broker_works_properly(self) -> None:
         func_1 = MagicMock()
         func_2 = MagicMock()
         expected_event = Event({"y": 1}, event_type="x")
-        mapper = {"x": [func_1, func_2]}
-        event = {"detail-type": "x", "detail": {"y": 1}}
+        mapper: Mapping[str, List[Callable[[Event], None]]] = {"x": [func_1, func_2]}
+        event = {"my-type": "x", "data": {"y": 1}}
 
-        EventBroker(mapper, event, LambdaContext()).react()  # type: ignore
+        BaseEventBroker(
+            mapper,
+            event,
+            LambdaContext(),
+            type_key="my-type",
+            data_key="data",
+        ).react()
 
         func_1.assert_called_once_with(expected_event)
         func_2.assert_called_once_with(expected_event)
@@ -26,11 +32,11 @@ class TestEventBroker:
     def test_broker_works_properly_when_using_type_and_data_optional_keys(self) -> None:
         func_1 = MagicMock()
         expected_event = Event({"y": 1}, event_type="x")
-        mapper = {"x": [func_1]}
+        mapper: Mapping[str, List[Callable[[Event], None]]] = {"x": [func_1]}
         event = {"my-type-key": "x", "my-data-key": {"y": 1}}
 
-        EventBroker(
-            mapper,  # type: ignore
+        BaseEventBroker(
+            mapper,
             event,
             LambdaContext(),
             type_key="my-type-key",
@@ -42,11 +48,17 @@ class TestEventBroker:
     def test_broker_raises_not_implemented_when_event_type_is_not_recognized(self) -> None:
         func_1 = MagicMock()
         func_2 = MagicMock()
-        mapper = {"x": [func_1, func_2]}
-        event = {"detail-type": "y", "detail": {"y": 1}}
+        mapper: Mapping[str, List[Callable[[Event], None]]] = {"x": [func_1, func_2]}
+        event = {"my-type": "y", "data": {"y": 1}}
 
         with pytest.raises(NotImplementedError, match="No handlers implemented for y"):
-            EventBroker(mapper, event, LambdaContext()).react()  # type: ignore
+            BaseEventBroker(
+                mapper,
+                event,
+                LambdaContext(),
+                type_key="my-type",
+                data_key="data",
+            ).react()
 
         func_1.assert_not_called()
         func_2.assert_not_called()
@@ -56,10 +68,16 @@ class TestEventBroker:
         func_2 = MagicMock(side_effect=TypeError)
         func_3 = MagicMock()
         expected_event = Event({"y": 1}, event_type="x")
-        mapper = {"x": [func_1, func_2, func_3]}
-        event = {"detail-type": "x", "detail": {"y": 1}}
+        mapper: Mapping[str, List[Callable[[Event], None]]] = {"x": [func_1, func_2, func_3]}
+        event = {"my-type": "x", "data": {"y": 1}}
 
-        EventBroker(mapper, event, LambdaContext()).react()  # type: ignore
+        BaseEventBroker(
+            mapper,
+            event,
+            LambdaContext(),
+            type_key="my-type",
+            data_key="data",
+        ).react()
 
         func_1.assert_called_once_with(expected_event)
         func_2.assert_called_once_with(expected_event)
@@ -82,9 +100,15 @@ class TestEventBroker:
             event.data["b"] = 50
 
         mapper: Dict[str, list] = {"x": [handler, handler, handler]}
-        event_payload = {"detail-type": "x", "detail": {"y": 1}}
+        event_payload = {"my-type": "x", "data": {"y": 1}}
 
-        EventBroker(mapper, event_payload, LambdaContext()).react()
+        BaseEventBroker(
+            mapper,
+            event_payload,
+            LambdaContext(),
+            type_key="my-type",
+            data_key="data",
+        ).react()
 
         assert passed_events == expected_events
 
@@ -98,6 +122,20 @@ class TestCognitoEventBroker:
         event = {"triggerSource": "x", "request": {"y": 1}, "userName": "usr-123"}
 
         CognitoEventBroker(mapper, event, LambdaContext()).react()  # type: ignore
+
+        func_1.assert_called_once_with(expected_event)
+        func_2.assert_called_once_with(expected_event)
+
+
+class TestEventBroker:
+    def test_broker_works_properly(self) -> None:
+        func_1 = MagicMock()
+        func_2 = MagicMock()
+        expected_event = Event({"y": 1}, event_type="x")
+        mapper = {"x": [func_1, func_2]}
+        event = {"detail-type": "x", "detail": {"y": 1}, "userName": "usr-123"}
+
+        EventBroker(mapper, event, LambdaContext()).react()  # type: ignore
 
         func_1.assert_called_once_with(expected_event)
         func_2.assert_called_once_with(expected_event)
