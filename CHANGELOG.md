@@ -311,7 +311,6 @@ Released 2023-03-10
 
 - Adds Cognito Event Broker
 - Adds Cognito generated event enum.
-- 
 
 ### Version 0.6.0
 Release ETA 2023-12-31
