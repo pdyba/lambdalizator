@@ -133,7 +133,7 @@ class TestEventBroker:
         func_2 = MagicMock()
         expected_event = Event({"y": 1}, event_type="x")
         mapper = {"x": [func_1, func_2]}
-        event = {"detail-type": "x", "detail": {"y": 1}, "userName": "usr-123"}
+        event = {"detail-type": "x", "detail": {"y": 1}}
 
         EventBroker(mapper, event, LambdaContext()).react()  # type: ignore
 

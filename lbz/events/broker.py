@@ -48,13 +48,7 @@ class EventBroker(BaseEventBroker):
         event: dict,
         context: LambdaContext,
     ) -> None:
-        super().__init__(
-            mapper,
-            event,
-            context,
-            type_key="detail-type",
-            data_key="detail",
-        )
+        super().__init__(mapper, event, context, type_key="detail-type", data_key="detail")
 
 
 class CognitoEventBroker(BaseEventBroker):
@@ -64,11 +58,5 @@ class CognitoEventBroker(BaseEventBroker):
         event: dict,
         context: LambdaContext,
     ) -> None:
-        super().__init__(
-            mapper,
-            event,
-            context,
-            type_key="triggerSource",
-            data_key="request",
-        )
+        super().__init__(mapper, event, context, type_key="triggerSource", data_key="request")
         self.event.data["userName"] = event["userName"]
