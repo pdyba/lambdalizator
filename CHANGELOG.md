@@ -306,8 +306,14 @@ Released 2022-11-03
 - Adds examples for Event aware API, Event handler (broker), and stand-alone Event producer
 - Adds examples for Lambda client and broker. 
 
+### Version 0.5.17
+Released 2023-03-10
+
+- Adds Cognito Event Broker
+- Adds Cognito generated event enum.
+
 ### Version 0.6.0
-Release ETA 2022-12-31
+Release ETA 2023-12-31
 
 - Moves REST (API Gateway) related modules into one package
 - Moves exceptions to related packages

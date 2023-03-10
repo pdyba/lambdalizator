@@ -9,16 +9,15 @@ from lbz.type_defs import LambdaContext
 logger = get_logger(__name__)
 
 
-# TODO: type_key and data_key will be const for EventBridge and different set for Cognito Events
-class EventBroker(BaseHandler[None]):
+class BaseEventBroker(BaseHandler[None]):
     def __init__(
         self,
         mapper: Mapping[str, List[Callable[[Event], None]]],
         event: dict,
         context: LambdaContext,
         *,
-        type_key: str = "detail-type",
-        data_key: str = "detail",
+        type_key: str,
+        data_key: str,
     ) -> None:
         super().__init__(event, context)
         self.mapper = mapper
@@ -40,3 +39,24 @@ class EventBroker(BaseHandler[None]):
             return self.mapper[self.event.type]
         except KeyError as err:
             raise NotImplementedError(f"No handlers implemented for {self.event.type}") from err
+
+
+class EventBroker(BaseEventBroker):
+    def __init__(
+        self,
+        mapper: Mapping[str, List[Callable[[Event], None]]],
+        event: dict,
+        context: LambdaContext,
+    ) -> None:
+        super().__init__(mapper, event, context, type_key="detail-type", data_key="detail")
+
+
+class CognitoEventBroker(BaseEventBroker):
+    def __init__(
+        self,
+        mapper: Mapping[str, List[Callable[[Event], None]]],
+        event: dict,
+        context: LambdaContext,
+    ) -> None:
+        super().__init__(mapper, event, context, type_key="triggerSource", data_key="request")
+        self.event.data["userName"] = event["userName"]

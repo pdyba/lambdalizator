@@ -17,6 +17,10 @@ class HelloWorldExample(Resource):
     def list(self) -> Response:
         return Response({"message": "HelloWorld"})
 
+    @add_route("/{uid}", method="GET")
+    def get_by_id(self, uid: str) -> Response:
+        return Response({"message": f"Hello {uid}"})
+
 
 def handle(event: dict, context: LambdaContext) -> dict:
     try:

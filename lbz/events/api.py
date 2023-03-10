@@ -43,6 +43,10 @@ class EventAPI(metaclass=Singleton):
         self._bus_name = bus_name
 
     @property
+    def bus_name(self) -> str:
+        return self._bus_name
+
+    @property
     def sent_events(self) -> List[Event]:
         return deepcopy(self._sent_events)
 

@@ -1,4 +1,4 @@
-from lbz.events.event import Event
+from lbz.events import Event
 from lbz.exceptions import LambdaFWException
 from lbz.resource import EventAwareResource
 from lbz.response import Response
