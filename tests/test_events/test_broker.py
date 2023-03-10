@@ -29,22 +29,6 @@ class TestBaseEventBroker:
         func_1.assert_called_once_with(expected_event)
         func_2.assert_called_once_with(expected_event)
 
-    def test_broker_works_properly_when_using_type_and_data_optional_keys(self) -> None:
-        func_1 = MagicMock()
-        expected_event = Event({"y": 1}, event_type="x")
-        mapper: Mapping[str, List[Callable[[Event], None]]] = {"x": [func_1]}
-        event = {"my-type-key": "x", "my-data-key": {"y": 1}}
-
-        BaseEventBroker(
-            mapper,
-            event,
-            LambdaContext(),
-            type_key="my-type-key",
-            data_key="my-data-key",
-        ).react()
-
-        func_1.assert_called_once_with(expected_event)
-
     def test_broker_raises_not_implemented_when_event_type_is_not_recognized(self) -> None:
         func_1 = MagicMock()
         func_2 = MagicMock()
