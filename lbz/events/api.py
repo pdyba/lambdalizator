@@ -62,9 +62,6 @@ class EventAPI(metaclass=Singleton):
         self._pending_events.append(new_event)
 
     def send(self) -> None:
-        self._sent_events = []
-        self._failed_events = []
-
         while self._pending_events:
             events = self._pending_events[:MAX_EVENTS_TO_SEND_AT_ONCE]
             try:
@@ -97,6 +94,7 @@ class EventAPI(metaclass=Singleton):
 
 def event_emitter(function: Callable) -> Callable:
     """Decorator that makes function an emitter - automatically sends pending events on success"""
+    EventAPI().clear()
 
     @wraps(function)
     def wrapped(*args: Any, **kwargs: Any) -> Any:

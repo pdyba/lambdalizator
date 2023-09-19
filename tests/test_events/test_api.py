@@ -199,7 +199,7 @@ class TestEventAPI:
         )
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
-    def test_second_send_clears_everything(self) -> None:
+    def test_second_send_does_not_clear_everything(self) -> None:
         event = MyTestEvent({"x": 1})
         self.event_api.register(event)
 
@@ -207,7 +207,23 @@ class TestEventAPI:
         self.event_api.send()
 
         assert self.event_api.failed_events == []
-        assert self.event_api.sent_events == []
+        assert self.event_api.sent_events == [event]
+        assert self.event_api.pending_events == []
+
+    @patch.object(Boto3Client, "eventbridge", MagicMock())
+    def test_conclusive_send_extends_event_list(self) -> None:
+        event_1 = MyTestEvent({"x": 1})
+        event_2 = MyTestEvent({"x": 1})
+        event_3 = MyTestEvent({"x": 1})
+
+        self.event_api.register(event_1)
+        self.event_api.send()
+        self.event_api.register(event_2)
+        self.event_api.register(event_3)
+        self.event_api.send()
+
+        assert self.event_api.failed_events == []
+        assert self.event_api.sent_events == [event_1, event_2, event_3]
         assert self.event_api.pending_events == []
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
@@ -256,6 +272,19 @@ class TestEventEmitter:
 
         with pytest.raises(RuntimeError):
             decorated_function()
+
+        assert not EventAPI().sent_events
+        assert not EventAPI().pending_events
+        assert not EventAPI().failed_events
+
+    def test_clears_que_when_wrapping_without_calling(self) -> None:
+        EventAPI().register(MyTestEvent({"x": 1}))
+        EventAPI().send()
+        EventAPI().register(MyTestEvent({"x": 2}))
+
+        @event_emitter
+        def decorated_function() -> None:
+            pass
 
         assert not EventAPI().sent_events
         assert not EventAPI().pending_events

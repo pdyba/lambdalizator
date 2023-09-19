@@ -484,8 +484,8 @@ class TestEventAwareResource:
 
         XResource(event)()
 
+        mocked_event_api_clear.assert_called_once()
         mocked_event_api_send.assert_called_once()
-        mocked_event_api_clear.assert_not_called()
 
     @patch.object(EventAPI, "clear")
     @patch.object(EventAPI, "send")
@@ -500,4 +500,4 @@ class TestEventAwareResource:
         XResource(event)()
 
         mocked_event_api_send.assert_not_called()
-        mocked_event_api_clear.assert_called_once()
+        assert mocked_event_api_clear.call_count == 2
