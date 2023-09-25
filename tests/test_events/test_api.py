@@ -319,7 +319,7 @@ class TestEventEmitter:
         assert not EventAPI().pending_events
         assert not EventAPI().failed_events
 
-    def test_clears_que_when_wrapping_without_calling(self) -> None:
+    def test_always_clears_queues_before_actually_decorating_function(self) -> None:
         EventAPI().register(MyTestEvent({"x": 1}))
         EventAPI().send()
         EventAPI().register(MyTestEvent({"x": 2}))
