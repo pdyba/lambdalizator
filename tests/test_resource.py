@@ -488,9 +488,13 @@ class TestEventAwareResource:
         mocked_event_api_send.assert_called_once()
 
     @patch.object(EventAPI, "clear")
+    @patch.object(EventAPI, "clear_pending")
     @patch.object(EventAPI, "send")
     def test_post_hook_event_api_was_not_sent_when_response_with_error(
-        self, mocked_event_api_send: MagicMock, mocked_event_api_clear: MagicMock
+        self,
+        mocked_event_api_send: MagicMock,
+        mocked_event_api_clear_pending: MagicMock,
+        mocked_event_api_clear: MagicMock,
     ) -> None:
         class XResource(EventAwareResource):
             @add_route("/")
@@ -500,4 +504,5 @@ class TestEventAwareResource:
         XResource(event)()
 
         mocked_event_api_send.assert_not_called()
-        assert mocked_event_api_clear.call_count == 2
+        mocked_event_api_clear.assert_called_once_with()
+        mocked_event_api_clear_pending.assert_called_once_with()

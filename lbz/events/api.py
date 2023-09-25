@@ -78,8 +78,17 @@ class EventAPI(metaclass=Singleton):
             raise RuntimeError("Sending events has failed. Check logs for more details!")
 
     def clear(self) -> None:
+        self.clear_sent()
+        self.clear_pending()
+        self.clear_failed()
+
+    def clear_sent(self) -> None:
         self._sent_events = []
+
+    def clear_pending(self) -> None:
         self._pending_events = []
+
+    def clear_failed(self) -> None:
         self._failed_events = []
 
     def _create_eb_entry(self, new_event: Event) -> PutEventsRequestEntryTypeDef:

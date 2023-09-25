@@ -245,4 +245,4 @@ class EventAwareResource(Resource):
         if self.response.is_ok():
             self.event_api.send()
         else:
-            self.event_api.clear()
+            self.event_api.clear_pending()

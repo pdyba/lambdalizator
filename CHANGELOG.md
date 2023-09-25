@@ -313,13 +313,13 @@ Released 2023-03-10
 - Adds Cognito generated event enum.
 
 ### Version 0.5.18
-Released 2023-09-20
+Released 2023-09-27
 
 - Adjust behaviour of Event Aware API and event_emiter to clean up api EventAPI on definition
 - Adjust behaviour of EventAPI to store all events that were process during one session
 
 ### Version 0.6.0
-Release ETA 2023-12-31
+Release ETA 2024-02-31 ;)
 
 - Moves REST (API Gateway) related modules into one package
 - Moves exceptions to related packages
