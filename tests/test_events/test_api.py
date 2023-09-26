@@ -198,20 +198,24 @@ class TestEventAPI:
             ]
         )
 
-    @patch.object(Boto3Client, "eventbridge", MagicMock())
-    def test_second_send_does_not_clear_everything(self) -> None:
+    @patch.object(Boto3Client, "eventbridge")
+    def test_second_send_does_not_clear_everything(self, mock_send: MagicMock) -> None:
+        mock_send.put_events.side_effect = NotADirectoryError
         event = MyTestEvent({"x": 1})
         self.event_api.register(event)
-
+        with pytest.raises(RuntimeError):
+            self.event_api.send()
+        mock_send.put_events.side_effect = None
+        self.event_api.register(event)
+        self.event_api.register(event)
         self.event_api.send()
-        self.event_api.send()
 
-        assert self.event_api.failed_events == []
-        assert self.event_api.sent_events == [event]
+        assert self.event_api.failed_events == [event]
+        assert self.event_api.sent_events == [event, event]
         assert self.event_api.pending_events == []
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
-    def test_conclusive_send_extends_event_list(self) -> None:
+    def test_raises_only_when_failed_in_current_send_scope(self) -> None:
         event_1 = MyTestEvent({"x": 1})
         event_2 = MyTestEvent({"x": 1})
         event_3 = MyTestEvent({"x": 1})
@@ -240,7 +244,7 @@ class TestEventAPI:
         assert self.event_api.pending_events == []
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
-    def test_clear_pending_clears_only_pending_events(self) -> None:
+    def test__clear_pending__clears_only_pending_events(self) -> None:
         event = MyTestEvent({"x": 1})
         self.event_api.register(event)
         self.event_api.send()
@@ -253,7 +257,7 @@ class TestEventAPI:
         assert self.event_api.pending_events == []
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
-    def test_clear_sent_clears_only_sent_events(self) -> None:
+    def test__clear_sent__clears_only_sent_events(self) -> None:
         event = MyTestEvent({"x": 1})
         self.event_api.register(event)
         self.event_api.send()
@@ -266,19 +270,18 @@ class TestEventAPI:
         assert self.event_api.pending_events == [event]
 
     @patch.object(Boto3Client, "eventbridge")
-    def test_clear_failed_clears_only_failed_events(self, mock_send: MagicMock) -> None:
-        assert self.event_api.failed_events == []
+    def test__clear_failed__clears_only_failed_events(self, mock_send: MagicMock) -> None:
         mock_send.put_events.side_effect = NotADirectoryError
         event = MyTestEvent({"x": 1})
         self.event_api.register(event)
         with pytest.raises(RuntimeError):
             self.event_api.send()
-        assert self.event_api.failed_events == [event]
         self.event_api.register(event)
 
         self.event_api.clear_failed()
 
         assert self.event_api.failed_events == []
+        assert self.event_api.sent_events == []
         assert self.event_api.pending_events == [event]
 
 
@@ -306,16 +309,20 @@ class TestEventEmitter:
         assert not EventAPI().pending_events
         assert not EventAPI().failed_events
 
-    def test_clears_queues_when_error_appeared_during_running_decorated_function(self) -> None:
+    def test_clears_pending_queue_when_error_appeared_during_running_decorated_function(
+        self,
+    ) -> None:
         @event_emitter
         def decorated_function() -> None:
             EventAPI().register(MyTestEvent({"x": 1}))
             raise RuntimeError
 
+        EventAPI().register(MyTestEvent({"x": 1}))
+        EventAPI().send()
         with pytest.raises(RuntimeError):
             decorated_function()
 
-        assert not EventAPI().sent_events
+        assert EventAPI().sent_events == [MyTestEvent({"x": 1})]
         assert not EventAPI().pending_events
         assert not EventAPI().failed_events
 
