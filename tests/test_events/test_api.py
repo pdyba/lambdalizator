@@ -199,13 +199,15 @@ class TestEventAPI:
         )
 
     @patch.object(Boto3Client, "eventbridge")
-    def test_second_send_does_not_clear_everything(self, mock_send: MagicMock) -> None:
-        mock_send.put_events.side_effect = NotADirectoryError
+    def test__send__raises_error_only_when_particular_attempt_failed(
+        self, mock_send: MagicMock
+    ) -> None:
+        mock_send.put_events.side_effect = [NotADirectoryError, None]
         event = MyTestEvent({"x": 1})
+
         self.event_api.register(event)
         with pytest.raises(RuntimeError):
             self.event_api.send()
-        mock_send.put_events.side_effect = None
         self.event_api.register(event)
         self.event_api.register(event)
         self.event_api.send()
@@ -215,7 +217,7 @@ class TestEventAPI:
         assert self.event_api.pending_events == []
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
-    def test_raises_only_when_failed_in_current_send_scope(self) -> None:
+    def test__send__continuously_extends_lists_of_events_during_next_attempts(self) -> None:
         event_1 = MyTestEvent({"x": 1})
         event_2 = MyTestEvent({"x": 1})
         event_3 = MyTestEvent({"x": 1})
@@ -317,12 +319,12 @@ class TestEventEmitter:
             EventAPI().register(MyTestEvent({"x": 1}))
             raise RuntimeError
 
-        EventAPI().register(MyTestEvent({"x": 1}))
+        EventAPI().register(MyTestEvent({"x": 2}))
         EventAPI().send()
         with pytest.raises(RuntimeError):
             decorated_function()
 
-        assert EventAPI().sent_events == [MyTestEvent({"x": 1})]
+        assert EventAPI().sent_events == [MyTestEvent({"x": 2})]
         assert not EventAPI().pending_events
         assert not EventAPI().failed_events
 
