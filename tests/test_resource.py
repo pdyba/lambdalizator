@@ -463,41 +463,40 @@ class TestPagination:
 
 
 class TestEventAwareResource:
-    def test_check_if_init_creates_event_api_attribute(self) -> None:
+    def test_initializes_completely_new_event_api_when_building_resource(self) -> None:
+        class XResource(EventAwareResource):
+            pass
+
+        with patch.object(EventAPI, "clear", autospec=True) as mocked_clear:
+            resource = XResource(event)
+
+        assert resource.event_api is EventAPI()
+        mocked_clear.assert_called_once_with(resource.event_api)
+
+    def test_emits_all_pending_events_when_request_is_successfully_handled(self) -> None:
         class XResource(EventAwareResource):
             @add_route("/")
             def test_method(self) -> Response:
                 return Response({"message": "x"})
 
-        res = XResource(event)
-        assert res.event_api is EventAPI()
+        resource = XResource(event)
+        with patch.object(resource, "event_api", autospec=True) as mocked_event_api:
+            resource()
 
-    @patch.object(EventAPI, "clear")
-    @patch.object(EventAPI, "send")
-    def test_post_hook_event_api_sent(
-        self, mocked_event_api_send: MagicMock, mocked_event_api_clear: MagicMock
-    ) -> None:
-        class XResource(EventAwareResource):
-            @add_route("/")
-            def test_method(self) -> Response:
-                return Response({"message": "x"})
+        mocked_event_api.send.assert_called_once_with()
+        mocked_event_api.clear.assert_not_called()
+        mocked_event_api.clear_pending.assert_not_called()
 
-        XResource(event)()
-
-        mocked_event_api_send.assert_called_once()
-        mocked_event_api_clear.assert_not_called()
-
-    @patch.object(EventAPI, "clear")
-    @patch.object(EventAPI, "send")
-    def test_post_hook_event_api_was_not_sent_when_response_with_error(
-        self, mocked_event_api_send: MagicMock, mocked_event_api_clear: MagicMock
-    ) -> None:
+    def test_clears_pending_events_when_request_failed_during_handling(self) -> None:
         class XResource(EventAwareResource):
             @add_route("/")
             def test_method(self) -> None:
                 raise TypeError
 
-        XResource(event)()
+        resource = XResource(event)
+        with patch.object(resource, "event_api", autospec=True) as mocked_event_api:
+            resource()
 
-        mocked_event_api_send.assert_not_called()
-        mocked_event_api_clear.assert_called_once()
+        mocked_event_api.send.assert_not_called()
+        mocked_event_api.clear.assert_not_called()
+        mocked_event_api.clear_pending.assert_called_once_with()

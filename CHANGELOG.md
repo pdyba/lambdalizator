@@ -312,8 +312,14 @@ Released 2023-03-10
 - Adds Cognito Event Broker
 - Adds Cognito generated event enum.
 
+### Version 0.5.18
+Released 2023-09-27
+
+- Adjust the behavior of EventAwareResource and event_emitter to clean up EventAPI on its initialization
+- Adjust the behavior of EventAPI to always store all events that were processed during one session
+
 ### Version 0.6.0
-Release ETA 2023-12-31
+Release ETA 2024-02-31 ;)
 
 - Moves REST (API Gateway) related modules into one package
 - Moves exceptions to related packages

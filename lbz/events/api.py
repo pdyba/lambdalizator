@@ -62,9 +62,7 @@ class EventAPI(metaclass=Singleton):
         self._pending_events.append(new_event)
 
     def send(self) -> None:
-        self._sent_events = []
-        self._failed_events = []
-
+        success = True
         while self._pending_events:
             events = self._pending_events[:MAX_EVENTS_TO_SEND_AT_ONCE]
             try:
@@ -74,15 +72,25 @@ class EventAPI(metaclass=Singleton):
             except Exception as err:  # pylint: disable=broad-except
                 self._failed_events.extend(events)
                 logger.exception(err)
+                success = False
 
             self._pending_events = self._pending_events[MAX_EVENTS_TO_SEND_AT_ONCE:]
 
-        if self._failed_events:
+        if not success:
             raise RuntimeError("Sending events has failed. Check logs for more details!")
 
     def clear(self) -> None:
+        self.clear_sent()
+        self.clear_pending()
+        self.clear_failed()
+
+    def clear_sent(self) -> None:
         self._sent_events = []
+
+    def clear_pending(self) -> None:
         self._pending_events = []
+
+    def clear_failed(self) -> None:
         self._failed_events = []
 
     def _create_eb_entry(self, new_event: Event) -> PutEventsRequestEntryTypeDef:
@@ -97,6 +105,7 @@ class EventAPI(metaclass=Singleton):
 
 def event_emitter(function: Callable) -> Callable:
     """Decorator that makes function an emitter - automatically sends pending events on success"""
+    EventAPI().clear()
 
     @wraps(function)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
@@ -105,7 +114,7 @@ def event_emitter(function: Callable) -> Callable:
             EventAPI().send()
             return result
         except Exception as error:
-            EventAPI().clear()
+            EventAPI().clear_pending()
             raise error
 
     return wrapped

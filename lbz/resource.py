@@ -239,9 +239,10 @@ class EventAwareResource(Resource):
     def __init__(self, event: dict):
         super().__init__(event)
         self.event_api = EventAPI()
+        self.event_api.clear()
 
     def post_request_hook(self) -> None:
         if self.response.is_ok():
             self.event_api.send()
         else:
-            self.event_api.clear()
+            self.event_api.clear_pending()
