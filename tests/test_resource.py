@@ -12,7 +12,6 @@ from pytest import LogCaptureFixture
 
 from lbz.authentication import User
 from lbz.collector import AuthzCollector
-from lbz.dev.misc import APIGatewayEvent
 from lbz.events.api import EventAPI
 from lbz.exceptions import NotFound, ServerError
 from lbz.misc import MultiDict
@@ -25,6 +24,7 @@ from lbz.resource import (
     Resource,
 )
 from lbz.response import Response
+from lbz.rest import APIGatewayEvent
 from lbz.router import Router, add_route
 from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 

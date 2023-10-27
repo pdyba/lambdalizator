@@ -1,4 +1,5 @@
 # flake8: noqa
+# TODO: remove in 0.6.0
 EVENT_TEMPLATE = """
 {
   "resource": "/",

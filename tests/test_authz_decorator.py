@@ -6,9 +6,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from lbz.authz.decorators import authorization
-from lbz.dev.misc import APIGatewayEvent
 from lbz.resource import Resource
 from lbz.response import Response
+from lbz.rest import APIGatewayEvent
 from lbz.router import add_route
 
 

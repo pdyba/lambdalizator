@@ -2,10 +2,12 @@ import json
 from typing import Any, Iterable, Optional, Type
 
 from lbz.aws_boto3 import client
+from lbz.dev import APIGatewayEvent
 from lbz.lambdas.enums import LambdaResult, LambdaSource
 from lbz.lambdas.exceptions import LambdaError
 from lbz.lambdas.response import LambdaResponse
 from lbz.misc import get_logger
+from lbz.response import Response
 
 logger = get_logger(__name__)
 
@@ -63,3 +65,31 @@ class LambdaClient:
         error_message = f"Error response from {function_name} Lambda (op: {op}): {lambda_result}"
         logger.error(error_message, extra=dict(data=data, response=response))
         return response
+
+    @classmethod
+    def request(
+        cls,
+        function_name: str,
+        path: str,
+        method: str,
+        params: dict = None,
+        query_params: dict = None,
+        body: dict = None,
+        headers: dict = None,
+    ) -> Response:
+        data = APIGatewayEvent(
+            resource_path=path,
+            method=method,
+            path_params=params,
+            query_params=query_params,
+            body=body,
+            headers=headers,
+        )
+        raw_response = client.lambda_.invoke(
+            FunctionName=function_name,
+            Payload=json.dumps(data, cls=cls.json_encoder).encode("utf-8"),
+            InvocationType="RequestResponse",
+        )
+        response: dict = json.loads(raw_response["Payload"].read().decode("utf-8"))
+        resp_body = response["body"]
+        return Response(resp_body, **response)

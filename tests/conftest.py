@@ -24,10 +24,10 @@ from lbz.authentication import User
 from lbz.authz.authorizer import Authorizer
 from lbz.authz.decorators import authorization
 from lbz.collector import authz_collector
-from lbz.dev.misc import APIGatewayEvent
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
+from lbz.rest import APIGatewayEvent
 from lbz.router import Router, add_route
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token
