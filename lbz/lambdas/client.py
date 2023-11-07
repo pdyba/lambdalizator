@@ -70,12 +70,12 @@ class LambdaClient:
     def request(
         cls,
         function_name: str,
-        path: str,
         method: str,
-        params: dict = None,
-        query_params: dict = None,
-        body: dict = None,
-        headers: dict = None,
+        path: str,
+        params: Optional[dict] = None,
+        query_params: Optional[dict] = None,
+        body: Optional[dict] = None,
+        headers: Optional[dict] = None,
     ) -> Response:
         data = APIGatewayEvent(
             resource_path=path,
