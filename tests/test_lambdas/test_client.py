@@ -256,7 +256,11 @@ def test__request__raises_error_when_response_could_not_be_read_correctly(
     lambda_client.invoke.return_value = response
 
     with pytest.raises(AttributeError):  # type of error does not matter here
-        LambdaClient.request("test-func", "/home", "GET")
+        LambdaClient.request(
+            "test-func",
+            "GET",
+            "/home",
+        )
 
     logged_record = caplog.records[0]
     assert logged_record.message == "Invalid response received from test-func Lambda (op: /home)"
