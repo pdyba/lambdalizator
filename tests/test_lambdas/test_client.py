@@ -10,11 +10,34 @@ from pytest_mock import MockerFixture
 
 from lbz.aws_boto3 import Boto3Client
 from lbz.lambdas import LambdaClient, LambdaError, LambdaResult
+from lbz.lambdas.client import SetsEncoder
+from lbz.response import Response
 
 
 @pytest.fixture(name="lambda_client")
 def lambda_client_fixture(mocker: MockerFixture) -> MagicMock:
     return mocker.patch.object(Boto3Client, "lambda_")
+
+
+def rest_payload_factory(
+    body: dict,
+    status_code: int = 200,
+    headers: Optional[dict] = None,
+    base_64: bool = False,
+) -> dict:
+    return {
+        "Payload": BytesIO(
+            json.dumps(
+                {
+                    "body": body,
+                    "statusCode": status_code,
+                    "headers": headers or {},
+                    "isBase64Encoded": base_64,
+                },
+                cls=SetsEncoder,
+            ).encode("utf-8")
+        )
+    }
 
 
 @pytest.mark.parametrize(
@@ -206,7 +229,11 @@ def test__invoke__raises_error_when_response_could_not_be_read_correctly(
 
     logged_record = caplog.records[0]
     assert logged_record.message == "Invalid response received from test-func Lambda (op: test-op)"
-    assert logged_record.data is None  # type: ignore
+    assert logged_record.data == {  # type: ignore
+        "data": None,
+        "invoke_type": "direct_lambda_request",
+        "op": "test-op",
+    }
     assert logged_record.response == response  # type: ignore
 
 
@@ -220,3 +247,28 @@ def test__invoke__returns_accepted_result_when_invoked_asynchronously(
 
     assert result == {"result": LambdaResult.ACCEPTED}
     assert caplog.messages == []
+
+
+def test__request__raises_error_when_response_could_not_be_read_correctly(
+    lambda_client: MagicMock, caplog: LogCaptureFixture
+) -> None:
+    response = {"StatusCode": 200, "Payload": "invalid-payload"}
+    lambda_client.invoke.return_value = response
+
+    with pytest.raises(AttributeError):  # type of error does not matter here
+        LambdaClient.request("test-func", "/home", "GET")
+
+    logged_record = caplog.records[0]
+    assert logged_record.message == "Invalid response received from test-func Lambda (op: /home)"
+
+
+def test__request__returns_response(
+    lambda_client: MagicMock,
+) -> None:
+    payload = rest_payload_factory(body={})
+
+    lambda_client.invoke.return_value = payload
+
+    result = LambdaClient.request("test-function", "/home", "GET")
+
+    assert result.to_dict() == Response({}, headers={}).to_dict()

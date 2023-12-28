@@ -1,5 +1,5 @@
 import json
-from typing import Any, Iterable, Optional, Type
+from typing import Any, Iterable, Optional, Type, cast
 
 from lbz.aws_boto3 import client
 from lbz.dev import APIGatewayEvent
@@ -36,22 +36,8 @@ class LambdaClient:
         allowed_error_results = set(allowed_error_results or []) & set(LambdaResult.soft_errors())
 
         payload = {"invoke_type": LambdaSource.DIRECT, "op": op, "data": data}
-        raw_response = client.lambda_.invoke(
-            FunctionName=function_name,
-            Payload=json.dumps(payload, cls=cls.json_encoder).encode("utf-8"),
-            InvocationType="Event" if asynchronous else "RequestResponse",
-        )
 
-        if asynchronous:
-            # Lambda invoked asynchronously only includes a status code in the response
-            return {"result": LambdaResult.ACCEPTED}
-
-        try:
-            response: LambdaResponse = json.loads(raw_response["Payload"].read().decode("utf-8"))
-        except Exception:
-            message = "Invalid response received from %s Lambda (op: %s)"
-            logger.error(message, function_name, op, extra=dict(data=data, response=raw_response))
-            raise
+        response = cast(LambdaResponse, cls._invoke(function_name, payload, asynchronous))
 
         lambda_result = response.get("result", LambdaResult.SERVER_ERROR)
         if lambda_result in LambdaResult.successes():
@@ -72,12 +58,12 @@ class LambdaClient:
         function_name: str,
         path: str,
         method: str,
-        params: dict = None,
-        query_params: dict = None,
-        body: dict = None,
-        headers: dict = None,
+        params: Optional[dict] = None,
+        query_params: Optional[dict] = None,
+        body: Optional[dict] = None,
+        headers: Optional[dict] = None,
     ) -> Response:
-        data = APIGatewayEvent(
+        payload = APIGatewayEvent(
             resource_path=path,
             method=method,
             path_params=params,
@@ -85,11 +71,36 @@ class LambdaClient:
             body=body,
             headers=headers,
         )
+
+        response = cls._invoke(function_name, payload)
+
+        return Response(
+            response["body"],
+            headers=response.get("headers", {}),
+            status_code=response["statusCode"],
+            base64_encoded=response.get("isBase64Encoded", False),
+        )
+
+    @classmethod
+    def _invoke(cls, function_name: str, payload: dict, asynchronous: bool = False) -> dict:
         raw_response = client.lambda_.invoke(
             FunctionName=function_name,
-            Payload=json.dumps(data, cls=cls.json_encoder).encode("utf-8"),
-            InvocationType="RequestResponse",
+            Payload=json.dumps(payload, cls=cls.json_encoder).encode("utf-8"),
+            InvocationType="Event" if asynchronous else "RequestResponse",
         )
-        response: dict = json.loads(raw_response["Payload"].read().decode("utf-8"))
-        resp_body = response["body"]
-        return Response(resp_body, **response)
+        if asynchronous:
+            # Lambda invoked asynchronously only includes a status code in the response
+            return {"result": LambdaResult.ACCEPTED}
+
+        try:
+            response: dict = json.loads(raw_response["Payload"].read().decode("utf-8"))
+            return response
+        except Exception:
+            message = "Invalid response received from %s Lambda (op: %s)"
+            logger.error(
+                message,
+                function_name,
+                payload.get("op", payload.get("path")),
+                extra=dict(data=payload, response=raw_response),
+            )
+            raise

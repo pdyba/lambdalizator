@@ -318,6 +318,13 @@ Released 2023-09-27
 - Adjust the behavior of EventAwareResource and event_emitter to clean up EventAPI on its initialization
 - Adjust the behavior of EventAPI to always store all events that were processed during one session
 
+
+### Version 0.5.19
+Released 2023-11-10
+
+- Adds rest over lambda interface (skipping API Gateway)
+
+
 ### Version 0.6.0
 Release ETA 2024-02-31 ;)
 
