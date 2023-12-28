@@ -56,8 +56,8 @@ class LambdaClient:
     def request(
         cls,
         function_name: str,
-        path: str,
         method: str,
+        path: str,
         params: Optional[dict] = None,
         query_params: Optional[dict] = None,
         body: Optional[dict] = None,

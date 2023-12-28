@@ -1,11 +1,11 @@
 from typing import Optional
 from uuid import uuid4
 
-DEFAULT_HEADER = {"Content-Type": "application/json"}
+DEFAULT_HEADERS = {"Content-Type": "application/json"}
 
 
 class APIGatewayEvent(dict):
-    """API Gateway Event object for AWS Lambda compatibility"""
+    """Easy-to-use dictionary simulating the event coming from the API Gateway"""
 
     def __init__(
         self,
