@@ -17,9 +17,9 @@ setup(
     long_description_content_type="text/markdown",
     long_description=pathlib.Path("README.md").read_text("utf-8"),
     install_requires=[
-        "boto3 >=1.21.0, <1.22.0",
-        "multidict >=6.0.0, <6.1.0",
-        "python-jose >=3.3.0, <3.4.0",
+        "boto3>=1.34.10,<1.35.0",
+        "multidict>=6.0.4,<6.1.0",
+        "python-jose>=3.3.0,<3.4.0",
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
