@@ -1,14 +1,16 @@
-name: Pull request checks
+name: Check pull request
 
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
 
 jobs:
-  check_code_formatting:
-    name: Check code quality (formatting and linters)
+  code_quality:
+    name: Check code quality
+
     runs-on: ubuntu-latest
     container: python:3.8-slim
+
     steps:
       - name: Checkout the repository
         uses: actions/checkout@master
@@ -21,19 +23,21 @@ jobs:
       - name: Install dependencies
         run: make install-dev
 
-      - name: Run Black Check
+      - name: Run black
         run: make black-check
 
-      - name: Run isort Check
+      - name: Run isort
         run: make isort-check
 
-      - name: Run Linters
+      - name: Run linters
         run: make lint
 
-  run_unit_tests:
+  unit_tests:
     name: Run unit tests
+
     runs-on: ubuntu-latest
     container: python:3.8-slim
+
     steps:
       - name: Checkout the repository
         uses: actions/checkout@master
@@ -46,18 +50,20 @@ jobs:
       - name: Install dependencies
         run: make install-dev
 
-      - name: Run tests
+      - name: Run unit tests
         run: make test
 
-  check_version:
-    name: Check if version was updated
+  version_check:
+    name: Check version
+
     runs-on: ubuntu-latest
     if: ${{ github.base_ref == 'refs/heads/master' }}
+
     steps:
       - name: Checkout the repository
         uses: actions/checkout@master
 
-      - name: Check version
+      - name: Check whether the version was updated
         run: |
           PUBLISHED_VERSION=$(curl https://pypi.org/pypi/lbz/json | jq -r '.info.version')
           REPO_VERSION=$(cat version)
