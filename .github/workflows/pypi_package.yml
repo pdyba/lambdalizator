@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@master
+      - name: Check out the repository
+        uses: actions/checkout@v4
 
       - name: Build package
         run: make build

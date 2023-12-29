@@ -12,8 +12,8 @@ jobs:
     container: python:3.8-slim
 
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@master
+      - name: Check out the repository
+        uses: actions/checkout@v4
 
       - name: Install make
         run: |
@@ -45,8 +45,8 @@ jobs:
     container: python:3.8-slim
 
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@master
+      - name: Check out the repository
+        uses: actions/checkout@v4
 
       - name: Install make
         run: |
@@ -66,8 +66,8 @@ jobs:
     if: ${{ github.base_ref == 'refs/heads/master' }}
 
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@master
+      - name: Check out the repository
+        uses: actions/checkout@v4
 
       - name: Check whether the version was updated
         run: |
