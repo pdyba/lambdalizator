@@ -13,23 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.8"
           cache: "pip"
-
-      - name: Build package
-        run: make build
-
-      - name: Install dependencies
-        run: pip install twine
-
-      - name: Publish package
-        run: make upload
+      - run: make build
+      - run: pip install twine
+      - run: make upload
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI }}

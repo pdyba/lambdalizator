@@ -15,32 +15,17 @@ jobs:
         python-version: ["3.8", "3.9", "3.10"]  # TODO: Support newer versions
 
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
-
-      - name: Install dependencies
-        run: make install-dev
-
-      - name: Run black
-        run: make black-check
-
-      - name: Run isort
-        run: make isort-check
-
-      - name: Run flake8
-        run: make flake8
-
-      - name: Run mypy
-        run: make mypy
-
-      - name: Run pylint
-        run: make pylint
+      - run: make install-dev
+      - run: make black-check
+      - run: make isort-check
+      - run: make flake8
+      - run: make mypy
+      - run: make pylint
 
   unit_tests:
     name: Run unit tests
@@ -52,20 +37,13 @@ jobs:
         python-version: ["3.8", "3.9", "3.10"]  # TODO: Support newer versions
 
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
-
-      - name: Install dependencies
-        run: make install-dev
-
-      - name: Run unit tests
-        run: make test
+      - run: make install-dev
+      - run: make test
 
   version_check:
     name: Check version
@@ -74,9 +52,7 @@ jobs:
     if: ${{ github.base_ref == 'refs/heads/master' }}
 
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Check whether the version was updated
         run: |
           PUBLISHED_VERSION=$(curl https://pypi.org/pypi/lbz/json | jq -r '.info.version')
