@@ -17,9 +17,9 @@ jobs:
         with:
           python-version: "3.8"
           cache: "pip"
-      - run: make build
-      - run: pip install twine
-      - run: make upload
+      - run: make build-nocache
+      - run: pip install -r requirements-deploy.txt
+      - run: python -m twine upload --verbose dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI }}
