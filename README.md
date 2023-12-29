@@ -1,5 +1,12 @@
 # Lambdalizator
-![Python 3.8+](https://img.shields.io/badge/python-v3.8-blue) ![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
+
+---
+[![Stable version](https://img.shields.io/pypi/v/lbz.svg?color=blue)](https://pypi.org/project/lbz/)
+[![Python versions](https://img.shields.io/pypi/pyversions/lbz.svg)](https://pypi.org/project/lbz/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black/)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1.svg)](https://pycqa.github.io/isort/)
+[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org)
+[![Downloads](https://pepy.tech/badge/lbz)](https://pepy.tech/project/lbz/)
 
 AWS Lambda Toolbox inspired by Flask. Currently supporting:
 - REST API
