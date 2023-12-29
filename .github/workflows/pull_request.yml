@@ -20,11 +20,6 @@ jobs:
           python-version: "3.8"
           cache: "pip"
 
-      - name: Install make
-        run: |
-          apt-get update
-          apt-get --yes install make git
-
       - name: Install dependencies
         run: make install-dev
 
@@ -57,11 +52,6 @@ jobs:
         with:
           python-version: "3.8"
           cache: "pip"
-
-      - name: Install make
-        run: |
-          apt-get update
-          apt-get --yes install make
 
       - name: Install dependencies
         run: make install-dev
