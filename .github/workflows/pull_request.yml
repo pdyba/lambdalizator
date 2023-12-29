@@ -29,8 +29,14 @@ jobs:
       - name: Run isort
         run: make isort-check
 
-      - name: Run linters
-        run: make lint
+      - name: Run flake8
+        run: make flake8
+
+      - name: Run mypy
+        run: make mypy
+
+      - name: Run pylint
+        run: make pylint
 
   unit_tests:
     name: Run unit tests
