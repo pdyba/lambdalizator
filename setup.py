@@ -5,7 +5,7 @@ from setuptools import setup
 # TODO: Add auto discovery for packages.
 setup(
     name="lbz",
-    version=pathlib.Path("version").read_text("utf-8"),
+    version=pathlib.Path("version").read_text("utf-8").strip(),
     author="Piotr Dyba",
     author_email="piotr.dyba@localbini.com",
     packages=["lbz", "lbz.authz", "lbz.dev", "lbz.events", "lbz.lambdas"],
