@@ -37,4 +37,4 @@ class LambdaContext:
 
     @staticmethod
     def get_remaining_time_in_millis() -> int:
-        ...
+        raise NotImplementedError
