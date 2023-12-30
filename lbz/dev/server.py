@@ -84,8 +84,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                 return
             self.done = False
 
-            request_size = int(self.headers.get("Content-Length", 0))
-            if request_size:
+            if request_size := int(self.headers.get("Content-Length", 0)):
                 request_body = self.rfile.read(request_size).decode(
                     encoding="utf_8", errors="strict"
                 )

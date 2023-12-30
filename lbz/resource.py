@@ -157,7 +157,7 @@ class CORSResource(Resource):
         if "*" in origins:
             return "*"
         request_origin: Optional[str] = self.request.headers.get("Origin")
-        if request_origin:
+        if request_origin:  # pylint: disable=consider-using-assignment-expr
             for allowed_origin in origins:
                 if request_origin == allowed_origin:
                     return request_origin
@@ -194,7 +194,7 @@ class PaginatedCORSResource(CORSResource):
         if previous_offset := max(offset - limit, 0):
             links["prev"] = base_link.format(offset=previous_offset, limit=limit)
         next_offset = offset + limit if offset + limit < total_items else None
-        if next_offset:
+        if next_offset:  # pylint: disable=consider-using-assignment-expr
             links["next"] = base_link.format(offset=next_offset, limit=limit)
         return {
             "count": total_items,

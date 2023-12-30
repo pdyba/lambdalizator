@@ -68,8 +68,8 @@ class Request:
     @property
     def json_body(self) -> Optional[dict]:
         if self._json_body is None:
-            content_type = self.headers.get("Content-Type")
-            if content_type is None:
+            content_type: Optional[str] = self.headers.get("Content-Type")
+            if content_type is None:  # pylint: disable=consider-using-assignment-expr
                 return None
             if content_type.startswith("application/json"):
                 if isinstance(self.raw_body, dict) or self.raw_body is None:
