@@ -53,8 +53,8 @@ def test_loading_user_parses_user_attributes(user_cognito: dict, user: User) -> 
     for key in ("aud", "iss", "exp", "iat"):
         parsed.pop(key, None)
     for key, expected_value in parsed.items():
-        key = key.replace("cognito:", "").replace("custom:", "")
-        value = getattr(user, key)
+        key_without_prefix = key.replace("cognito:", "").replace("custom:", "")
+        value = getattr(user, key_without_prefix)
         assert value == expected_value
 
 
