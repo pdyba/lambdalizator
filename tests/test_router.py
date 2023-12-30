@@ -54,7 +54,7 @@ class TestRouter:
 class TestAddRoute:
     def test_add_route(self) -> None:
         router = Router()
-        assert len(router) == 0  # pylint: disable=compare-to-zero
+        assert len(router) == 0
 
         @add_route("/")
         def random_method() -> None:

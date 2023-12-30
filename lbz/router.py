@@ -25,7 +25,7 @@ class Router(metaclass=Singleton):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __contains__(self, o: Any) -> bool:  # pylint: disable=invalid-name
+    def __contains__(self, o: Any) -> bool:
         return self._routes.__contains__(o)
 
     def __len__(self) -> int:

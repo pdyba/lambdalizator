@@ -105,7 +105,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
             if route is None:
                 self._error(666, "Path not Found")
                 return
-            resource = self.cls(  # pylint: disable=not-callable
+            resource = self.cls(
                 APIGatewayEvent(
                     resource_path=route,
                     method=self.command,

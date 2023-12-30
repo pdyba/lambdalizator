@@ -20,7 +20,6 @@ class TestEventAPI:
         self.event_api = EventAPI()
 
     def teardown_method(self, _test_method: Callable) -> None:
-        # pylint: disable= attribute-defined-outside-init
         self.event_api._del()  # type: ignore # pylint: disable=protected-access
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
