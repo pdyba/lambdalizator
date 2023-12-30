@@ -2,7 +2,8 @@ import json
 from typing import Optional
 
 
-class Event:
+# TODO: Implement the hash method to stay compatible with pylint requirements
+class Event:  # pylint: disable=eq-without-hash
     type: str
 
     def __init__(self, data: dict, *, event_type: Optional[str] = None) -> None:
