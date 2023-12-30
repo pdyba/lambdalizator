@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 from http import HTTPStatus
 from os import environ
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 from unittest.mock import ANY, MagicMock, patch
 
 from jose import jwt
@@ -45,7 +45,7 @@ req = Request(
 event = APIGatewayEvent(
     resource_path="/",
     method="GET",
-    body=req,  # pylint issue #214
+    body=req.to_dict(),
     headers={},
     path_params={},
     query_params={},
@@ -57,7 +57,7 @@ event_wrong_uri = APIGatewayEvent(
     headers={},
     path_params={},
     query_params={},
-    body=req,
+    body=req.to_dict(),
 )
 
 
@@ -281,10 +281,14 @@ class TestCORSResource:
         del environ["CORS_ORIGIN"]
 
     def make_cors_handler(
-        self, origins: List[str] = None, req_origin: str = None, cors_headers: list = None
+        self,
+        origins: Optional[List[str]] = None,
+        req_origin: Optional[str] = None,
+        cors_headers: Optional[list] = None,
     ) -> CORSResource:
         an_event: Dict[Any, MagicMock] = defaultdict(MagicMock())
-        an_event["headers"] = {"origin": req_origin} if req_origin is not None else {}
+        headers = {"origin": req_origin} if req_origin is not None else {}
+        an_event["headers"] = headers  # type: ignore
         cors_handler = CORSResource(
             an_event, ["GET", "POST"], origins=origins, cors_headers=cors_headers
         )
