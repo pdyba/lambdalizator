@@ -22,7 +22,6 @@ def authorization(permission_name: Optional[str] = None) -> Callable:
 
         @wraps(func)
         def wrapped(self: Resource, *args: Any, **kwargs: Any) -> Any:
-
             restrictions = check_permission(self, permission_name or func.__name__)
             return func(self, *args, restrictions=restrictions, **kwargs)
 
