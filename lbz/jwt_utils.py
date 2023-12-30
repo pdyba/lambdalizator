@@ -1,6 +1,3 @@
-"""
-JWT helpers module.
-"""
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 
@@ -12,9 +9,7 @@ logger = get_logger(__name__)
 
 
 def get_matching_jwk(auth_jwt_token: str) -> dict:
-    """
-    Checks provided JWT token against allowed tokens.
-    """
+    """Checks provided JWT token against allowed tokens."""
     try:
         kid_from_jwt_header = jwt.get_unverified_header(auth_jwt_token)["kid"]
         for key in ALLOWED_PUBLIC_KEYS.value:
@@ -44,9 +39,7 @@ def validate_jwt_properties(decoded_jwt: dict) -> None:
 
 
 def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
-    """
-    Decodes JWT token.
-    """
+    """Decodes JWT token."""
 
     if not ALLOWED_PUBLIC_KEYS.value:
         raise MissingConfigValue("ALLOWED_PUBLIC_KEYS")

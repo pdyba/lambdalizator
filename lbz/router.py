@@ -1,6 +1,3 @@
-"""
-Router module.
-"""
 import json
 from functools import wraps
 from typing import Any, Callable, Iterator
@@ -9,10 +6,6 @@ from lbz.misc import NestedDict, Singleton
 
 
 class Router(metaclass=Singleton):
-    """
-    Router Class.
-    """
-
     def __init__(self) -> None:
         self._routes = NestedDict()
 
@@ -35,9 +28,7 @@ class Router(metaclass=Singleton):
         return self._routes.__iter__()
 
     def add_route(self, route: str, method: str, handler: str) -> None:
-        """
-        Registers handler to route and method.
-        """
+        """Registers handler to route and method."""
         self._routes[route][method] = handler
 
     def clear(self) -> None:
@@ -45,9 +36,7 @@ class Router(metaclass=Singleton):
 
 
 def add_route(route: str, method: str = "GET") -> Callable:
-    """
-    Flask-like wrapper for adding routes.
-    """
+    """Flask-like wrapper for adding routes."""
 
     def wrapper(func: Callable) -> Callable:
         router = Router()

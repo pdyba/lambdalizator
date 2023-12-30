@@ -1,6 +1,3 @@
-"""
-Dev misc tools.
-"""
 import json
 import pathlib
 from typing import Optional

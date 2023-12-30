@@ -1,6 +1,4 @@
-"""
-Misc Helpers of Lambda Framework.
-"""
+"""Misc Helpers of Lambda Framework."""
 import copy
 import logging
 import logging.handlers
@@ -13,9 +11,7 @@ from lbz._cfg import LBZ_DEBUG_MODE, LOGGING_LEVEL
 
 
 class NestedDict(dict):
-    """
-    Endless nested dict.
-    """
+    """Endless nested dict."""
 
     def __getitem__(self, key: str) -> Any:
         if key in self:
@@ -24,7 +20,8 @@ class NestedDict(dict):
 
 
 class Singleton(type):
-    """
+    """Metaclass that ensures that an inheriting class has only one instance.
+
     Usage:
         class MyClass(metaclass=Singleton):
             pass
@@ -45,9 +42,7 @@ class Singleton(type):
 
 
 class MultiDict(MutableMapping):
-    """
-    Advanced Multi Dictionary.
-    """
+    """Advanced Multi Dictionary."""
 
     def __init__(self, mapping: Optional[dict]):
         if mapping is None:
@@ -80,9 +75,7 @@ class MultiDict(MutableMapping):
         return repr(self)
 
     def getlist(self, k: Hashable) -> list:
-        """
-        Returns a list of all values for specific key.
-        """
+        """Returns a list of all values for specific key."""
         return list(self._dict[k])
 
     def original_items(self, keys_to_skip: Optional[Iterable[Hashable]] = None) -> List[tuple]:
@@ -101,9 +94,7 @@ logger = get_logger(__name__)
 
 
 def error_catcher(function: Callable, default_return: Any = False) -> Callable:
-    """
-    Universal Error Catcher
-    """
+    """Universal Error Catcher"""
 
     @wraps(function)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
@@ -134,8 +125,7 @@ def is_in_debug_mode() -> bool:
 
 
 def deprecated(*, message: str, version: str) -> Callable:
-    """
-    This is a decorator which can be used to mark functions as deprecated.
+    """This is a decorator which can be used to mark functions as deprecated.
 
     It will result in a warning being emitted when the function is used.
     """

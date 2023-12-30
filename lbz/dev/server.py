@@ -1,6 +1,3 @@
-"""
-Development Server.
-"""
 import json
 import logging
 import urllib.parse
@@ -18,9 +15,7 @@ if environ.get("LBZ_DEBUG_MODE") is None:
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
-    """
-    Mimics AWS Lambda behavior.
-    """
+    """Mimics AWS Lambda behavior."""
 
     done: bool = False  # TODO: if possible move to __init__
 
@@ -32,8 +27,8 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
     def _get_route_params(  # noqa:C901
         self, org_path: str
     ) -> Tuple[Union[str, None], Union[dict, None]]:
-        """
-        Parses route and params.
+        """Parses route and params.
+
         :param org_path:
         :return: standardised route, url params / None
         """
@@ -83,9 +78,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
         self._send_json(code, {"error": message}, headers={"Content-Type": content_type})
 
     def handle_request(self) -> None:
-        """
-        Main method for handling all incoming requests.
-        """
+        """Main method for handling all incoming requests."""
         try:
             if self.path == "/favicon.ico":
                 return
@@ -148,10 +141,6 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
 
 
 class MyDevServer(Thread):
-    """
-    Development Server base class.
-    """
-
     def __init__(
         self,
         acls: Type[Resource],
@@ -170,9 +159,7 @@ class MyDevServer(Thread):
         print(f"server bound to port: {self.port}")
 
     def run(self) -> None:
-        """
-        Start the server in the foreground.
-        """
+        """Start the server in the foreground."""
         print(f"serving on http://{self.address}:{self.port}")
         self.httpd.serve_forever()
 
@@ -182,7 +169,5 @@ class MyDevServer(Thread):
         print(f"Server stopped and port {self.port} released")
 
     def start(self) -> None:  # pylint: disable=useless-super-delegation
-        """
-        Start the server in the background
-        """
+        """Start the server in the background"""
         super().start()

@@ -1,4 +1,3 @@
-"""Helper class for testing."""
 from typing import Optional, Type
 
 from lbz.dev.misc import APIGatewayEvent
@@ -10,9 +9,7 @@ logger = get_logger(__name__)
 
 
 class Client:
-    """
-    Client created for testing purposes.
-    """
+    """Client created for testing purposes."""
 
     def __init__(self, resource: Type[Resource]):
         self.resource = resource

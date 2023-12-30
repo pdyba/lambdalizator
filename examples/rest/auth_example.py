@@ -1,6 +1,4 @@
-"""
-Simple Lambda Handler with authorization
-"""
+"""Simple Lambda Handler with authorization"""
 from lbz.authz.decorators import authorization
 from lbz.dev.server import MyDevServer
 from lbz.exceptions import ServerError

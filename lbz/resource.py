@@ -1,4 +1,3 @@
-"""Resource Handler."""
 from copy import deepcopy
 from http import HTTPStatus
 from typing import Callable, List, Optional, Union
@@ -28,10 +27,6 @@ logger = get_logger(__name__)
 
 
 class Resource:
-    """
-    Resource class.
-    """
-
     _name: str = ""
     _router = Router()
     _authz_collector = authz_collector
@@ -96,28 +91,21 @@ class Resource:
         return None
 
     def _post_request_hook(self) -> None:
-        """
-        Makes the post_request_hook run-time friendly.
-        """
+        """Makes the post_request_hook run-time friendly."""
         try:
             self.post_request_hook()
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
 
     def pre_request_hook(self) -> None:
-        """
-        Place to configure pre request hooks.
-        """
+        """Place to configure pre request hooks."""
 
     def post_request_hook(self) -> None:
-        """
-        Place to configure post request hooks.
-        """
+        """Place to configure post request hooks."""
 
     @staticmethod
     def get_guest_authorization() -> dict:
-        """
-        Place to configure default authorization.
+        """Place to configure default authorization.
 
         That will be used when Authorization Header is not in place.
         """
@@ -128,9 +116,7 @@ class Resource:
 
 
 class CORSResource(Resource):
-    """
-    CORS capable resource.
-    """
+    """CORS capable resource."""
 
     _cors_headers = (
         "Content-Type",
@@ -167,9 +153,7 @@ class CORSResource(Resource):
         return resp
 
     def _get_allowed_origins(self, origins: List[str]) -> str:
-        """
-        Checks requests origins against allowed origins.
-        """
+        """Checks requests origins against allowed origins."""
         if "*" in origins:
             return "*"
         request_origin: Optional[str] = self.request.headers.get("Origin")
@@ -184,9 +168,7 @@ class CORSResource(Resource):
         return origins[0]
 
     def resp_headers(self, content_type: str = "") -> dict:
-        """
-        Properly formatted headers.
-        """
+        """Properly formatted headers."""
         return (
             {**self._resp_headers, "Content-Type": content_type}
             if content_type
@@ -195,21 +177,15 @@ class CORSResource(Resource):
 
     @property
     def resp_headers_json(self) -> dict:
-        """
-        Properly formatted json headers.
-        """
+        """Properly formatted json headers."""
         return self.resp_headers(content_type="application/json")
 
 
 class PaginatedCORSResource(CORSResource):
-    """
-    Resource for standardised pagination.
-    """
+    """Resource for standardised pagination."""
 
     def get_pagination(self, total_items: int, limit: int, offset: int) -> dict:
-        """
-        Responsible for paginating the requests.
-        """
+        """Responsible for paginating the requests."""
         base_link = self._pagination_uri
         links = {
             "current": base_link.format(offset=offset, limit=limit),

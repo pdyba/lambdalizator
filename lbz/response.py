@@ -1,6 +1,3 @@
-"""
-Standardised response module.
-"""
 import json
 from typing import Optional, Union
 
@@ -25,9 +22,7 @@ class Response:
         self.is_base64 = base64_encoded
 
     def get_content_header(self) -> dict:
-        """
-        Adds necessary headers based on content type
-        """
+        """Adds necessary headers based on content type"""
         if self.is_json:
             return {"Content-Type": "application/json"}
         if isinstance(self.body, str):
@@ -35,9 +30,7 @@ class Response:
         raise RuntimeError("Response body type not supported yet.")
 
     def to_dict(self) -> dict:
-        """
-        Dumps response to AWS Lambda compatible response format.
-        """
+        """Dumps response to AWS Lambda compatible response format."""
         body = (
             json.dumps(self.body, separators=(",", ":"), default=str)
             if self.is_json

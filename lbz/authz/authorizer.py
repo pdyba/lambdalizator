@@ -17,9 +17,7 @@ LIMITED_ALLOW = -1
 
 
 class Authorizer:
-    """
-    Authorizer class responsible for Authorization.
-    """
+    """Authorizer class responsible for Authorization."""
 
     def __init__(
         self,
@@ -62,9 +60,7 @@ class Authorizer:
         raise PermissionDenied()
 
     def check_access(self) -> None:
-        """
-        Main authorization checking logic.
-        """
+        """Main authorization checking logic."""
         self.outcome = DENY
 
         if self.deny:
@@ -129,16 +125,12 @@ class Authorizer:
 
     @property
     def restrictions(self) -> dict:
-        """
-        Provides restrictions in standardised format.
-        """
+        """Provides restrictions in standardised format."""
         return {"allow": self.allowed_resource, "deny": self.denied_resource}
 
     @staticmethod
     def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
-        """
-        Signs authorization in JWT format.
-        """
+        """Signs authorization in JWT format."""
         if not isinstance(private_key_jwk, dict):
             raise ValueError("private_key_jwk must be a jwk dict")
         if "kid" not in private_key_jwk:

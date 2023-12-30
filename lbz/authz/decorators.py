@@ -1,6 +1,3 @@
-"""
-Authorization helper wrappers (decorators).
-"""
 from functools import wraps
 from typing import Any, Callable, Optional
 
@@ -10,9 +7,7 @@ from lbz.resource import Resource
 
 
 def authorization(permission_name: Optional[str] = None) -> Callable:
-    """
-    Wrapper for easy adding authorization requirement.
-    """
+    """Wrapper for easy adding authorization requirement."""
 
     def decorator(func: Callable) -> Callable:
         # to consider adding more abstraction with 0.4 and doing it per Resource

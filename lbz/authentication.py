@@ -1,6 +1,4 @@
-"""
-JWT based Authentication module.
-"""
+"""JWT based Authentication module."""
 from lbz._cfg import AUTH_REMOVE_PREFIXES
 from lbz.jwt_utils import decode_jwt
 
@@ -8,9 +6,7 @@ STANDARD_CLAIMS = ("sub", "aud", "auth_time", "iss", "exp", "iat", "token_use")
 
 
 def remove_prefix(text: str) -> str:
-    """
-    Removes prefix of a text based on : sign.
-    """
+    """Removes prefix of a text based on : sign."""
     return text.split(":", maxsplit=1)[1] if ":" in text else text
 
 
@@ -29,9 +25,7 @@ class User:
         return "User"
 
     def get_user_details_from_auth_token(self) -> dict:
-        """
-        Parses auth token for user details.
-        """
+        """Parses auth token for user details."""
         parsed_user = {}
         attributes = decode_jwt(self._token)
         self._validate_attributes(attributes)
