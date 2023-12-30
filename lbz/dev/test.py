@@ -20,50 +20,50 @@ class Client:
     def post(
         self,
         path: str,
-        params: dict = None,
-        query_params: dict = None,
-        body: dict = None,
-        headers: dict = None,
+        params: Optional[dict] = None,
+        query_params: Optional[dict] = None,
+        body: Optional[dict] = None,
+        headers: Optional[dict] = None,
     ) -> Response:
         return self._process(path, "POST", params, query_params, body, headers)
 
     def get(
         self,
         path: str,
-        params: dict = None,
-        query_params: dict = None,
-        body: dict = None,
-        headers: dict = None,
+        params: Optional[dict] = None,
+        query_params: Optional[dict] = None,
+        body: Optional[dict] = None,
+        headers: Optional[dict] = None,
     ) -> Response:
         return self._process(path, "GET", params, query_params, body, headers)
 
     def patch(
         self,
         path: str,
-        params: dict = None,
-        query_params: dict = None,
-        body: dict = None,
-        headers: dict = None,
+        params: Optional[dict] = None,
+        query_params: Optional[dict] = None,
+        body: Optional[dict] = None,
+        headers: Optional[dict] = None,
     ) -> Response:
         return self._process(path, "PATCH", params, query_params, body, headers)
 
     def put(
         self,
         path: str,
-        params: dict = None,
-        query_params: dict = None,
-        body: dict = None,
-        headers: dict = None,
+        params: Optional[dict] = None,
+        query_params: Optional[dict] = None,
+        body: Optional[dict] = None,
+        headers: Optional[dict] = None,
     ) -> Response:
         return self._process(path, "PUT", params, query_params, body, headers)
 
     def delete(
         self,
         path: str,
-        params: dict = None,
-        query_params: dict = None,
-        body: dict = None,
-        headers: dict = None,
+        params: Optional[dict] = None,
+        query_params: Optional[dict] = None,
+        body: Optional[dict] = None,
+        headers: Optional[dict] = None,
     ) -> Response:
         return self._process(path, "DELETE", params, query_params, body, headers)
 

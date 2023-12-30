@@ -3,6 +3,7 @@ Dev misc tools.
 """
 import json
 import pathlib
+from typing import Optional
 from uuid import uuid4
 
 from lbz.dev.event import EVENT_TEMPLATE
@@ -17,10 +18,10 @@ class APIGatewayEvent(dict):
         self,
         resource_path: str,
         method: str,
-        body: dict = None,
-        query_params: dict = None,
-        path_params: dict = None,
-        headers: dict = None,
+        body: Optional[dict] = None,
+        query_params: Optional[dict] = None,
+        path_params: Optional[dict] = None,
+        headers: Optional[dict] = None,
     ) -> None:
         super().__init__(**json.loads(EVENT_TEMPLATE))
 

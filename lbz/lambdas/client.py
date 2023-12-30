@@ -27,7 +27,7 @@ class LambdaClient:
         op: str,
         data: Optional[dict] = None,
         *,
-        allowed_error_results: Iterable[str] = None,
+        allowed_error_results: Optional[Iterable[str]] = None,
         raise_if_error_resp: bool = False,
         asynchronous: bool = False,
     ) -> LambdaResponse:

@@ -2,7 +2,7 @@
 Standardised response module.
 """
 import json
-from typing import Union
+from typing import Optional, Union
 
 
 class Response:
@@ -14,7 +14,7 @@ class Response:
         self,
         body: Union[str, dict],
         /,
-        headers: dict = None,
+        headers: Optional[dict] = None,
         status_code: int = 200,
         base64_encoded: bool = False,
     ):

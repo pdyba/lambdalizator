@@ -145,8 +145,8 @@ class CORSResource(Resource):
         self,
         event: dict,
         methods: List[str],
-        origins: List[str] = None,
-        cors_headers: List[str] = None,
+        origins: Optional[List[str]] = None,
+        cors_headers: Optional[List[str]] = None,
     ):
         # TODO: adjust the rest of the arguments in the near future too.
         super().__init__(event)

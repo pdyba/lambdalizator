@@ -37,7 +37,7 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
         self,
         key: str,
         parser: Callable[[Any], T] = str,  # type: ignore
-        default: T = None,
+        default: Optional[T] = None,
     ):
         self._key = key
         self._parser = parser

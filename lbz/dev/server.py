@@ -8,7 +8,7 @@ from abc import ABCMeta, abstractmethod
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from os import environ
 from threading import Thread
-from typing import Tuple, Type, Union
+from typing import Optional, Tuple, Type, Union
 
 from lbz.dev.misc import APIGatewayEvent
 from lbz.resource import Resource
@@ -63,7 +63,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                     return org_route, params
         return None, None
 
-    def _send_json(self, code: int, obj: dict, headers: dict = None) -> None:
+    def _send_json(self, code: int, obj: dict, headers: Optional[dict] = None) -> None:
         # Make sure only one response is sent
         if self.done:
             return

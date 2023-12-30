@@ -1,4 +1,4 @@
-from typing import Any, TypedDict
+from typing import Any, Optional, TypedDict
 
 from lbz.lambdas.enums import LambdaResult
 
@@ -18,7 +18,7 @@ def lambda_ok_response(data: Any = None) -> LambdaResponse:
 
 
 def lambda_error_response(
-    result: str, error_message: str, error_code: str = None
+    result: str, error_message: str, error_code: Optional[str] = None
 ) -> LambdaResponse:
     err_response = LambdaResponse(result=result, message=error_message)
     if error_code is not None:

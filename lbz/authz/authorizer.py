@@ -26,7 +26,7 @@ class Authorizer:
         auth_jwt: Optional[str],
         resource_name: str,
         permission_name: str,
-        base_permission_policy: dict = None,
+        base_permission_policy: Optional[dict] = None,
     ):
         self.outcome = DENY
         self.allowed_resource: Union[str, dict, None] = None
@@ -44,7 +44,9 @@ class Authorizer:
             f"permission_name='{self.permission}')"
         )
 
-    def _set_policy(self, auth_jwt: str = None, base_permission_policy: dict = None) -> None:
+    def _set_policy(
+        self, auth_jwt: Optional[str] = None, base_permission_policy: Optional[dict] = None
+    ) -> None:
         policy = base_permission_policy or {}
         if auth_jwt is not None:
             deep_update(policy, decode_jwt(auth_jwt))

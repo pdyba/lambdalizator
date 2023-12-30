@@ -85,7 +85,7 @@ class MultiDict(MutableMapping):
         """
         return list(self._dict[k])
 
-    def original_items(self, keys_to_skip: Iterable[Hashable] = None) -> List[tuple]:
+    def original_items(self, keys_to_skip: Optional[Iterable[Hashable]] = None) -> List[tuple]:
         keys_to_skip = keys_to_skip or []
         return [(key, values) for key, values in self._dict.items() if key not in keys_to_skip]
 
