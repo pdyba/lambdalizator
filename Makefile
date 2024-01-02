@@ -30,6 +30,23 @@ upgrade-all:
 
 
 ###############################################################################
+# Packaging and Distributing
+# -----------------------------------------------------------------------------
+.PHONY: build
+build:
+	python setup.py sdist bdist_wheel
+	echo -e "\033[0;32mBuild complete"
+
+.PHONY: clean
+clean:
+	rm -rf ./build ./dist ./*.egg-info
+	echo "Existing distribution has been removed!"
+
+.PHONY: build-nocache clean-and-build cab
+build-nocache clean-and-build cab: clean build
+
+
+###############################################################################
 # Code Quality
 # -----------------------------------------------------------------------------
 .PHONY: black
@@ -71,7 +88,7 @@ pylint:
 	pylint examples lbz tests setup.py
 
 .PHONY: lint
-lint:  flake8 mypy pylint
+lint: flake8 mypy pylint
 
 .PHONY: format-and-lint
 format-and-lint: format lint
@@ -85,21 +102,10 @@ test-unit tu:
 	coverage run --include "lbz/*" -m pytest "tests"
 	coverage report -m --skip-covered
 
-.PHONY: test
-test: test-unit
-
 .PHONY: test-unit-verbose tuv
 test-unit-verbose tuv:
 	coverage run --include "lbz/*" -m pytest "tests" -vv
 	coverage report -m --skip-covered
 
-###############################################################################
-# Custom Scripts
-# -----------------------------------------------------------------------------
-.PHONY: build
-build:
-	python setup.py sdist bdist_wheel
-
-.PHONY: upload
-upload:
-	python3 -m twine upload dist/*
+.PHONY: test
+test: test-unit

@@ -1,0 +1,63 @@
+name: Check pull request
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  code_quality:
+    name: Check code quality
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]  # TODO: Support newer versions
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+      - run: make install-dev
+      - run: make black-check
+      - run: make isort-check
+      - run: make flake8
+      - run: make mypy
+      - run: make pylint
+
+  unit_tests:
+    name: Run unit tests
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]  # TODO: Support newer versions
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+      - run: make install-dev
+      - run: make test
+
+  version_check:
+    name: Check version
+
+    runs-on: ubuntu-latest
+
+    if: ${{ github.base_ref == 'master' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check whether the version was updated
+        run: |
+          PUBLISHED_VERSION=$(curl --silent https://pypi.org/pypi/lbz/json | jq -r '.info.version')
+          ACTUAL_VERSION=$(cat version)
+          if [ "$PUBLISHED_VERSION" == "$ACTUAL_VERSION" ]; then
+            echo "Update the Lambdalizator version before merging!"
+            exit 1
+          fi

@@ -318,6 +318,13 @@ Released 2023-09-27
 - Adjust the behavior of EventAwareResource and event_emitter to clean up EventAPI on its initialization
 - Adjust the behavior of EventAPI to always store all events that were processed during one session
 
+### Version 0.5.19
+Released 2024-01-02
+
+- Start verifying the code with the usage of Python 3.9 and Python 3.10
+- Adjust the GitHub Workflow files to make the pipelines more descriptive
+- Improve the rest of the repository for upcoming changes
+
 ### Version 0.6.0
 Release ETA 2024-02-31 ;)
 
