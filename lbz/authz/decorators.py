@@ -1,13 +1,13 @@
 from collections.abc import Callable
 from functools import wraps
-from typing import Any, Optional
+from typing import Any
 
 from lbz.authz.utils import check_permission
 from lbz.collector import authz_collector
 from lbz.resource import Resource
 
 
-def authorization(permission_name: Optional[str] = None) -> Callable:
+def authorization(permission_name: str | None = None) -> Callable:
     """Wrapper for easy adding authorization requirement."""
 
     def decorator(func: Callable) -> Callable:

@@ -2,7 +2,7 @@ import json
 from abc import ABCMeta, abstractmethod
 from collections.abc import Callable
 from os import getenv
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, TypeVar
 
 from lbz.aws_ssm import SSM
 from lbz.exceptions import ConfigValueParsingFailed, MissingConfigValue
@@ -38,12 +38,12 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
         self,
         key: str,
         parser: Callable[[Any], T] = str,  # type: ignore
-        default: Optional[T] = None,
+        default: T | None = None,
     ):
         self._key = key
         self._parser = parser
         self._default = default
-        self._value: Optional[T] = None
+        self._value: T | None = None
 
     @abstractmethod
     def getter(self) -> Any:
@@ -72,10 +72,10 @@ class ConfigValue(Generic[T], metaclass=ABCMeta):
 
 
 class EnvValue(ConfigValue[T]):
-    def getter(self) -> Optional[str]:
+    def getter(self) -> str | None:
         return getenv(self._key)
 
 
 class SSMValue(ConfigValue[T]):
-    def getter(self) -> Optional[str]:
+    def getter(self) -> str | None:
         return SSM.get_parameter(self._key)

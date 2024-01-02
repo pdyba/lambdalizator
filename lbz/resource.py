@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from copy import deepcopy
 from http import HTTPStatus
-from typing import Optional, Union
+from typing import Union
 from urllib.parse import urlencode
 
 from multidict import CIMultiDict
@@ -132,8 +132,8 @@ class CORSResource(Resource):
         self,
         event: dict,
         methods: list[str],
-        origins: Optional[list[str]] = None,
-        cors_headers: Optional[list[str]] = None,
+        origins: list[str] | None = None,
+        cors_headers: list[str] | None = None,
     ):
         # TODO: adjust the rest of the arguments in the near future too.
         super().__init__(event)
@@ -157,7 +157,7 @@ class CORSResource(Resource):
         """Checks requests origins against allowed origins."""
         if "*" in origins:
             return "*"
-        request_origin: Optional[str] = self.request.headers.get("Origin")
+        request_origin: str | None = self.request.headers.get("Origin")
         if request_origin:  # pylint: disable=consider-using-assignment-expr
             for allowed_origin in origins:
                 if request_origin == allowed_origin:

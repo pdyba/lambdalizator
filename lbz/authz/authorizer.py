@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Union
 
 from jose import jwt
 
@@ -21,10 +21,10 @@ class Authorizer:
 
     def __init__(
         self,
-        auth_jwt: Optional[str],
+        auth_jwt: str | None,
         resource_name: str,
         permission_name: str,
-        base_permission_policy: Optional[dict] = None,
+        base_permission_policy: dict | None = None,
     ):
         self.outcome = DENY
         self.allowed_resource: Union[str, dict, None] = None
@@ -43,7 +43,7 @@ class Authorizer:
         )
 
     def _set_policy(
-        self, auth_jwt: Optional[str] = None, base_permission_policy: Optional[dict] = None
+        self, auth_jwt: str | None = None, base_permission_policy: dict | None = None
     ) -> None:
         policy = base_permission_policy or {}
         if auth_jwt is not None:

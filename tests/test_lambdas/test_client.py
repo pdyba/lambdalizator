@@ -1,7 +1,6 @@
 import json
 import logging
 from io import BytesIO
-from typing import Optional
 from unittest.mock import MagicMock
 
 import pytest
@@ -26,7 +25,7 @@ def lambda_client_fixture(mocker: MockerFixture) -> MagicMock:
     ],
 )
 def test__invoke__returns_response_sending_provided_data_as_payload(
-    lambda_client: MagicMock, data: Optional[dict], expected_data_bytes: bytes
+    lambda_client: MagicMock, data: dict | None, expected_data_bytes: bytes
 ) -> None:
     response_payload = {"result": LambdaResult.OK, "data": "test"}
     lambda_client.invoke.return_value = {

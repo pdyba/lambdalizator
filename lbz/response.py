@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Union
+from typing import Union
 
 
 class Response:
@@ -11,7 +11,7 @@ class Response:
         self,
         body: Union[str, dict],
         /,
-        headers: Optional[dict] = None,
+        headers: dict | None = None,
         status_code: int = 200,
         base64_encoded: bool = False,
     ):

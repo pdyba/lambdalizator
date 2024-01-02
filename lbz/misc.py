@@ -5,7 +5,7 @@ import logging.handlers
 import warnings
 from collections.abc import Callable, Hashable, Iterable, Iterator, MutableMapping
 from functools import wraps
-from typing import Any, Optional
+from typing import Any
 
 from lbz._cfg import LBZ_DEBUG_MODE, LOGGING_LEVEL
 
@@ -44,7 +44,7 @@ class Singleton(type):
 class MultiDict(MutableMapping):
     """Advanced Multi Dictionary."""
 
-    def __init__(self, mapping: Optional[dict]):
+    def __init__(self, mapping: dict | None):
         if mapping is None:
             mapping = {}
 
@@ -78,7 +78,7 @@ class MultiDict(MutableMapping):
         """Returns a list of all values for specific key."""
         return list(self._dict[k])
 
-    def original_items(self, keys_to_skip: Optional[Iterable[Hashable]] = None) -> list[tuple]:
+    def original_items(self, keys_to_skip: Iterable[Hashable] | None = None) -> list[tuple]:
         keys_to_skip = keys_to_skip or []
         return [(key, values) for key, values in self._dict.items() if key not in keys_to_skip]
 

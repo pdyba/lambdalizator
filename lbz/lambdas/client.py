@@ -1,6 +1,6 @@
 import json
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import Any
 
 from lbz.aws_boto3 import client
 from lbz.lambdas.enums import LambdaResult, LambdaSource
@@ -26,9 +26,9 @@ class LambdaClient:
         cls,
         function_name: str,
         op: str,
-        data: Optional[dict] = None,
+        data: dict | None = None,
         *,
-        allowed_error_results: Optional[Iterable[str]] = None,
+        allowed_error_results: Iterable[str] | None = None,
         raise_if_error_resp: bool = False,
         asynchronous: bool = False,
     ) -> LambdaResponse:

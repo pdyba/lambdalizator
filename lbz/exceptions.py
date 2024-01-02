@@ -1,6 +1,6 @@
 from collections.abc import Generator
 from http import HTTPStatus
-from typing import Any, Optional
+from typing import Any
 
 from lbz.response import Response
 
@@ -24,9 +24,9 @@ class LambdaFWException(Exception):
 
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
-    error_code: Optional[str] = None
+    error_code: str | None = None
 
-    def __init__(self, message: str = "", error_code: Optional[str] = None) -> None:
+    def __init__(self, message: str = "", error_code: str | None = None) -> None:
         super().__init__(message)
         if message:
             self.message = message
