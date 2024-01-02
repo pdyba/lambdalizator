@@ -2,12 +2,12 @@ import json
 from typing import Any, Iterable, Optional, Type, cast
 
 from lbz.aws_boto3 import client
-from lbz.dev import APIGatewayEvent
 from lbz.lambdas.enums import LambdaResult, LambdaSource
 from lbz.lambdas.exceptions import LambdaError
 from lbz.lambdas.response import LambdaResponse
 from lbz.misc import get_logger
 from lbz.response import Response
+from lbz.rest import APIGatewayEvent
 
 logger = get_logger(__name__)
 
@@ -66,7 +66,7 @@ class LambdaClient:
         payload = APIGatewayEvent(
             resource_path=path,
             method=method,
-            path_params=params,
+            path_params=path_params,
             query_params=query_params,
             body=body,
             headers=headers,
@@ -76,9 +76,9 @@ class LambdaClient:
 
         return Response(
             response["body"],
-            headers=response.get("headers", {}),
+            headers=response["headers"],
             status_code=response["statusCode"],
-            base64_encoded=response.get("isBase64Encoded", False),
+            base64_encoded=response["isBase64Encoded"],
         )
 
     @classmethod
@@ -96,11 +96,12 @@ class LambdaClient:
             response: dict = json.loads(raw_response["Payload"].read().decode("utf-8"))
             return response
         except Exception:
-            message = "Invalid response received from %s Lambda (op: %s)"
+            message = "Invalid response received from %s Lambda (%s: %s)"
             logger.error(
                 message,
                 function_name,
+                "op" if payload.get("op") else "path",
                 payload.get("op", payload.get("path")),
-                extra=dict(data=payload, response=raw_response),
+                extra=dict(payload=payload, response=raw_response),
             )
             raise

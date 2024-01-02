@@ -320,9 +320,9 @@ Released 2023-09-27
 
 
 ### Version 0.5.19
-Released 2023-11-10
+Released 2024-01-10
 
-- Adds rest over lambda interface (skipping API Gateway)
+- Adds HTTP requests over lambda interface (skipping API Gateway)
 
 
 ### Version 0.6.0

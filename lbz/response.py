@@ -24,6 +24,9 @@ class Response:
         self.status_code = status_code
         self.is_base64 = base64_encoded
 
+    def __repr__(self) -> str:
+        return f"<Response {self.status_code}>"
+
     def get_content_header(self) -> dict:
         """
         Adds necessary headers based on content type

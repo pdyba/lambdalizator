@@ -2,16 +2,14 @@ import json
 import logging
 from io import BytesIO
 from typing import Optional
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
 from pytest import LogCaptureFixture
 from pytest_mock import MockerFixture
 
 from lbz.aws_boto3 import Boto3Client
-from lbz.lambdas import LambdaClient, LambdaError, LambdaResult
-from lbz.lambdas.client import SetsEncoder
-from lbz.response import Response
+from lbz.lambdas import LambdaClient, LambdaError, LambdaResult, LambdaSource
 
 
 @pytest.fixture(name="lambda_client")
@@ -19,11 +17,11 @@ def lambda_client_fixture(mocker: MockerFixture) -> MagicMock:
     return mocker.patch.object(Boto3Client, "lambda_")
 
 
-def rest_payload_factory(
+def rest_response_factory(
     body: dict,
     status_code: int = 200,
     headers: Optional[dict] = None,
-    base_64: bool = False,
+    is_base_64_encoded: bool = False,
 ) -> dict:
     return {
         "Payload": BytesIO(
@@ -32,9 +30,8 @@ def rest_payload_factory(
                     "body": body,
                     "statusCode": status_code,
                     "headers": headers or {},
-                    "isBase64Encoded": base_64,
-                },
-                cls=SetsEncoder,
+                    "isBase64Encoded": is_base_64_encoded,
+                }
             ).encode("utf-8")
         )
     }
@@ -229,9 +226,9 @@ def test__invoke__raises_error_when_response_could_not_be_read_correctly(
 
     logged_record = caplog.records[0]
     assert logged_record.message == "Invalid response received from test-func Lambda (op: test-op)"
-    assert logged_record.data == {  # type: ignore
+    assert logged_record.payload == {  # type: ignore
         "data": None,
-        "invoke_type": "direct_lambda_request",
+        "invoke_type": LambdaSource.DIRECT,
         "op": "test-op",
     }
     assert logged_record.response == response  # type: ignore
@@ -263,16 +260,92 @@ def test__request__raises_error_when_response_could_not_be_read_correctly(
         )
 
     logged_record = caplog.records[0]
-    assert logged_record.message == "Invalid response received from test-func Lambda (op: /home)"
+    assert logged_record.message == "Invalid response received from test-func Lambda (path: /home)"
 
 
-def test__request__returns_response(
+def test__request__returns_response_when_requesting_with_no_body(
     lambda_client: MagicMock,
 ) -> None:
-    payload = rest_payload_factory(body={})
+    payload = rest_response_factory(body={})
 
     lambda_client.invoke.return_value = payload
 
     result = LambdaClient.request("test-function", "/home", "GET")
 
-    assert result.to_dict() == Response({}, headers={}).to_dict()
+    assert result.to_dict() == {
+        "body": "{}",
+        "headers": {},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    lambda_client.invoke.assert_called_once_with(
+        FunctionName="test-function",
+        Payload=ANY,  # Any idea how to generate predefined requestId
+        InvocationType="RequestResponse",
+    )
+
+
+def test__request__returns_response_when_requesting_with_body(
+    lambda_client: MagicMock,
+) -> None:
+    payload = rest_response_factory(body={"adult": "child"})
+
+    lambda_client.invoke.return_value = payload
+
+    result = LambdaClient.request("test-function", "/home", "GET")
+
+    assert result.to_dict() == {
+        "body": '{"adult":"child"}',
+        "headers": {},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    lambda_client.invoke.assert_called_once_with(
+        FunctionName="test-function",
+        Payload=ANY,  # Any idea how to generate predefined requestId
+        InvocationType="RequestResponse",
+    )
+
+
+def test__request__returns_response_when_requesting_with_headers(
+    lambda_client: MagicMock,
+) -> None:
+    payload = rest_response_factory(body={}, headers={"accept": "darth/json/only"})
+
+    lambda_client.invoke.return_value = payload
+
+    result = LambdaClient.request("test-function", "/home", "GET")
+
+    assert result.to_dict() == {
+        "body": "{}",
+        "headers": {"accept": "darth/json/only"},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    lambda_client.invoke.assert_called_once_with(
+        FunctionName="test-function",
+        Payload=ANY,  # Any idea how to generate predefined requestId
+        InvocationType="RequestResponse",
+    )
+
+
+def test__request__returns_response_when_requesting_with_base_64_set_to_true(
+    lambda_client: MagicMock,
+) -> None:
+    payload = rest_response_factory(body={}, is_base_64_encoded=True)
+
+    lambda_client.invoke.return_value = payload
+
+    result = LambdaClient.request("test-function", "/home", "GET")
+
+    assert result.to_dict() == {
+        "body": "{}",
+        "headers": {},
+        "isBase64Encoded": True,
+        "statusCode": 200,
+    }
+    lambda_client.invoke.assert_called_once_with(
+        FunctionName="test-function",
+        Payload=ANY,  # Any idea how to generate predefined requestId
+        InvocationType="RequestResponse",
+    )
