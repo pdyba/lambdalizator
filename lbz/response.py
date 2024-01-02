@@ -1,5 +1,4 @@
 import json
-from typing import Union
 
 
 class Response:
@@ -9,7 +8,7 @@ class Response:
 
     def __init__(
         self,
-        body: Union[str, dict],
+        body: str | dict,
         /,
         headers: dict | None = None,
         status_code: int = 200,

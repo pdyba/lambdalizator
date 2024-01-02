@@ -1,5 +1,3 @@
-from typing import Union
-
 from jose import jwt
 
 from lbz.exceptions import PermissionDenied
@@ -27,8 +25,8 @@ class Authorizer:
         base_permission_policy: dict | None = None,
     ):
         self.outcome = DENY
-        self.allowed_resource: Union[str, dict, None] = None
-        self.denied_resource: Union[str, dict, None] = None
+        self.allowed_resource: str | dict | None = None
+        self.denied_resource: str | dict | None = None
         self.resource = resource_name
         self.permission = permission_name
         self.refs: dict[str, dict] = {}
@@ -71,7 +69,7 @@ class Authorizer:
         if self.outcome == DENY:
             self._raise_permission_denied()
 
-    def _deny_if_all(self, permission: Union[dict, str]) -> None:
+    def _deny_if_all(self, permission: dict | str) -> None:
         if permission == ALL:
             self._raise_permission_denied()
 
@@ -83,7 +81,7 @@ class Authorizer:
                 self._check_resource(resource)
                 self.denied_resource = resource
 
-    def _check_resource(self, resource: Union[dict, str]) -> None:
+    def _check_resource(self, resource: dict | str) -> None:
         # TODO: standardize the naming convention (resource != permission)
         self._deny_if_all(resource)
         if isinstance(resource, dict):
@@ -91,7 +89,7 @@ class Authorizer:
                 self._deny_if_all(key)
                 self._deny_if_all(value)
 
-    def _allow_if_allow_all(self, permission: Union[str, dict]) -> bool:
+    def _allow_if_allow_all(self, permission: str | dict) -> bool:
         if permission == ALL:
             self.outcome = ALLOW
             self.allowed_resource = ALL

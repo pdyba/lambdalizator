@@ -1,7 +1,6 @@
 from collections.abc import Callable
 from copy import deepcopy
 from http import HTTPStatus
-from typing import Union
 from urllib.parse import urlencode
 
 from multidict import CIMultiDict
@@ -83,7 +82,7 @@ class Resource:
     def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"
 
-    def _get_user(self, headers: CIMultiDict) -> Union[None, User]:
+    def _get_user(self, headers: CIMultiDict) -> User | None:
         authentication = headers.get("Authentication")
         if authentication and ALLOWED_PUBLIC_KEYS.value:
             return User(authentication)

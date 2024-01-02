@@ -1,6 +1,6 @@
 import base64
 import json
-from typing import Any, Union
+from typing import Any
 
 from multidict import CIMultiDict
 
@@ -19,7 +19,7 @@ class Request:
         headers: CIMultiDict,
         uri_params: dict,
         method: str,
-        body: Union[str, bytes, dict],
+        body: str | bytes | dict,
         context: dict,
         stage_vars: dict,
         is_base64_encoded: bool,
@@ -36,19 +36,19 @@ class Request:
         self._is_base64_encoded = is_base64_encoded
         self._body = body
         self._json_body: dict | None = None
-        self._raw_body: Union[bytes, dict] | None = None
+        self._raw_body: bytes | dict | None = None
 
     def __repr__(self) -> str:
         return f"<Request {self.method} >"
 
     @staticmethod
-    def _decode_base64(encoded: Union[str, bytes]) -> bytes:
+    def _decode_base64(encoded: str | bytes) -> bytes:
         if not isinstance(encoded, bytes):
             encoded = encoded.encode("ascii")
         return base64.b64decode(encoded)
 
     @property
-    def raw_body(self) -> Union[bytes, dict] | None:
+    def raw_body(self) -> bytes | dict | None:
         if self._raw_body is None and self._body is not None:
             if self._is_base64_encoded and isinstance(self._body, (bytes, str)):
                 self._raw_body = self._decode_base64(self._body)
@@ -59,7 +59,7 @@ class Request:
         return self._raw_body
 
     @staticmethod
-    def _safe_json_loads(payload: Union[str, bytes]) -> Any:
+    def _safe_json_loads(payload: str | bytes) -> Any:
         try:
             return json.loads(payload)
         except ValueError as error:
