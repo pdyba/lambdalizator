@@ -15,6 +15,7 @@ class APIGatewayEvent(dict):
         query_params: Optional[dict] = None,
         path_params: Optional[dict] = None,
         headers: Optional[dict] = None,
+        is_base_64_encoded: bool = False,
     ) -> None:
         super().__init__()
 
@@ -35,6 +36,8 @@ class APIGatewayEvent(dict):
             "requestId": str(uuid4()),
         }
         self["stageVariables"] = {}
+        if is_base_64_encoded:
+            self["isBase64Encoded"] = is_base_64_encoded
 
     @staticmethod
     def _extract_query_params(query_params: Optional[dict]) -> None:

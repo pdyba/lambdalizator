@@ -113,3 +113,26 @@ class TestAPIGatewayEvent:
             "resource": "/",
             "stageVariables": {},
         }
+
+    def test_structure_is_as_expected_with_base64(self) -> None:
+        event = APIGatewayEvent("/", "GET", is_base_64_encoded=True)
+
+        assert event == {
+            "body": {},
+            "headers": {"Content-Type": "application/json"},
+            "httpMethod": "GET",
+            "method": "GET",
+            "multiValueQueryStringParameters": None,
+            "path": "/",
+            "pathParameters": {},
+            "queryStringParameters": None,
+            "requestContext": {
+                "httpMethod": "GET",
+                "path": "/",
+                "requestId": ANY,
+                "resourcePath": "/",
+            },
+            "resource": "/",
+            "stageVariables": {},
+            "isBase64Encoded": True,
+        }
