@@ -17,8 +17,8 @@ jobs:
         with:
           python-version: "3.9"
           cache: "pip"
-      - run: make build-nocache
       - run: pip install -r requirements-deploy.txt
+      - run: python setup.py sdist bdist_wheel
       - run: python -m twine upload --verbose dist/*
         env:
           TWINE_USERNAME: __token__

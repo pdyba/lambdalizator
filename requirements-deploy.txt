@@ -52,5 +52,7 @@ urllib3==2.1.0
     # via
     #   requests
     #   twine
+wheel==0.42.0
+    # via -r requirements-deploy.in
 zipp==3.17.0
     # via importlib-metadata
