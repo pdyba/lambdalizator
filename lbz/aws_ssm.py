@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from lbz.aws_boto3 import client
 
 

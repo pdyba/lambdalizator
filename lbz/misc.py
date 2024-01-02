@@ -1,4 +1,6 @@
 """Misc Helpers of Lambda Framework."""
+from __future__ import annotations
+
 import copy
 import logging
 import logging.handlers

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from lbz.dev.misc import APIGatewayEvent
 from lbz.misc import get_logger
 from lbz.resource import Resource

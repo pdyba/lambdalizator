@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from jose import jwt
 
 from lbz.exceptions import PermissionDenied
