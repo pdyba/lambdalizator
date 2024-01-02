@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 from lbz.authz.utils import check_permission
 from lbz.collector import authz_collector

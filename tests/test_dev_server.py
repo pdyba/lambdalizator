@@ -3,7 +3,6 @@ import io
 import json
 import socket
 from socketserver import BaseServer
-from typing import Type
 from unittest import mock
 from urllib import request
 
@@ -17,7 +16,7 @@ class MyClass:
         self.tcp_socket.connect("0.0.0.0", "8888")  # type: ignore
 
 
-def test_my_lambda_dev_handler(sample_resource: Type[Resource]) -> None:
+def test_my_lambda_dev_handler(sample_resource: type[Resource]) -> None:
     with mock.patch("socket.socket") as msocket:
 
         class MyLambdaDevHandlerHelloWorld(MyLambdaDevHandler):
@@ -43,7 +42,7 @@ def test_my_lambda_dev_handler(sample_resource: Type[Resource]) -> None:
     assert params == {"id": "123"}
 
 
-def test_my_dev_server(sample_resource: Type[Resource]) -> None:
+def test_my_dev_server(sample_resource: type[Resource]) -> None:
     dev_serv = MyDevServer(sample_resource)
     assert dev_serv.server_address == ("localhost", 8000)
     assert dev_serv.port == 8000
@@ -51,7 +50,7 @@ def test_my_dev_server(sample_resource: Type[Resource]) -> None:
     assert issubclass(dev_serv.my_handler, MyLambdaDevHandler)
 
 
-def test_server_can_run_in_background(sample_resource: Type[Resource]) -> None:
+def test_server_can_run_in_background(sample_resource: type[Resource]) -> None:
     dev_serv = MyDevServer(sample_resource, port=9999)
     dev_serv.start()
     url = "http://localhost:9999/"

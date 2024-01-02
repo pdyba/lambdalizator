@@ -1,4 +1,4 @@
-from typing import Callable, Mapping
+from collections.abc import Callable, Mapping
 
 from lbz.exceptions import LambdaFWException
 from lbz.handlers import BaseHandler

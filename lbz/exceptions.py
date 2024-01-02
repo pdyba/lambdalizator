@@ -1,5 +1,6 @@
+from collections.abc import Generator
 from http import HTTPStatus
-from typing import Any, Generator, Optional, Type
+from typing import Any, Optional
 
 from lbz.response import Response
 
@@ -344,8 +345,8 @@ class NetworkAuthenticationRequired(LambdaFWServerException):
 
 
 def all_lbz_errors(
-    cls: Type[LambdaFWException] = LambdaFWException,
-) -> Generator[Type[LambdaFWException], None, None]:
+    cls: type[LambdaFWException] = LambdaFWException,
+) -> Generator[type[LambdaFWException], None, None]:
     for subcls in cls.__subclasses__():
         if subcls not in [LambdaFWClientException, LambdaFWServerException]:
             yield subcls

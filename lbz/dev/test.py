@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Optional
 
 from lbz.dev.misc import APIGatewayEvent
 from lbz.misc import get_logger
@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 class Client:
     """Client created for testing purposes."""
 
-    def __init__(self, resource: Type[Resource]):
+    def __init__(self, resource: type[Resource]):
         self.resource = resource
 
     def post(

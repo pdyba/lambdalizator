@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from os import environ
 from threading import Thread
-from typing import Optional, Tuple, Type, Union
+from typing import Optional, Union
 
 from lbz.dev.misc import APIGatewayEvent
 from lbz.resource import Resource
@@ -21,12 +21,12 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def cls(self) -> Type[Resource]:
+    def cls(self) -> type[Resource]:
         pass
 
     def _get_route_params(  # noqa:C901
         self, org_path: str
-    ) -> Tuple[Union[str, None], Union[dict, None]]:
+    ) -> tuple[Union[str, None], Union[dict, None]]:
         """Parses route and params.
 
         :param org_path:
@@ -142,12 +142,12 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
 class MyDevServer(Thread):
     def __init__(
         self,
-        acls: Type[Resource],
+        acls: type[Resource],
         address: str = "localhost",
         port: int = 8000,
     ) -> None:
         class MyClassLambdaDevHandler(MyLambdaDevHandler):
-            cls: Type[Resource] = acls
+            cls: type[Resource] = acls
 
         super().__init__()
         self.my_handler = MyClassLambdaDevHandler

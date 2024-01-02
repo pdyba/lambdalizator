@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from jose import jwt
 
@@ -31,7 +31,7 @@ class Authorizer:
         self.denied_resource: Union[str, dict, None] = None
         self.resource = resource_name
         self.permission = permission_name
-        self.refs: Dict[str, dict] = {}
+        self.refs: dict[str, dict] = {}
         self.allow: dict = {}
         self.deny: dict = {}
         self._set_policy(auth_jwt, base_permission_policy)

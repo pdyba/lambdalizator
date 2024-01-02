@@ -1,7 +1,8 @@
 import json
 from abc import ABCMeta, abstractmethod
+from collections.abc import Callable
 from os import getenv
-from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
+from typing import Any, Generic, Optional, TypeVar
 
 from lbz.aws_ssm import SSM
 from lbz.exceptions import ConfigValueParsingFailed, MissingConfigValue
@@ -11,7 +12,7 @@ T = TypeVar("T")
 
 class ConfigParser:
     @staticmethod
-    def split_by_comma(value: str) -> List[str]:
+    def split_by_comma(value: str) -> list[str]:
         return value.split(",")
 
     @staticmethod
@@ -21,8 +22,8 @@ class ConfigParser:
         return False
 
     @staticmethod
-    def load_jwt_keys(value: str) -> List[dict]:
-        deserialized_value: Dict[str, List[dict]] = json.loads(value)
+    def load_jwt_keys(value: str) -> list[dict]:
+        deserialized_value: dict[str, list[dict]] = json.loads(value)
         return deserialized_value["keys"]
 
 

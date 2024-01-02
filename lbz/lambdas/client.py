@@ -1,5 +1,6 @@
 import json
-from typing import Any, Iterable, Optional, Type
+from collections.abc import Iterable
+from typing import Any, Optional
 
 from lbz.aws_boto3 import client
 from lbz.lambdas.enums import LambdaResult, LambdaSource
@@ -18,7 +19,7 @@ class SetsEncoder(json.JSONEncoder):
 
 
 class LambdaClient:
-    json_encoder: Type[json.JSONEncoder] = SetsEncoder
+    json_encoder: type[json.JSONEncoder] = SetsEncoder
 
     @classmethod
     def invoke(

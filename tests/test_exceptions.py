@@ -1,6 +1,4 @@
 # coding=utf-8
-from typing import Type
-
 import pytest
 
 from lbz.exceptions import (
@@ -71,7 +69,7 @@ def test__unsupported_method__builds_message_based_on_method_provided_from_outsi
 
 @pytest.mark.parametrize("custom_exception", set(all_lbz_errors()) - {UnsupportedMethod})
 def test__custom_exception__contains_message_and_status_code_according_to_its_docstring(
-    custom_exception: Type[LambdaFWException],
+    custom_exception: type[LambdaFWException],
 ) -> None:
     exception = custom_exception()
     try:

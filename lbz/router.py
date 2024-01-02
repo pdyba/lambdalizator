@@ -1,6 +1,7 @@
 import json
+from collections.abc import Callable, Iterator
 from functools import wraps
-from typing import Any, Callable, Iterator
+from typing import Any
 
 from lbz.misc import NestedDict, Singleton
 
