@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import uuid4
 
-DEFAULT_HEADER = {"Content-Type": "application/json"}
+DEFAULT_HEADERS = {"Content-Type": "application/json"}
 
 
 class APIGatewayEvent(dict):

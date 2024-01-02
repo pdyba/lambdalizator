@@ -58,7 +58,7 @@ class LambdaClient:
         function_name: str,
         method: str,
         path: str,
-        params: Optional[dict] = None,
+        path_params: Optional[dict] = None,
         query_params: Optional[dict] = None,
         body: Optional[dict] = None,
         headers: Optional[dict] = None,
