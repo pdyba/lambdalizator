@@ -36,9 +36,6 @@ class APIGatewayEvent(dict):
         }
         self["stageVariables"] = {}
 
-    def __repr__(self) -> str:
-        return f"<API Gateway Event {self['method']} @ {self['path']}>"
-
     @staticmethod
     def _extract_query_params(query_params: Optional[dict]) -> None:
         if query_params:
