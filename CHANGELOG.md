@@ -320,6 +320,14 @@ Released 2023-09-27
 
 
 ### Version 0.5.19
+Released 2024-01-02
+
+- Start verifying the code with the usage of Python 3.9 and Python 3.10
+- Adjust the GitHub Workflow files to make the pipelines more descriptive
+- Improve the rest of the repository for upcoming changes
+
+
+### Version 0.5.20
 Released 2024-01-10
 
 - Adds HTTP requests over lambda interface (skipping API Gateway)
