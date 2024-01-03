@@ -23,7 +23,7 @@ class BaseHandler(Generic[T], metaclass=ABCMeta):
         self._post_handle()
         return self.response
 
-    @deprecated(message="Please use react() for full request flow", version="0.6.0")
+    @deprecated(message="Please use react() for full request flow", version="0.7.0")
     def __call__(self) -> T:
         return self.react()
 
