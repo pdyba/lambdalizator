@@ -26,6 +26,7 @@ jobs:
       - run: make flake8
       - run: make mypy
       - run: make pylint
+      - run: make bandit
 
   unit_tests:
     name: Run unit tests

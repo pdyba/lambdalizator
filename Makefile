@@ -90,8 +90,16 @@ pylint:
 .PHONY: lint
 lint: flake8 mypy pylint
 
-.PHONY: format-and-lint
-format-and-lint: format lint
+.PHONY: bandit
+bandit:
+	bandit --version
+	bandit --recursive lbz setup.py
+
+.PHONY: secure
+secure: bandit
+
+.PHONY: format-lint-secure
+format-lint-secure: format lint secure
 
 
 ###############################################################################
