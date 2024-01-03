@@ -1,5 +1,6 @@
 -c requirements.txt
 
+bandit
 black
 boto3-stubs[cognito-idp,dynamodb,events,lambda,s3,sns,ssm,sqs]
 coverage
