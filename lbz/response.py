@@ -25,7 +25,7 @@ class Response:
         self.is_base64 = base64_encoded
 
     def __repr__(self) -> str:
-        return f"<Response {self.status_code}>"
+        return f"<Response(status_code={self.status_code})>"
 
     def get_content_header(self) -> dict:
         """

@@ -330,7 +330,7 @@ Released 2024-01-02
 ### Version 0.5.20
 Released 2024-01-10
 
-- Adds HTTP requests over lambda interface (skipping API Gateway)
+- Adds the ability to make an HTTP request bypassing the API Gateway
 
 
 ### Version 0.6.0
