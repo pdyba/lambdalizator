@@ -333,7 +333,7 @@ def test__request__returns_response_when_requesting_with_all_possibilites(
     )
 
     assert result.to_dict() == {
-        "body": '{}',
+        "body": "{}",
         "headers": {},
         "isBase64Encoded": False,
         "statusCode": 200,
