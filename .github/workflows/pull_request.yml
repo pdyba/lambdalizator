@@ -27,6 +27,7 @@ jobs:
       - run: make mypy
       - run: make pylint
       - run: make bandit
+      - run: make pip-audit
 
   unit_tests:
     name: Run unit tests
