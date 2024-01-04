@@ -19,16 +19,13 @@ class APIGatewayEvent(dict):
     ) -> None:
         super().__init__()
 
-        self._extract_query_params(query_params)
         self["resource"] = resource_path
         self["httpMethod"] = method
         self["pathParameters"] = {} if path_params is None else path_params
         self["path"] = resource_path.format(**self.get("pathParameters", {}))
-        self["method"] = method
         self["body"] = {} if body is None else body
         self["headers"] = DEFAULT_HEADERS if headers is None else headers
-        self["queryStringParameters"] = query_params
-        self["multiValueQueryStringParameters"] = query_params
+        self["multiValueQueryStringParameters"] = self._extract_query_params(query_params)
         self["requestContext"] = {
             "resourcePath": self["resource"],
             "path": self["path"],
@@ -36,14 +33,16 @@ class APIGatewayEvent(dict):
             "requestId": str(uuid4()),
         }
         self["stageVariables"] = {}
-        if is_base_64_encoded:
-            self["isBase64Encoded"] = is_base_64_encoded
+        self["isBase64Encoded"] = is_base_64_encoded
 
     @staticmethod
-    def _extract_query_params(query_params: Optional[dict]) -> None:
+    def _extract_query_params(query_params: Optional[dict]) -> dict:
+        extracted_query_aparams = {}
         if query_params:
+
             for key, value in query_params.items():
                 if not isinstance(value, list):
-                    query_params[key] = [str(value)]
+                    extracted_query_aparams[key] = [str(value)]
                 else:
-                    query_params[key] = [str(elem) for elem in value]
+                    extracted_query_aparams[key] = [str(elem) for elem in value]
+        return extracted_query_aparams

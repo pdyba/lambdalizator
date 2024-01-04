@@ -1,7 +1,7 @@
 import json
 import logging
 from io import BytesIO
-from typing import Optional
+from typing import Optional, cast
 from unittest.mock import ANY, MagicMock
 
 import pytest
@@ -225,7 +225,7 @@ def test__invoke__raises_error_when_response_could_not_be_read_correctly(
         LambdaClient.invoke("test-func", "test-op", raise_if_error_resp=False)
 
     logged_record = caplog.records[0]
-    assert logged_record.message == "Invalid response received from test-func Lambda (op: test-op)"
+    assert logged_record.message == "Invalid response received from 'test-func' Lambda"
     assert logged_record.payload == {  # type: ignore
         "data": None,
         "invoke_type": LambdaSource.DIRECT,
@@ -260,15 +260,30 @@ def test__request__raises_error_when_response_could_not_be_read_correctly(
         )
 
     logged_record = caplog.records[0]
-    assert logged_record.message == "Invalid response received from test-func Lambda (path: /home)"
+    assert logged_record.message == "Invalid response received from 'test-func' Lambda"
+    assert logged_record.payload == {  # type: ignore
+        "body": {},
+        "headers": {"Content-Type": "application/json"},
+        "httpMethod": "GET",
+        "isBase64Encoded": False,
+        "multiValueQueryStringParameters": {},
+        "path": "/home",
+        "pathParameters": {},
+        "requestContext": {
+            "httpMethod": "GET",
+            "path": "/home",
+            "requestId": ANY,
+            "resourcePath": "/home",
+        },
+        "resource": "/home",
+        "stageVariables": {},
+    }
 
 
-def test__request__returns_response_when_requesting_with_no_body(
+def test__request__returns_response_when_requesting_with_minimal_args(
     lambda_client: MagicMock,
 ) -> None:
-    payload = rest_response_factory(body={})
-
-    lambda_client.invoke.return_value = payload
+    lambda_client.invoke.return_value = rest_response_factory(body={})
 
     result = LambdaClient.request("test-function", "/home", "GET")
 
@@ -280,72 +295,74 @@ def test__request__returns_response_when_requesting_with_no_body(
     }
     lambda_client.invoke.assert_called_once_with(
         FunctionName="test-function",
-        Payload=ANY,  # Any idea how to generate predefined requestId
+        Payload=ANY,
         InvocationType="RequestResponse",
     )
+    assert _load_request_payload_from_lambda_client(lambda_client) == {
+        "body": {},
+        "headers": {"Content-Type": "application/json"},
+        "httpMethod": "/home",
+        "isBase64Encoded": False,
+        "multiValueQueryStringParameters": {},
+        "path": "GET",
+        "pathParameters": {},
+        "requestContext": {
+            "httpMethod": "/home",
+            "path": "GET",
+            "requestId": ANY,
+            "resourcePath": "GET",
+        },
+        "resource": "GET",
+        "stageVariables": {},
+    }
 
 
-def test__request__returns_response_when_requesting_with_body(
+def test__request__returns_response_when_requesting_with_all_possibilites(
     lambda_client: MagicMock,
 ) -> None:
-    payload = rest_response_factory(body={"adult": "child"})
+    lambda_client.invoke.return_value = rest_response_factory(body={})
 
-    lambda_client.invoke.return_value = payload
-
-    result = LambdaClient.request("test-function", "/home", "GET")
+    result = LambdaClient.request(
+        "test-function",
+        "/{pid}",
+        "POST",
+        path_params={"pid": "id-123"},
+        query_params={"city": "Peters Enclave"},
+        body={"x": "y"},
+        headers={"Authz": "yolo"},
+    )
 
     assert result.to_dict() == {
-        "body": '{"adult":"child"}',
+        "body": '{}',
         "headers": {},
         "isBase64Encoded": False,
         "statusCode": 200,
     }
     lambda_client.invoke.assert_called_once_with(
         FunctionName="test-function",
-        Payload=ANY,  # Any idea how to generate predefined requestId
+        Payload=ANY,
         InvocationType="RequestResponse",
     )
-
-
-def test__request__returns_response_when_requesting_with_headers(
-    lambda_client: MagicMock,
-) -> None:
-    payload = rest_response_factory(body={}, headers={"accept": "darth/json/only"})
-
-    lambda_client.invoke.return_value = payload
-
-    result = LambdaClient.request("test-function", "/home", "GET")
-
-    assert result.to_dict() == {
-        "body": "{}",
-        "headers": {"accept": "darth/json/only"},
+    assert _load_request_payload_from_lambda_client(lambda_client) == {
+        "body": {"x": "y"},
+        "headers": {"Authz": "yolo"},
+        "httpMethod": "/{pid}",
         "isBase64Encoded": False,
-        "statusCode": 200,
+        "multiValueQueryStringParameters": {"city": ["Peters Enclave"]},
+        "path": "POST",
+        "pathParameters": {"pid": "id-123"},
+        "requestContext": {
+            "httpMethod": "/{pid}",
+            "path": "POST",
+            "requestId": ANY,
+            "resourcePath": "POST",
+        },
+        "resource": "POST",
+        "stageVariables": {},
     }
-    lambda_client.invoke.assert_called_once_with(
-        FunctionName="test-function",
-        Payload=ANY,  # Any idea how to generate predefined requestId
-        InvocationType="RequestResponse",
-    )
 
 
-def test__request__returns_response_when_requesting_with_base_64_set_to_true(
-    lambda_client: MagicMock,
-) -> None:
-    payload = rest_response_factory(body={}, is_base_64_encoded=True)
-
-    lambda_client.invoke.return_value = payload
-
-    result = LambdaClient.request("test-function", "/home", "GET")
-
-    assert result.to_dict() == {
-        "body": "{}",
-        "headers": {},
-        "isBase64Encoded": True,
-        "statusCode": 200,
-    }
-    lambda_client.invoke.assert_called_once_with(
-        FunctionName="test-function",
-        Payload=ANY,  # Any idea how to generate predefined requestId
-        InvocationType="RequestResponse",
+def _load_request_payload_from_lambda_client(lambda_client: MagicMock) -> dict:
+    return cast(
+        dict, json.loads(lambda_client.invoke.call_args_list[0].kwargs["Payload"].decode("UTF-8"))
     )

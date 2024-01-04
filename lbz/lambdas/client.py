@@ -96,12 +96,10 @@ class LambdaClient:
             response: dict = json.loads(raw_response["Payload"].read().decode("utf-8"))
             return response
         except Exception:
-            message = "Invalid response received from %s Lambda (%s: %s)"
+            message = "Invalid response received from '%s' Lambda"
             logger.error(
                 message,
                 function_name,
-                "op" if payload.get("op") else "path",
-                payload.get("op", payload.get("path")),
                 extra=dict(payload=payload, response=raw_response),
             )
             raise
