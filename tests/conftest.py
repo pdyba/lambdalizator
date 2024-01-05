@@ -1,7 +1,7 @@
 import json
+from collections.abc import Iterator
 from datetime import datetime, timedelta
 from os import environ
-from typing import Iterator, List, Type
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -34,12 +34,12 @@ from tests.utils import encode_token
 
 
 @pytest.fixture(scope="session", name="allowed_audiences")
-def allowed_audiences_fixture() -> List[str]:
+def allowed_audiences_fixture() -> list[str]:
     return [str(uuid4()), str(uuid4())]
 
 
 @pytest.fixture(autouse=True)
-def setting_initial_lbz_configuration(allowed_audiences: List[str]) -> Iterator[None]:
+def setting_initial_lbz_configuration(allowed_audiences: list[str]) -> Iterator[None]:
     patched_environ = {
         "AUTH_REMOVE_PREFIXES": "1",
         "ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [SAMPLE_PUBLIC_KEY]}),
@@ -104,7 +104,7 @@ def sample_event() -> APIGatewayEvent:
 
 
 @pytest.fixture(scope="session", name="jwt_partial_payload")
-def jwt_partial_payload_fixture(allowed_audiences: List[str]) -> dict:
+def jwt_partial_payload_fixture(allowed_audiences: list[str]) -> dict:
     return {
         "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
         "iat": int(datetime.utcnow().timestamp()),
@@ -191,7 +191,7 @@ def sample_request_with_user(user: User) -> Request:
 
 
 @pytest.fixture()
-def sample_resource() -> Type[Resource]:
+def sample_resource() -> type[Resource]:
     """Be careful when doing any changes in this fixture"""
 
     class HelloWorld(Resource):
@@ -207,7 +207,7 @@ def sample_resource() -> Type[Resource]:
 
 
 @pytest.fixture()
-def sample_resource_with_authorization() -> Type[Resource]:
+def sample_resource_with_authorization() -> type[Resource]:
     """Be careful when doing any changes in this fixture - especially for Auth Collector"""
 
     class XResource(Resource):

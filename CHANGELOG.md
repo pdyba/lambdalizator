@@ -321,11 +321,19 @@ Released 2023-09-27
 ### Version 0.5.19
 Released 2024-01-02
 
-- Start verifying the code with the usage of Python 3.9 and Python 3.10
-- Adjust the GitHub Workflow files to make the pipelines more descriptive
-- Improve the rest of the repository for upcoming changes
+- Starts verifying the code with the usage of Python 3.9 and Python 3.10
+- Adjusts the GitHub Workflow files to make the pipelines more descriptive
+- Improves the rest of the repository for upcoming changes
+
+## 0.6.x
 
 ### Version 0.6.0
+Released 2024-01-05
+
+- Adjusts the code to the latest standards set by Python 3.12
+- Disables support for Python 3.8 due to deprecated typing aliases
+
+### Version 0.7.0
 Release ETA 2024-02-31 ;)
 
 - Moves REST (API Gateway) related modules into one package

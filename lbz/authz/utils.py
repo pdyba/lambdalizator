@@ -1,14 +1,10 @@
-"""
-Authorization helper functions.
-"""
 from lbz.authz.authorizer import Authorizer
 from lbz.exceptions import PermissionDenied, Unauthorized
 from lbz.resource import Resource
 
 
 def check_permission(resource: Resource, permission_name: str) -> dict:
-    """
-    Check if requester has sufficient permissions to do something on specific resource.
+    """Check if requester has sufficient permissions to do something on specific resource.
 
     Raises if not.
     """
@@ -28,8 +24,7 @@ def check_permission(resource: Resource, permission_name: str) -> dict:
 
 
 def has_permission(resource: Resource, permission_name: str) -> bool:
-    """
-    Safe Check if requester has sufficient permissions to do something on specific resource.
+    """Safe Check if requester has sufficient permissions to do something on specific resource.
 
     Does not raise.
     """

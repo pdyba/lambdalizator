@@ -2,7 +2,7 @@
 
 https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
 """
-from typing import Any, Dict
+from typing import Any
 
 
 class LambdaClientContextMobileClient:
@@ -15,8 +15,8 @@ class LambdaClientContextMobileClient:
 
 class LambdaClientContext:
     client: LambdaClientContextMobileClient
-    custom: Dict[str, Any]
-    env: Dict[str, Any]
+    custom: dict[str, Any]
+    env: dict[str, Any]
 
 
 class LambdaCognitoIdentity:
@@ -37,4 +37,4 @@ class LambdaContext:
 
     @staticmethod
     def get_remaining_time_in_millis() -> int:
-        ...
+        raise NotImplementedError

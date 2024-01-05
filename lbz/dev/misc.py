@@ -1,6 +1,5 @@
-"""
-Dev misc tools.
-"""
+from __future__ import annotations
+
 import json
 import pathlib
 from uuid import uuid4
@@ -17,10 +16,10 @@ class APIGatewayEvent(dict):
         self,
         resource_path: str,
         method: str,
-        body: dict = None,
-        query_params: dict = None,
-        path_params: dict = None,
-        headers: dict = None,
+        body: dict | None = None,
+        query_params: dict | None = None,
+        path_params: dict | None = None,
+        headers: dict | None = None,
     ) -> None:
         super().__init__(**json.loads(EVENT_TEMPLATE))
 

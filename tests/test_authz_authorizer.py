@@ -46,7 +46,6 @@ class TestAuthorizerWithoutMockingJWT:
             )
 
 
-# pylint: disable=too-many-public-methods
 class TestAuthorizerWithMockedJWT:
     @staticmethod
     def _make_mocked_authorizer(token_payload: dict) -> Authorizer:
