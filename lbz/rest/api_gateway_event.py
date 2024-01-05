@@ -5,17 +5,20 @@ DEFAULT_HEADERS = {"Content-Type": "application/json"}
 
 
 class APIGatewayEvent(dict):
-    """Easy-to-use dictionary simulating the event coming from the API Gateway"""
+    """Easy-to-use dictionary simulating the event coming from the API Gateway
+    
+    https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
+    """
 
     def __init__(
         self,
-        resource_path: str,
         method: str,
-        body: Optional[dict] = None,
-        query_params: Optional[dict] = None,
+        resource_path: str,
         path_params: Optional[dict] = None,
+        query_params: Optional[dict] = None,
+        body: Optional[dict] = None,
         headers: Optional[dict] = None,
-        is_base_64_encoded: bool = False,
+        is_base64_encoded: bool = False,
     ) -> None:
         super().__init__()
 
@@ -36,13 +39,12 @@ class APIGatewayEvent(dict):
         self["isBase64Encoded"] = is_base_64_encoded
 
     @staticmethod
-    def _extract_query_params(query_params: Optional[dict]) -> dict:
-        extracted_query_aparams = {}
+    def _get_multi_value_query_params(query_params: Optional[dict]) -> dict:
+        multi_value_query_params: Dict[str, List[str]] = {}
         if query_params:
-
             for key, value in query_params.items():
                 if not isinstance(value, list):
-                    extracted_query_aparams[key] = [str(value)]
+                    multi_value_query_params[key] = [str(value)]
                 else:
-                    extracted_query_aparams[key] = [str(elem) for elem in value]
-        return extracted_query_aparams
+                    multi_value_query_params[key] = [str(elem) for elem in value]
+        return multi_value_query_params

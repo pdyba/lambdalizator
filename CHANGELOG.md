@@ -173,7 +173,6 @@ Released 2021-09-24
 
 - Packaging Type Information \(PEP 561\)
 
-
 ### Version 0.4.2
 Released 2021-10-09
 
@@ -275,7 +274,6 @@ Released 2022-08-09
 - Adds Router cleanup after each test and router fixture
 - General tests improvements
 - Many mypy related improvements for tests
-
 
 ### Version 0.5.15
 Released 2022-08-30

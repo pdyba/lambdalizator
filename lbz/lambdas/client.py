@@ -63,16 +63,16 @@ class LambdaClient:
         body: Optional[dict] = None,
         headers: Optional[dict] = None,
     ) -> Response:
-        payload = APIGatewayEvent(
-            resource_path=path,
+        event = APIGatewayEvent(
             method=method,
+            resource_path=path,
             path_params=path_params,
             query_params=query_params,
             body=body,
             headers=headers,
         )
 
-        response = cls._invoke(function_name, payload)
+        response = cls._invoke(function_name, payload=event)
 
         return Response(
             response["body"],
@@ -96,10 +96,7 @@ class LambdaClient:
             response: dict = json.loads(raw_response["Payload"].read().decode("utf-8"))
             return response
         except Exception:
-            message = "Invalid response received from '%s' Lambda"
-            logger.error(
-                message,
-                function_name,
-                extra=dict(payload=payload, response=raw_response),
-            )
+            # f-string used directly to keep messages unique from a monitoring/tracking perspective
+            error_message = f"Invalid response received from {function_name} Lambda"
+            logger.error(error_message, extra=dict(payload=payload, response=raw_response))
             raise

@@ -17,12 +17,7 @@ def lambda_client_fixture(mocker: MockerFixture) -> MagicMock:
     return mocker.patch.object(Boto3Client, "lambda_")
 
 
-def rest_response_factory(
-    body: dict,
-    status_code: int = 200,
-    headers: Optional[dict] = None,
-    is_base_64_encoded: bool = False,
-) -> dict:
+def rest_response_factory() -> dict:
     return {
         "Payload": BytesIO(
             json.dumps(
@@ -278,9 +273,10 @@ def test__request__raises_error_when_response_could_not_be_read_correctly(
         "resource": "/home",
         "stageVariables": {},
     }
+    assert logged_record.response == response  # type: ignore
 
 
-def test__request__returns_response_when_requesting_with_minimal_args(
+def test__request__returns_response_based_on_direct_answer_from_lambda_function(
     lambda_client: MagicMock,
 ) -> None:
     lambda_client.invoke.return_value = rest_response_factory(body={})
@@ -298,7 +294,8 @@ def test__request__returns_response_when_requesting_with_minimal_args(
         Payload=ANY,
         InvocationType="RequestResponse",
     )
-    assert _load_request_payload_from_lambda_client(lambda_client) == {
+    actual_payload: bytes = lambda_client.invoke.call_args_list[0].kwargs["Payload"]
+    assert json.loads(actual_payload.decode("UTF-8")) == {
         "body": {},
         "headers": {"Content-Type": "application/json"},
         "httpMethod": "/home",
@@ -317,7 +314,7 @@ def test__request__returns_response_when_requesting_with_minimal_args(
     }
 
 
-def test__request__returns_response_when_requesting_with_all_possibilites(
+def test__request__uses_all_parameters_provided_from_outside_to_get_response(
     lambda_client: MagicMock,
 ) -> None:
     lambda_client.invoke.return_value = rest_response_factory(body={})
@@ -343,7 +340,8 @@ def test__request__returns_response_when_requesting_with_all_possibilites(
         Payload=ANY,
         InvocationType="RequestResponse",
     )
-    assert _load_request_payload_from_lambda_client(lambda_client) == {
+    actual_payload: bytes = lambda_client.invoke.call_args_list[0].kwargs["Payload"]
+    assert json.loads(actual_payload.decode("UTF-8")) == {
         "body": {"x": "y"},
         "headers": {"Authz": "yolo"},
         "httpMethod": "/{pid}",
@@ -360,9 +358,3 @@ def test__request__returns_response_when_requesting_with_all_possibilites(
         "resource": "POST",
         "stageVariables": {},
     }
-
-
-def _load_request_payload_from_lambda_client(lambda_client: MagicMock) -> dict:
-    return cast(
-        dict, json.loads(lambda_client.invoke.call_args_list[0].kwargs["Payload"].decode("UTF-8"))
-    )
