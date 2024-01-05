@@ -333,6 +333,11 @@ Released 2024-01-05
 - Adjusts the code to the latest standards set by Python 3.12
 - Disables support for Python 3.8 due to deprecated typing aliases
 
+### Version 0.6.1
+Released 2024-01-05
+
+- Extends the code quality tools with security checks
+
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)
 
