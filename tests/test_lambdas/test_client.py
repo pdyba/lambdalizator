@@ -23,10 +23,10 @@ def rest_response_factory() -> dict:
         "Payload": BytesIO(
             json.dumps(
                 {
-                    "body": body,
-                    "statusCode": status_code,
-                    "headers": headers or {},
-                    "isBase64Encoded": is_base_64_encoded,
+                    "body": {},
+                    "statusCode": 200,
+                    "headers": {},
+                    "isBase64Encoded": False,
                 }
             ).encode("utf-8")
         )
@@ -221,7 +221,7 @@ def test__invoke__raises_error_when_response_could_not_be_read_correctly(
         LambdaClient.invoke("test-func", "test-op", raise_if_error_resp=False)
 
     logged_record = caplog.records[0]
-    assert logged_record.message == "Invalid response received from 'test-func' Lambda"
+    assert logged_record.message == "Invalid response received from test-func Lambda"
     assert logged_record.payload == {  # type: ignore
         "data": None,
         "invoke_type": LambdaSource.DIRECT,
@@ -250,13 +250,13 @@ def test__request__raises_error_when_response_could_not_be_read_correctly(
 
     with pytest.raises(AttributeError):  # type of error does not matter here
         LambdaClient.request(
-            "test-func",
-            "GET",
-            "/home",
+            function_name="test-func",
+            method="GET",
+            path="/home",
         )
 
     logged_record = caplog.records[0]
-    assert logged_record.message == "Invalid response received from 'test-func' Lambda"
+    assert logged_record.message == "Invalid response received from test-func Lambda"
     assert logged_record.payload == {  # type: ignore
         "body": {},
         "headers": {"Content-Type": "application/json"},
@@ -280,7 +280,7 @@ def test__request__raises_error_when_response_could_not_be_read_correctly(
 def test__request__returns_response_based_on_direct_answer_from_lambda_function(
     lambda_client: MagicMock,
 ) -> None:
-    lambda_client.invoke.return_value = rest_response_factory(body={})
+    lambda_client.invoke.return_value = rest_response_factory()
 
     result = LambdaClient.request("test-function", "/home", "GET")
 
@@ -318,7 +318,7 @@ def test__request__returns_response_based_on_direct_answer_from_lambda_function(
 def test__request__uses_all_parameters_provided_from_outside_to_get_response(
     lambda_client: MagicMock,
 ) -> None:
-    lambda_client.invoke.return_value = rest_response_factory(body={})
+    lambda_client.invoke.return_value = rest_response_factory()
 
     result = LambdaClient.request(
         "test-function",

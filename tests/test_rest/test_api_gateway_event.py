@@ -5,7 +5,10 @@ from lbz.rest import APIGatewayEvent
 
 class TestAPIGatewayEvent:
     def test_builds_basic_version_of_simulated_event(self) -> None:
-        event = APIGatewayEvent("/", "GET")
+        event = APIGatewayEvent(
+            method="GET",
+            resource_path="/",
+        )
 
         assert event == {
             "body": {},
@@ -33,7 +36,7 @@ class TestAPIGatewayEvent:
             query_params={"kod": 23},
             path_params={"pid": 123},
             headers={"Accept": "DarthJson"},
-            is_base_64_encoded=True,
+            is_base64_encoded=True,
         )
 
         assert event == {

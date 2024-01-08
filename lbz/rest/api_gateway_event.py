@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import uuid4
 
 DEFAULT_HEADERS = {"Content-Type": "application/json"}
@@ -6,7 +5,7 @@ DEFAULT_HEADERS = {"Content-Type": "application/json"}
 
 class APIGatewayEvent(dict):
     """Easy-to-use dictionary simulating the event coming from the API Gateway
-    
+
     https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
     """
 
@@ -14,10 +13,10 @@ class APIGatewayEvent(dict):
         self,
         method: str,
         resource_path: str,
-        path_params: Optional[dict] = None,
-        query_params: Optional[dict] = None,
-        body: Optional[dict] = None,
-        headers: Optional[dict] = None,
+        path_params: dict | None = None,
+        query_params: dict | None = None,
+        body: dict | None = None,
+        headers: dict | None = None,
         is_base64_encoded: bool = False,
     ) -> None:
         super().__init__()
@@ -28,7 +27,7 @@ class APIGatewayEvent(dict):
         self["path"] = resource_path.format(**self.get("pathParameters", {}))
         self["body"] = {} if body is None else body
         self["headers"] = DEFAULT_HEADERS if headers is None else headers
-        self["multiValueQueryStringParameters"] = self._extract_query_params(query_params)
+        self["multiValueQueryStringParameters"] = self._get_multi_value_query_params(query_params)
         self["requestContext"] = {
             "resourcePath": self["resource"],
             "path": self["path"],
@@ -36,11 +35,11 @@ class APIGatewayEvent(dict):
             "requestId": str(uuid4()),
         }
         self["stageVariables"] = {}
-        self["isBase64Encoded"] = is_base_64_encoded
+        self["isBase64Encoded"] = is_base64_encoded
 
     @staticmethod
-    def _get_multi_value_query_params(query_params: Optional[dict]) -> dict:
-        multi_value_query_params: Dict[str, List[str]] = {}
+    def _get_multi_value_query_params(query_params: dict | None) -> dict:
+        multi_value_query_params: dict[str, list[str]] = {}
         if query_params:
             for key, value in query_params.items():
                 if not isinstance(value, list):

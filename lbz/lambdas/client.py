@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, cast
 
 from lbz.aws_boto3 import client
 from lbz.lambdas.enums import LambdaResult, LambdaSource
@@ -61,10 +61,10 @@ class LambdaClient:
         function_name: str,
         method: str,
         path: str,
-        path_params: Optional[dict] = None,
-        query_params: Optional[dict] = None,
-        body: Optional[dict] = None,
-        headers: Optional[dict] = None,
+        path_params: dict | None = None,
+        query_params: dict | None = None,
+        body: dict | None = None,
+        headers: dict | None = None,
     ) -> Response:
         event = APIGatewayEvent(
             method=method,
@@ -101,5 +101,5 @@ class LambdaClient:
         except Exception:
             # f-string used directly to keep messages unique from a monitoring/tracking perspective
             error_message = f"Invalid response received from {function_name} Lambda"
-            logger.error(error_message, extra=dict(payload=payload, response=raw_response))
+            logger.error(error_message, extra={"payload": payload, "response": raw_response})
             raise
