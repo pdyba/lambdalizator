@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from __future__ import annotations
 
 from jose import jwt
 
@@ -17,23 +17,21 @@ LIMITED_ALLOW = -1
 
 
 class Authorizer:
-    """
-    Authorizer class responsible for Authorization.
-    """
+    """Authorizer class responsible for Authorization."""
 
     def __init__(
         self,
-        auth_jwt: Optional[str],
+        auth_jwt: str | None,
         resource_name: str,
         permission_name: str,
-        base_permission_policy: dict = None,
+        base_permission_policy: dict | None = None,
     ):
         self.outcome = DENY
-        self.allowed_resource: Union[str, dict, None] = None
-        self.denied_resource: Union[str, dict, None] = None
+        self.allowed_resource: str | dict | None = None
+        self.denied_resource: str | dict | None = None
         self.resource = resource_name
         self.permission = permission_name
-        self.refs: Dict[str, dict] = {}
+        self.refs: dict[str, dict] = {}
         self.allow: dict = {}
         self.deny: dict = {}
         self._set_policy(auth_jwt, base_permission_policy)
@@ -44,7 +42,9 @@ class Authorizer:
             f"permission_name='{self.permission}')"
         )
 
-    def _set_policy(self, auth_jwt: str = None, base_permission_policy: dict = None) -> None:
+    def _set_policy(
+        self, auth_jwt: str | None = None, base_permission_policy: dict | None = None
+    ) -> None:
         policy = base_permission_policy or {}
         if auth_jwt is not None:
             deep_update(policy, decode_jwt(auth_jwt))
@@ -60,9 +60,7 @@ class Authorizer:
         raise PermissionDenied()
 
     def check_access(self) -> None:
-        """
-        Main authorization checking logic.
-        """
+        """Main authorization checking logic."""
         self.outcome = DENY
 
         if self.deny:
@@ -73,7 +71,7 @@ class Authorizer:
         if self.outcome == DENY:
             self._raise_permission_denied()
 
-    def _deny_if_all(self, permission: Union[dict, str]) -> None:
+    def _deny_if_all(self, permission: dict | str) -> None:
         if permission == ALL:
             self._raise_permission_denied()
 
@@ -85,7 +83,7 @@ class Authorizer:
                 self._check_resource(resource)
                 self.denied_resource = resource
 
-    def _check_resource(self, resource: Union[dict, str]) -> None:
+    def _check_resource(self, resource: dict | str) -> None:
         # TODO: standardize the naming convention (resource != permission)
         self._deny_if_all(resource)
         if isinstance(resource, dict):
@@ -93,7 +91,7 @@ class Authorizer:
                 self._deny_if_all(key)
                 self._deny_if_all(value)
 
-    def _allow_if_allow_all(self, permission: Union[str, dict]) -> bool:
+    def _allow_if_allow_all(self, permission: str | dict) -> bool:
         if permission == ALL:
             self.outcome = ALLOW
             self.allowed_resource = ALL
@@ -127,16 +125,12 @@ class Authorizer:
 
     @property
     def restrictions(self) -> dict:
-        """
-        Provides restrictions in standardised format.
-        """
+        """Provides restrictions in standardised format."""
         return {"allow": self.allowed_resource, "deny": self.denied_resource}
 
     @staticmethod
     def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
-        """
-        Signs authorization in JWT format.
-        """
+        """Signs authorization in JWT format."""
         if not isinstance(private_key_jwk, dict):
             raise ValueError("private_key_jwk must be a jwk dict")
         if "kid" not in private_key_jwk:

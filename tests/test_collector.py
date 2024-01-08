@@ -11,7 +11,7 @@ class TestAuthzCollector:
     def test__init__(self) -> None:
         azc = AuthzCollector()
         assert azc.possible_permissions == {}
-        assert azc.resource_name == ""  # pylint: disable=compare-to-empty-string
+        assert azc.resource_name == ""
         assert azc.guest_permissions == {}
 
     def test_set_resource(self) -> None:
@@ -67,5 +67,5 @@ class TestAuthzCollector:
         azc.clean()
 
         assert azc.possible_permissions == {}
-        assert azc.resource_name == ""  # pylint: disable=compare-to-empty-string
+        assert azc.resource_name == ""
         assert azc.guest_permissions == {}

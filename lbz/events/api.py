@@ -1,6 +1,7 @@
+from collections.abc import Callable
 from copy import deepcopy
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, List
+from typing import TYPE_CHECKING, Any
 
 from lbz._cfg import AWS_LAMBDA_FUNCTION_NAME, EVENTS_BUS_NAME
 from lbz.aws_boto3 import client
@@ -21,10 +22,10 @@ MAX_EVENTS_TO_SEND_AT_ONCE = 10
 class EventAPI(metaclass=Singleton):
     def __init__(self) -> None:
         self._source = AWS_LAMBDA_FUNCTION_NAME.value
-        self._resources: List[str] = []
-        self._pending_events: List[Event] = []
-        self._sent_events: List[Event] = []
-        self._failed_events: List[Event] = []
+        self._resources: list[str] = []
+        self._pending_events: list[Event] = []
+        self._sent_events: list[Event] = []
+        self._failed_events: list[Event] = []
         self._bus_name = EVENTS_BUS_NAME.value
 
     def __repr__(self) -> str:
@@ -36,7 +37,7 @@ class EventAPI(metaclass=Singleton):
     def set_source(self, source: str) -> None:
         self._source = source
 
-    def set_resources(self, resources: List[str]) -> None:
+    def set_resources(self, resources: list[str]) -> None:
         self._resources = resources
 
     def set_bus_name(self, bus_name: str) -> None:
@@ -47,15 +48,15 @@ class EventAPI(metaclass=Singleton):
         return self._bus_name
 
     @property
-    def sent_events(self) -> List[Event]:
+    def sent_events(self) -> list[Event]:
         return deepcopy(self._sent_events)
 
     @property
-    def pending_events(self) -> List[Event]:
+    def pending_events(self) -> list[Event]:
         return deepcopy(self._pending_events)
 
     @property
-    def failed_events(self) -> List[Event]:
+    def failed_events(self) -> list[Event]:
         return deepcopy(self._failed_events)
 
     def register(self, new_event: Event) -> None:

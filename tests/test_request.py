@@ -48,8 +48,8 @@ class TestRequestGeneral:
         assert output == b"j\xc7Z\xb1\xdb\x1d"
 
     def test_accessing_user_attributes(self, sample_request_with_user: Request) -> None:
-        assert isinstance(sample_request_with_user.user.username, str)
-        assert isinstance(sample_request_with_user.user.email, str)
+        assert isinstance(sample_request_with_user.user.username, str)  # type: ignore
+        assert isinstance(sample_request_with_user.user.email, str)  # type: ignore
         for custom_param in range(1, 5):
             assert isinstance(getattr(sample_request_with_user.user, str(custom_param)), str)
 
@@ -102,17 +102,17 @@ class TestRequestJsonBody:
             sample_request.json_body  # pylint: disable=pointless-statement
 
     def test_json_body_bad_content_type(self, sample_request: Request) -> None:
-        sample_request.headers = {"Content-Type": "application/dzejson"}
+        sample_request.headers = CIMultiDict({"Content-Type": "application/dzejson"})
         with pytest.raises(BadRequestError) as err:
             sample_request.json_body  # pylint: disable=pointless-statement
-            assert err.message.startswith("Content-Type header is missing or wrong")
+            assert err.value.message.startswith("Content-Type header is missing or wrong")
 
     def test_json_body_none_when_no_content_type(self, sample_request: Request) -> None:
-        sample_request.headers = {}
+        sample_request.headers = CIMultiDict({})
         assert sample_request.json_body is None
 
     def test_json_body_none_as_body(self, sample_request: Request) -> None:
-        sample_request._body = None  # pylint: disable=protected-access
+        sample_request._body = None  # type: ignore # pylint: disable=protected-access
         assert sample_request.json_body is None
 
 
@@ -125,5 +125,5 @@ class TestRequestToDict:
             "query_params": {},
             "stage_vars": {},
             "uri_params": {},
-            "user": f"User username={sample_request_with_user.user.username}",
+            "user": f"User username={sample_request_with_user.user.username}",  # type: ignore
         }

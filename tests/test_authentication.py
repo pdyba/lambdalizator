@@ -50,11 +50,11 @@ def test_decoding_user_raises_unauthorized_when_invalid_public_key(user_token: s
 
 def test_loading_user_parses_user_attributes(user_cognito: dict, user: User) -> None:
     parsed = user_cognito.copy()
-    for key in ["aud", "iss", "exp", "iat"]:
+    for key in ("aud", "iss", "exp", "iat"):
         parsed.pop(key, None)
     for key, expected_value in parsed.items():
-        key = key.replace("cognito:", "").replace("custom:", "")
-        value = getattr(user, key)
+        key_without_prefix = key.replace("cognito:", "").replace("custom:", "")
+        value = getattr(user, key_without_prefix)
         assert value == expected_value
 
 

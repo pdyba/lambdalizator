@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import json
 import logging
 from io import BytesIO
-from typing import Optional, cast
 from unittest.mock import ANY, MagicMock
 
 import pytest
@@ -41,7 +42,7 @@ def rest_response_factory() -> dict:
     ],
 )
 def test__invoke__returns_response_sending_provided_data_as_payload(
-    lambda_client: MagicMock, data: Optional[dict], expected_data_bytes: bytes
+    lambda_client: MagicMock, data: dict | None, expected_data_bytes: bytes
 ) -> None:
     response_payload = {"result": LambdaResult.OK, "data": "test"}
     lambda_client.invoke.return_value = {

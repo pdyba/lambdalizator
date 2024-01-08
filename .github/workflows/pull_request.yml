@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]  # TODO: Support newer versions
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +26,8 @@ jobs:
       - run: make flake8
       - run: make mypy
       - run: make pylint
+      - run: make bandit
+      - run: make pip-audit
 
   unit_tests:
     name: Run unit tests
@@ -34,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]  # TODO: Support newer versions
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4

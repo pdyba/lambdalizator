@@ -1,7 +1,8 @@
-"""Resource Handler."""
+from __future__ import annotations
+
+from collections.abc import Callable
 from copy import deepcopy
 from http import HTTPStatus
-from typing import Callable, List, Optional, Union
 from urllib.parse import urlencode
 
 from multidict import CIMultiDict
@@ -28,10 +29,6 @@ logger = get_logger(__name__)
 
 
 class Resource:
-    """
-    Resource class.
-    """
-
     _name: str = ""
     _router = Router()
     _authz_collector = authz_collector
@@ -87,7 +84,7 @@ class Resource:
     def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"
 
-    def _get_user(self, headers: CIMultiDict) -> Union[None, User]:
+    def _get_user(self, headers: CIMultiDict) -> User | None:
         authentication = headers.get("Authentication")
         if authentication and ALLOWED_PUBLIC_KEYS.value:
             return User(authentication)
@@ -96,28 +93,21 @@ class Resource:
         return None
 
     def _post_request_hook(self) -> None:
-        """
-        Makes the post_request_hook run-time friendly.
-        """
+        """Makes the post_request_hook run-time friendly."""
         try:
             self.post_request_hook()
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
 
     def pre_request_hook(self) -> None:
-        """
-        Place to configure pre request hooks.
-        """
+        """Place to configure pre request hooks."""
 
     def post_request_hook(self) -> None:
-        """
-        Place to configure post request hooks.
-        """
+        """Place to configure post request hooks."""
 
     @staticmethod
     def get_guest_authorization() -> dict:
-        """
-        Place to configure default authorization.
+        """Place to configure default authorization.
 
         That will be used when Authorization Header is not in place.
         """
@@ -128,9 +118,7 @@ class Resource:
 
 
 class CORSResource(Resource):
-    """
-    CORS capable resource.
-    """
+    """CORS capable resource."""
 
     _cors_headers = (
         "Content-Type",
@@ -144,9 +132,9 @@ class CORSResource(Resource):
     def __init__(
         self,
         event: dict,
-        methods: List[str],
-        origins: List[str] = None,
-        cors_headers: List[str] = None,
+        methods: list[str],
+        origins: list[str] | None = None,
+        cors_headers: list[str] | None = None,
     ):
         # TODO: adjust the rest of the arguments in the near future too.
         super().__init__(event)
@@ -166,14 +154,12 @@ class CORSResource(Resource):
             resp.headers.update(self.resp_headers())
         return resp
 
-    def _get_allowed_origins(self, origins: List[str]) -> str:
-        """
-        Checks requests origins against allowed origins.
-        """
+    def _get_allowed_origins(self, origins: list[str]) -> str:
+        """Checks requests origins against allowed origins."""
         if "*" in origins:
             return "*"
-        request_origin: Optional[str] = self.request.headers.get("Origin")
-        if request_origin:
+        request_origin: str | None = self.request.headers.get("Origin")
+        if request_origin:  # pylint: disable=consider-using-assignment-expr
             for allowed_origin in origins:
                 if request_origin == allowed_origin:
                     return request_origin
@@ -184,9 +170,7 @@ class CORSResource(Resource):
         return origins[0]
 
     def resp_headers(self, content_type: str = "") -> dict:
-        """
-        Properly formatted headers.
-        """
+        """Properly formatted headers."""
         return (
             {**self._resp_headers, "Content-Type": content_type}
             if content_type
@@ -195,21 +179,15 @@ class CORSResource(Resource):
 
     @property
     def resp_headers_json(self) -> dict:
-        """
-        Properly formatted json headers.
-        """
+        """Properly formatted json headers."""
         return self.resp_headers(content_type="application/json")
 
 
 class PaginatedCORSResource(CORSResource):
-    """
-    Resource for standardised pagination.
-    """
+    """Resource for standardised pagination."""
 
     def get_pagination(self, total_items: int, limit: int, offset: int) -> dict:
-        """
-        Responsible for paginating the requests.
-        """
+        """Responsible for paginating the requests."""
         base_link = self._pagination_uri
         links = {
             "current": base_link.format(offset=offset, limit=limit),
@@ -218,7 +196,7 @@ class PaginatedCORSResource(CORSResource):
         if previous_offset := max(offset - limit, 0):
             links["prev"] = base_link.format(offset=previous_offset, limit=limit)
         next_offset = offset + limit if offset + limit < total_items else None
-        if next_offset:
+        if next_offset:  # pylint: disable=consider-using-assignment-expr
             links["next"] = base_link.format(offset=next_offset, limit=limit)
         return {
             "count": total_items,
@@ -230,7 +208,7 @@ class PaginatedCORSResource(CORSResource):
         if query_params := self.request.query_params.original_items(
             keys_to_skip=["offset", "limit"]
         ):
-            encoded_params = urlencode(query_params, doseq=True)  # type: ignore
+            encoded_params = urlencode(query_params, doseq=True)
             return f"{self.urn}?{encoded_params}&offset={{offset}}&limit={{limit}}"
         return f"{self.urn}?offset={{offset}}&limit={{limit}}"
 

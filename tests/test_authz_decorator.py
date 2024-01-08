@@ -1,6 +1,5 @@
 # coding=utf-8
 from http import HTTPStatus
-from typing import Type
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -13,7 +12,7 @@ from lbz.router import add_route
 
 
 @pytest.fixture(name="sample_guest_resource")
-def sample_guest_resource_fixture() -> Type[Resource]:
+def sample_guest_resource_fixture() -> type[Resource]:
     class GuestResource(Resource):
         _name = "guest_res"
 
@@ -47,7 +46,7 @@ class TestAuthorizationDecorator:
         mocked_authz_collector.add_authz.assert_called_once()
 
     def test_root_permissions_success(
-        self, sample_resource_with_authorization: Type[Resource], full_access_auth_header: str
+        self, sample_resource_with_authorization: type[Resource], full_access_auth_header: str
     ) -> None:
         res_instance = sample_resource_with_authorization(
             APIGatewayEvent("/", "GET", headers={"authorization": full_access_auth_header})
@@ -55,7 +54,7 @@ class TestAuthorizationDecorator:
         assert res_instance().status_code == HTTPStatus.OK
 
     def test_limited_permissions_success(
-        self, limited_access_auth_header: str, sample_resource_with_authorization: Type[Resource]
+        self, limited_access_auth_header: str, sample_resource_with_authorization: type[Resource]
     ) -> None:
         res_instance = sample_resource_with_authorization(
             APIGatewayEvent("/", "GET", headers={"authorization": limited_access_auth_header})
@@ -63,7 +62,7 @@ class TestAuthorizationDecorator:
         assert res_instance().status_code == HTTPStatus.OK
 
     def test_limited_permissions_failed(
-        self, limited_access_auth_header: str, sample_resource_with_authorization: Type[Resource]
+        self, limited_access_auth_header: str, sample_resource_with_authorization: type[Resource]
     ) -> None:
         res_instance = sample_resource_with_authorization(
             APIGatewayEvent(
@@ -74,18 +73,18 @@ class TestAuthorizationDecorator:
 
 
 class TestAuthorizationDecoratorGuestPermissions:
-    def test_get_success(self, sample_guest_resource: Type[Resource]) -> None:
+    def test_get_success(self, sample_guest_resource: type[Resource]) -> None:
         res_instance = sample_guest_resource(APIGatewayEvent("/", "GET"))
         assert res_instance().status_code == HTTPStatus.OK
 
-    def test_limited_permissions_failed(self, sample_guest_resource: Type[Resource]) -> None:
+    def test_limited_permissions_failed(self, sample_guest_resource: type[Resource]) -> None:
         res_instance = sample_guest_resource(APIGatewayEvent("/garbage2", "GET"))
         assert res_instance().status_code == HTTPStatus.FORBIDDEN
 
     def test_inharitance_success(
         self,
         full_access_auth_header: str,
-        sample_guest_resource: Type[Resource],
+        sample_guest_resource: type[Resource],
     ) -> None:
         res_instance = sample_guest_resource(
             APIGatewayEvent("/garbage2", "GET", headers={"authorization": full_access_auth_header})

@@ -1,6 +1,5 @@
-"""
-Development Server.
-"""
+from __future__ import annotations
+
 import json
 import logging
 import urllib.parse
@@ -8,7 +7,6 @@ from abc import ABCMeta, abstractmethod
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from os import environ
 from threading import Thread
-from typing import Tuple, Type, Union
 
 from lbz.resource import Resource
 from lbz.rest import APIGatewayEvent
@@ -18,22 +16,18 @@ if environ.get("LBZ_DEBUG_MODE") is None:
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
-    """
-    Mimics AWS Lambda behavior.
-    """
+    """Mimics AWS Lambda behavior."""
 
     done: bool = False  # TODO: if possible move to __init__
 
     @property
     @abstractmethod
-    def cls(self) -> Type[Resource]:
+    def cls(self) -> type[Resource]:
         pass
 
-    def _get_route_params(  # noqa:C901
-        self, org_path: str
-    ) -> Tuple[Union[str, None], Union[dict, None]]:
-        """
-        Parses route and params.
+    def _get_route_params(self, org_path: str) -> tuple[str | None, dict | None]:  # noqa:C901
+        """Parses route and params.
+
         :param org_path:
         :return: standardised route, url params / None
         """
@@ -63,7 +57,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                     return org_route, params
         return None, None
 
-    def _send_json(self, code: int, obj: dict, headers: dict = None) -> None:
+    def _send_json(self, code: int, obj: dict, headers: dict | None = None) -> None:
         # Make sure only one response is sent
         if self.done:
             return
@@ -83,16 +77,13 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
         self._send_json(code, {"error": message}, headers={"Content-Type": content_type})
 
     def handle_request(self) -> None:
-        """
-        Main method for handling all incoming requests.
-        """
+        """Main method for handling all incoming requests."""
         try:
             if self.path == "/favicon.ico":
                 return
             self.done = False
 
-            request_size = int(self.headers.get("Content-Length", 0))
-            if request_size:
+            if request_size := int(self.headers.get("Content-Length", 0)):
                 request_body = self.rfile.read(request_size).decode(
                     encoding="utf_8", errors="strict"
                 )
@@ -105,7 +96,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
             if route is None:
                 self._error(666, "Path not Found")
                 return
-            resource = self.cls(  # pylint: disable=not-callable
+            resource = self.cls(
                 APIGatewayEvent(
                     resource_path=route,
                     method=self.command,
@@ -148,18 +139,14 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
 
 
 class MyDevServer(Thread):
-    """
-    Development Server base class.
-    """
-
     def __init__(
         self,
-        acls: Type[Resource],
+        acls: type[Resource],
         address: str = "localhost",
         port: int = 8000,
     ) -> None:
         class MyClassLambdaDevHandler(MyLambdaDevHandler):
-            cls: Type[Resource] = acls
+            cls: type[Resource] = acls
 
         super().__init__()
         self.my_handler = MyClassLambdaDevHandler
@@ -170,9 +157,7 @@ class MyDevServer(Thread):
         print(f"server bound to port: {self.port}")
 
     def run(self) -> None:
-        """
-        Start the server in the foreground.
-        """
+        """Start the server in the foreground."""
         print(f"serving on http://{self.address}:{self.port}")
         self.httpd.serve_forever()
 
@@ -182,7 +167,5 @@ class MyDevServer(Thread):
         print(f"Server stopped and port {self.port} released")
 
     def start(self) -> None:  # pylint: disable=useless-super-delegation
-        """
-        Start the server in the background
-        """
+        """Start the server in the background"""
         super().start()

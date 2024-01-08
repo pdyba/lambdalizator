@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from examples.event.event_aware_resource import HelloWorldExample
 from examples.event.event_broker import event_to_handler_map
@@ -8,7 +8,7 @@ from lbz.lambdas import LambdaSource
 from lbz.type_defs import LambdaContext
 
 
-def handle(event: dict, context: LambdaContext) -> Optional[dict]:
+def handle(event: dict, context: LambdaContext) -> dict | None:
     try:
         if LambdaSource.is_from(event, LambdaSource.API_GW):
             return HelloWorldExample(event)().to_dict()

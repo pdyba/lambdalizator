@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 from lbz.misc import deprecated, get_logger
 from lbz.type_defs import LambdaContext
@@ -13,7 +15,7 @@ class BaseHandler(Generic[T], metaclass=ABCMeta):
     def __init__(self, event: dict, context: LambdaContext) -> None:
         self.raw_event = event
         self.context = context
-        self.response: Optional[T] = None
+        self.response: T | None = None
 
     def react(self) -> T:
         self.pre_handle()
@@ -21,7 +23,7 @@ class BaseHandler(Generic[T], metaclass=ABCMeta):
         self._post_handle()
         return self.response
 
-    @deprecated(message="Please use react() for full request flow", version="0.6.0")
+    @deprecated(message="Please use react() for full request flow", version="0.7.0")
     def __call__(self) -> T:
         return self.react()
 

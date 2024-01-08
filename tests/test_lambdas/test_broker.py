@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 from pytest import LogCaptureFixture
@@ -7,7 +9,7 @@ from lbz.lambdas import LambdaBroker, LambdaResponse, LambdaResult, lambda_ok_re
 from lbz.type_defs import LambdaContext
 
 
-def simple_func(_data: dict = None) -> LambdaResponse:
+def simple_func(_data: dict | None = None) -> LambdaResponse:
     return lambda_ok_response()
 
 

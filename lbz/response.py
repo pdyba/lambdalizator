@@ -1,8 +1,6 @@
-"""
-Standardised response module.
-"""
+from __future__ import annotations
+
 import json
-from typing import Union
 
 
 class Response:
@@ -12,9 +10,9 @@ class Response:
 
     def __init__(
         self,
-        body: Union[str, dict],
+        body: str | dict,
         /,
-        headers: dict = None,
+        headers: dict | None = None,
         status_code: int = 200,
         base64_encoded: bool = False,
     ):
@@ -28,9 +26,7 @@ class Response:
         return f"<Response(status_code={self.status_code})>"
 
     def get_content_header(self) -> dict:
-        """
-        Adds necessary headers based on content type
-        """
+        """Adds necessary headers based on content type"""
         if self.is_json:
             return {"Content-Type": "application/json"}
         if isinstance(self.body, str):
@@ -38,9 +34,7 @@ class Response:
         raise RuntimeError("Response body type not supported yet.")
 
     def to_dict(self) -> dict:
-        """
-        Dumps response to AWS Lambda compatible response format.
-        """
+        """Dumps response to AWS Lambda compatible response format."""
         body = (
             json.dumps(self.body, separators=(",", ":"), default=str)
             if self.is_json

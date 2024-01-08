@@ -3,7 +3,6 @@ import io
 import json
 import socket
 from socketserver import BaseServer
-from typing import Type
 from unittest import mock
 from urllib import request
 
@@ -14,10 +13,10 @@ from lbz.resource import Resource
 class MyClass:
     def __init__(self) -> None:
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_socket.connect("0.0.0.0", "8888")
+        self.tcp_socket.connect("0.0.0.0", "8888")  # type: ignore
 
 
-def test_my_lambda_dev_handler(sample_resource: Type[Resource]) -> None:
+def test_my_lambda_dev_handler(sample_resource: type[Resource]) -> None:
     with mock.patch("socket.socket") as msocket:
 
         class MyLambdaDevHandlerHelloWorld(MyLambdaDevHandler):
@@ -26,8 +25,12 @@ def test_my_lambda_dev_handler(sample_resource: Type[Resource]) -> None:
         msocket.makefile = lambda a, b: io.BytesIO(b"GET / HTTP/1.1\r\n")
         msocket.rfile.close = lambda: 0
         my_class = MyClass()
-        handler = MyLambdaDevHandlerHelloWorld(msocket, ("127.0.0.1", 8888), BaseServer)
-        my_class.tcp_socket.connect.assert_called_with(  # pylint: disable=no-member
+        handler = MyLambdaDevHandlerHelloWorld(
+            msocket,
+            ("127.0.0.1", 8888),
+            BaseServer,  # type: ignore
+        )
+        my_class.tcp_socket.connect.assert_called_with(  # type: ignore # pylint: disable=no-member
             "0.0.0.0", "8888"
         )
     path, params = handler._get_route_params("/")  # pylint: disable=protected-access
@@ -39,7 +42,7 @@ def test_my_lambda_dev_handler(sample_resource: Type[Resource]) -> None:
     assert params == {"id": "123"}
 
 
-def test_my_dev_server(sample_resource: Type[Resource]) -> None:
+def test_my_dev_server(sample_resource: type[Resource]) -> None:
     dev_serv = MyDevServer(sample_resource)
     assert dev_serv.server_address == ("localhost", 8000)
     assert dev_serv.port == 8000
@@ -47,7 +50,7 @@ def test_my_dev_server(sample_resource: Type[Resource]) -> None:
     assert issubclass(dev_serv.my_handler, MyLambdaDevHandler)
 
 
-def test_server_can_run_in_background(sample_resource: Type[Resource]) -> None:
+def test_server_can_run_in_background(sample_resource: type[Resource]) -> None:
     dev_serv = MyDevServer(sample_resource, port=9999)
     dev_serv.start()
     url = "http://localhost:9999/"

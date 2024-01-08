@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import json
-from typing import Any, Iterable, Optional, Type, cast
+from collections.abc import Iterable
+from typing import Any
 
 from lbz.aws_boto3 import client
 from lbz.lambdas.enums import LambdaResult, LambdaSource
@@ -20,16 +23,16 @@ class SetsEncoder(json.JSONEncoder):
 
 
 class LambdaClient:
-    json_encoder: Type[json.JSONEncoder] = SetsEncoder
+    json_encoder: type[json.JSONEncoder] = SetsEncoder
 
     @classmethod
     def invoke(
         cls,
         function_name: str,
         op: str,
-        data: Optional[dict] = None,
+        data: dict | None = None,
         *,
-        allowed_error_results: Iterable[str] = None,
+        allowed_error_results: Iterable[str] | None = None,
         raise_if_error_resp: bool = False,
         asynchronous: bool = False,
     ) -> LambdaResponse:
@@ -47,9 +50,9 @@ class LambdaClient:
         if raise_if_error_resp:
             raise LambdaError(function_name, op, lambda_result, response)
 
-        # f-string used directly to keep messages unique from the monitoring/tracking perspective
+        # f-string used directly to keep messages unique from a monitoring/tracking perspective
         error_message = f"Error response from {function_name} Lambda (op: {op}): {lambda_result}"
-        logger.error(error_message, extra=dict(data=data, response=response))
+        logger.error(error_message, extra={"data": data, "response": response})
         return response
 
     @classmethod
