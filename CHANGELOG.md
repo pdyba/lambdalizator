@@ -312,11 +312,6 @@ Released 2024-01-02
 
 ## 0.6.x
 
-### Version 0.5.20
-Released 2024-01-10
-
-- Adds the ability to make an HTTP request bypassing the API Gateway
-
 ### Version 0.6.0
 Released 2024-01-05
 
@@ -327,6 +322,11 @@ Released 2024-01-05
 Released 2024-01-05
 
 - Extends the code quality tools with security checks
+
+### Version 0.6.2
+Released 2024-01-10
+
+- Adds the ability to make an HTTP request bypassing the API Gateway
 
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)

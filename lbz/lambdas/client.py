@@ -66,6 +66,7 @@ class LambdaClient:
         body: dict | None = None,
         headers: dict | None = None,
     ) -> Response:
+        # TODO: consider raise on error if resp >= 400
         event = APIGatewayEvent(
             method=method,
             resource_path=path,

@@ -1,4 +1,4 @@
-from uuid import uuid4
+import uuid
 
 DEFAULT_HEADERS = {"Content-Type": "application/json"}
 
@@ -32,7 +32,7 @@ class APIGatewayEvent(dict):
             "resourcePath": self["resource"],
             "path": self["path"],
             "httpMethod": method,
-            "requestId": str(uuid4()),
+            "requestId": str(uuid.uuid4()),
         }
         self["stageVariables"] = {}
         self["isBase64Encoded"] = is_base64_encoded
