@@ -8,11 +8,9 @@ from lbz.rest import APIGatewayEvent
 
 class TestAPIGatewayEvent:
     @patch.object(uuid, "uuid4")
-    @pytest.mark.parametrize("uuid4", ["uuid-1", "uuid-2", "uuid-3"])
-    def test_builds_basic_version_of_simulated_event(
-        self, mocked_uuid4: MagicMock, uuid4: str
-    ) -> None:
-        mocked_uuid4.return_value = uuid4
+    def test_builds_basic_version_of_simulated_event(self, mocked_uuid4: MagicMock) -> None:
+        mocked_uuid4.return_value = "<mocked-uuid-value>"
+
         event = APIGatewayEvent(
             method="GET",
             resource_path="/",
@@ -28,7 +26,7 @@ class TestAPIGatewayEvent:
             "requestContext": {
                 "httpMethod": "GET",
                 "path": "/",
-                "requestId": uuid4,
+                "requestId": "<mocked-uuid-value>",
                 "resourcePath": "/",
             },
             "resource": "/",
@@ -38,11 +36,15 @@ class TestAPIGatewayEvent:
 
     def test_builds_event_based_on_data_declared_from_outside(self) -> None:
         event = APIGatewayEvent(
-            resource_path="/{pid}",
             method="POST",
-            body={"ala": "ma_aids"},
-            query_params={"kod": 23},
+            resource_path="/{pid}",
             path_params={"pid": 123},
+            query_params={
+                "kot": 23,
+                "ma": "duze",
+                "aids": ["lol", "xd"],
+            },
+            body={"ala": "ma_aids"},
             headers={"Accept": "DarthJson"},
             is_base64_encoded=True,
         )
@@ -52,7 +54,11 @@ class TestAPIGatewayEvent:
             "headers": {"Accept": "DarthJson"},
             "httpMethod": "POST",
             "isBase64Encoded": True,
-            "multiValueQueryStringParameters": {"kod": ["23"]},
+            "multiValueQueryStringParameters": {
+                "aids": ["lol", "xd"],
+                "kot": ["23"],
+                "ma": ["duze"],
+            },
             "path": "/123",
             "pathParameters": {"pid": 123},
             "requestContext": {
@@ -63,33 +69,4 @@ class TestAPIGatewayEvent:
             },
             "resource": "/{pid}",
             "stageVariables": {},
-        }
-
-    def test_building_of_multivalue_query_params(self) -> None:
-        event = APIGatewayEvent(
-            method="GET",
-            resource_path="/",
-            query_params={"kot": 23, "ma": "duze", "aids": ["lol", "xd"]},
-        )
-
-        assert event == {
-            "body": {},
-            "headers": {"Content-Type": "application/json"},
-            "httpMethod": "GET",
-            "multiValueQueryStringParameters": {
-                "aids": ["lol", "xd"],
-                "kot": ["23"],
-                "ma": ["duze"],
-            },
-            "path": "/",
-            "pathParameters": {},
-            "requestContext": {
-                "httpMethod": "GET",
-                "path": "/",
-                "requestId": ANY,
-                "resourcePath": "/",
-            },
-            "resource": "/",
-            "stageVariables": {},
-            "isBase64Encoded": False,
         }

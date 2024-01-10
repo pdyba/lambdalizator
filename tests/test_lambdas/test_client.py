@@ -23,9 +23,9 @@ def rest_response_factory() -> dict:
         "Payload": BytesIO(
             json.dumps(
                 {
-                    "body": {},
+                    "body": {"message": "Hello World!"},
                     "statusCode": 200,
-                    "headers": {},
+                    "headers": {"Content-Type": "application/json"},
                     "isBase64Encoded": False,
                 }
             ).encode("utf-8")

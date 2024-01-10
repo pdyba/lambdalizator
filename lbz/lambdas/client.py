@@ -39,7 +39,6 @@ class LambdaClient:
         allowed_error_results = set(allowed_error_results or []) & set(LambdaResult.soft_errors())
 
         payload = {"invoke_type": LambdaSource.DIRECT, "op": op, "data": data}
-
         response = cast(LambdaResponse, cls._invoke(function_name, payload, asynchronous))
 
         lambda_result = response.get("result", LambdaResult.SERVER_ERROR)
@@ -66,7 +65,7 @@ class LambdaClient:
         body: dict | None = None,
         headers: dict | None = None,
     ) -> Response:
-        # TODO: consider raise on error if resp >= 400
+        # TODO: consider raising an error if response >= 400
         event = APIGatewayEvent(
             method=method,
             resource_path=path,
@@ -92,6 +91,7 @@ class LambdaClient:
             Payload=json.dumps(payload, cls=cls.json_encoder).encode("utf-8"),
             InvocationType="Event" if asynchronous else "RequestResponse",
         )
+
         if asynchronous:
             # Lambda invoked asynchronously only includes a status code in the response
             return {"result": LambdaResult.ACCEPTED}

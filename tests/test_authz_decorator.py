@@ -49,9 +49,7 @@ class TestAuthorizationDecorator:
         self, sample_resource_with_authorization: type[Resource], full_access_auth_header: str
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            APIGatewayEvent(
-                resource_path="/", method="GET", headers={"authorization": full_access_auth_header}
-            )
+            APIGatewayEvent("GET", "/", headers={"authorization": full_access_auth_header})
         )
         assert res_instance().status_code == HTTPStatus.OK
 
@@ -59,11 +57,7 @@ class TestAuthorizationDecorator:
         self, limited_access_auth_header: str, sample_resource_with_authorization: type[Resource]
     ) -> None:
         res_instance = sample_resource_with_authorization(
-            APIGatewayEvent(
-                resource_path="/",
-                method="GET",
-                headers={"authorization": limited_access_auth_header},
-            )
+            APIGatewayEvent("GET", "/", headers={"authorization": limited_access_auth_header})
         )
         assert res_instance().status_code == HTTPStatus.OK
 
@@ -72,9 +66,7 @@ class TestAuthorizationDecorator:
     ) -> None:
         res_instance = sample_resource_with_authorization(
             APIGatewayEvent(
-                resource_path="/garbage",
-                method="GET",
-                headers={"authorization": limited_access_auth_header},
+                "GET", "/garbage", headers={"authorization": limited_access_auth_header}
             )
         )
         assert res_instance().status_code == HTTPStatus.FORBIDDEN
@@ -82,13 +74,11 @@ class TestAuthorizationDecorator:
 
 class TestAuthorizationDecoratorGuestPermissions:
     def test_get_success(self, sample_guest_resource: type[Resource]) -> None:
-        res_instance = sample_guest_resource(APIGatewayEvent(resource_path="/", method="GET"))
+        res_instance = sample_guest_resource(APIGatewayEvent("GET", "/"))
         assert res_instance().status_code == HTTPStatus.OK
 
     def test_limited_permissions_failed(self, sample_guest_resource: type[Resource]) -> None:
-        res_instance = sample_guest_resource(
-            APIGatewayEvent(resource_path="/garbage2", method="GET")
-        )
+        res_instance = sample_guest_resource(APIGatewayEvent("GET", "/garbage2"))
         assert res_instance().status_code == HTTPStatus.FORBIDDEN
 
     def test_inharitance_success(
@@ -97,10 +87,6 @@ class TestAuthorizationDecoratorGuestPermissions:
         sample_guest_resource: type[Resource],
     ) -> None:
         res_instance = sample_guest_resource(
-            APIGatewayEvent(
-                resource_path="/garbage2",
-                method="GET",
-                headers={"authorization": full_access_auth_header},
-            )
+            APIGatewayEvent("GET", "/garbage2", headers={"authorization": full_access_auth_header})
         )
         assert res_instance().status_code == HTTPStatus.OK
