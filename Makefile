@@ -52,12 +52,12 @@ build-nocache clean-and-build cab: clean build
 .PHONY: black
 black:
 	black --version
-	black --target-version py38 --line-length 99 examples lbz tests setup.py
+	black --target-version py39 --line-length 99 examples lbz tests setup.py
 
 .PHONY: black-check
 black-check:
 	black --version
-	black --target-version py38 --line-length 99 --check examples lbz tests setup.py
+	black --target-version py39 --line-length 99 --check examples lbz tests setup.py
 
 .PHONY: isort
 isort:
