@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from lbz.dev.misc import APIGatewayEvent
-from lbz.misc import get_logger
 from lbz.resource import Resource
 from lbz.response import Response
-
-logger = get_logger(__name__)
+from lbz.rest import APIGatewayEvent
 
 
 class Client:
@@ -73,12 +70,6 @@ class Client:
         body: dict | None,
         headers: dict | None,
     ) -> Response:
-        if query_params:
-            for key, value in query_params.items():
-                if not isinstance(value, list):
-                    query_params[key] = [str(value)]
-                else:
-                    query_params[key] = [str(elem) for elem in value]
         return self.resource(
             APIGatewayEvent(
                 resource_path=path,

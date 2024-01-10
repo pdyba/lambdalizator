@@ -2,9 +2,9 @@
 import pytest
 
 from lbz.authz.utils import check_permission, has_permission
-from lbz.dev.misc import APIGatewayEvent
 from lbz.exceptions import PermissionDenied, Unauthorized
 from lbz.resource import Resource
+from lbz.rest import APIGatewayEvent
 
 
 class TestAuthorizationUtils:

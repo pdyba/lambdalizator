@@ -8,8 +8,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from os import environ
 from threading import Thread
 
-from lbz.dev.misc import APIGatewayEvent
 from lbz.resource import Resource
+from lbz.rest import APIGatewayEvent
 
 if environ.get("LBZ_DEBUG_MODE") is None:
     environ["LBZ_DEBUG_MODE"] = "true"

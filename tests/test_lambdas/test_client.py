@@ -3,19 +3,34 @@ from __future__ import annotations
 import json
 import logging
 from io import BytesIO
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
 from pytest import LogCaptureFixture
 from pytest_mock import MockerFixture
 
 from lbz.aws_boto3 import Boto3Client
-from lbz.lambdas import LambdaClient, LambdaError, LambdaResult
+from lbz.lambdas import LambdaClient, LambdaError, LambdaResult, LambdaSource
 
 
 @pytest.fixture(name="lambda_client")
 def lambda_client_fixture(mocker: MockerFixture) -> MagicMock:
     return mocker.patch.object(Boto3Client, "lambda_")
+
+
+def rest_response_factory() -> dict:
+    return {
+        "Payload": BytesIO(
+            json.dumps(
+                {
+                    "body": {"message": "Hello World!"},
+                    "statusCode": 200,
+                    "headers": {"Content-Type": "application/json"},
+                    "isBase64Encoded": False,
+                }
+            ).encode("utf-8")
+        )
+    }
 
 
 @pytest.mark.parametrize(
@@ -206,8 +221,12 @@ def test__invoke__raises_error_when_response_could_not_be_read_correctly(
         LambdaClient.invoke("test-func", "test-op", raise_if_error_resp=False)
 
     logged_record = caplog.records[0]
-    assert logged_record.message == "Invalid response received from test-func Lambda (op: test-op)"
-    assert logged_record.data is None  # type: ignore
+    assert logged_record.message == "Invalid response received from test-func Lambda"
+    assert logged_record.payload == {  # type: ignore
+        "data": None,
+        "invoke_type": LambdaSource.DIRECT,
+        "op": "test-op",
+    }
     assert logged_record.response == response  # type: ignore
 
 
@@ -221,3 +240,122 @@ def test__invoke__returns_accepted_result_when_invoked_asynchronously(
 
     assert result == {"result": LambdaResult.ACCEPTED}
     assert caplog.messages == []
+
+
+def test__request__raises_error_when_response_could_not_be_read_correctly(
+    lambda_client: MagicMock, caplog: LogCaptureFixture
+) -> None:
+    response = {"StatusCode": 200, "Payload": "invalid-payload"}
+    lambda_client.invoke.return_value = response
+
+    with pytest.raises(AttributeError):  # type of error does not matter here
+        LambdaClient.request(
+            function_name="test-func",
+            method="GET",
+            path="/home",
+        )
+
+    logged_record = caplog.records[0]
+    assert logged_record.message == "Invalid response received from test-func Lambda"
+    assert logged_record.payload == {  # type: ignore
+        "body": {},
+        "headers": {"Content-Type": "application/json"},
+        "httpMethod": "GET",
+        "isBase64Encoded": False,
+        "multiValueQueryStringParameters": {},
+        "path": "/home",
+        "pathParameters": {},
+        "requestContext": {
+            "httpMethod": "GET",
+            "path": "/home",
+            "requestId": ANY,
+            "resourcePath": "/home",
+        },
+        "resource": "/home",
+        "stageVariables": {},
+    }
+    assert logged_record.response == response  # type: ignore
+
+
+def test__request__returns_response_based_on_direct_answer_from_lambda_function(
+    lambda_client: MagicMock,
+) -> None:
+    lambda_client.invoke.return_value = rest_response_factory()
+
+    result = LambdaClient.request("test-function", "GET", "/home")
+
+    assert result.to_dict() == {
+        "body": '{"message":"Hello World!"}',
+        "headers": {"Content-Type": "application/json"},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    lambda_client.invoke.assert_called_once_with(
+        FunctionName="test-function",
+        Payload=ANY,
+        InvocationType="RequestResponse",
+    )
+    actual_payload: bytes = lambda_client.invoke.call_args_list[0].kwargs["Payload"]
+    assert json.loads(actual_payload.decode("UTF-8")) == {
+        "body": {},
+        "headers": {"Content-Type": "application/json"},
+        "httpMethod": "GET",
+        "isBase64Encoded": False,
+        "multiValueQueryStringParameters": {},
+        "path": "/home",
+        "pathParameters": {},
+        "requestContext": {
+            "httpMethod": "GET",
+            "path": "/home",
+            "requestId": ANY,
+            "resourcePath": "/home",
+        },
+        "resource": "/home",
+        "stageVariables": {},
+    }
+
+
+def test__request__uses_all_parameters_provided_from_outside_to_get_response(
+    lambda_client: MagicMock,
+) -> None:
+    lambda_client.invoke.return_value = rest_response_factory()
+
+    result = LambdaClient.request(
+        "test-function",
+        "POST",
+        "/{pid}",
+        path_params={"pid": "id-123"},
+        query_params={"city": "Peters Enclave"},
+        body={"x": "y"},
+        headers={"Authz": "yolo"},
+    )
+
+    assert result.to_dict() == {
+        "body": '{"message":"Hello World!"}',
+        "headers": {"Content-Type": "application/json"},
+        "isBase64Encoded": False,
+        "statusCode": 200,
+    }
+    lambda_client.invoke.assert_called_once_with(
+        FunctionName="test-function",
+        Payload=ANY,
+        InvocationType="RequestResponse",
+    )
+    actual_payload: bytes = lambda_client.invoke.call_args_list[0].kwargs["Payload"]
+    assert json.loads(actual_payload.decode("UTF-8")) == {
+        "body": {"x": "y"},
+        "headers": {"Authz": "yolo"},
+        "httpMethod": "POST",
+        "isBase64Encoded": False,
+        "multiValueQueryStringParameters": {"city": ["Peters Enclave"]},
+        "path": "/id-123",
+        "pathParameters": {"pid": "id-123"},
+        "requestContext": {
+            "httpMethod": "POST",
+            "path": "/id-123",
+            "requestId": ANY,
+            "resourcePath": "/{pid}",
+        },
+        "resource": "/{pid}",
+        "stageVariables": {},
+    }

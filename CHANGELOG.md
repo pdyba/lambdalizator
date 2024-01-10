@@ -53,7 +53,6 @@ Released 2020-12-03
   should be removed from the user data
 - Remove the guest authorization feature from the Resource class
 
-
 ### Version 0.2.1
 Released 2020-12-15
 
@@ -139,24 +138,20 @@ Released 2021-07-08
   - `*.domain.com`
 - Add Paginated Resource Helper class
 
-
 ### Version 0.3.12
 Released 2021-07-18
 
 - Add pylint, with configuration at 10.00/10.00 score
-
 
 ### Version 0.3.13
 Released 2021-08-01
 
 - Reworks Exceptions and adds missing ones to be compatible with all HTTP error codes.
 
-
 ### Version 0.3.14
 Released 2021-08-10
 
 - Code quality improvements based on mypy type checking
-
 
 ### Version 0.3.15
 Released 2021-08-25
@@ -173,13 +168,10 @@ Released 2021-09-21
 - improves test runtime
 - restores support for dicts in request class
 
-
 ### Version 0.4.1
 Released 2021-09-24
 
 - Packaging Type Information \(PEP 561\)
-
-
 
 ### Version 0.4.2
 Released 2021-10-09
@@ -198,7 +190,6 @@ Released 2021-10-09
 - Adds Debug Mode
 - Moves All JWT validation to decoding function from resource
 
-
 ### Version 0.5.1
 Released 2021-11-17
 
@@ -210,7 +201,6 @@ Released 2022-04-12
 - Adds Event Broker to support Asynchronous event handling with AWS Lambda
 - Introduces isort for better sorting and related checks
 - Updates dependencies
-
 
 ### Version 0.5.3
 Released 2022-04-15
@@ -258,7 +248,6 @@ Released 2022-07-31
 - Logs an error when required ref is missing in the Authorization policy
 - Accepts the error_code also during initialization of the Exception
 
-
 ### Version 0.5.11
 Released 2022-08-01
 
@@ -278,7 +267,6 @@ Released 2022-08-07
 - Makes sure that event broker is always passing original event and other handlers cannot affect it.
 - Makes DevServer threaded, so it can be run in background, useful for testing
 
-
 ### Version 0.5.14
 Released 2022-08-09
 
@@ -287,13 +275,10 @@ Released 2022-08-09
 - General tests improvements
 - Many mypy related improvements for tests
 
-
-
 ### Version 0.5.15
 Released 2022-08-30
 
 - Adds the all_lbz_errors function
-
 
 ### Version 0.5.16
 Released 2022-11-03
@@ -337,6 +322,11 @@ Released 2024-01-05
 Released 2024-01-05
 
 - Extends the code quality tools with security checks
+
+### Version 0.6.2
+Released 2024-01-10
+
+- Adds the ability to make an HTTP request bypassing the API Gateway
 
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)
