@@ -1,8 +1,6 @@
 import uuid
 from unittest.mock import ANY, MagicMock, patch
 
-import pytest
-
 from lbz.rest import APIGatewayEvent
 
 

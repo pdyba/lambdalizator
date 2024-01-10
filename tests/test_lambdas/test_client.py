@@ -282,11 +282,11 @@ def test__request__returns_response_based_on_direct_answer_from_lambda_function(
 ) -> None:
     lambda_client.invoke.return_value = rest_response_factory()
 
-    result = LambdaClient.request("test-function", "/home", "GET")
+    result = LambdaClient.request("test-function", "GET", "/home")
 
     assert result.to_dict() == {
-        "body": "{}",
-        "headers": {},
+        "body": '{"message":"Hello World!"}',
+        "headers": {"Content-Type": "application/json"},
         "isBase64Encoded": False,
         "statusCode": 200,
     }
@@ -299,18 +299,18 @@ def test__request__returns_response_based_on_direct_answer_from_lambda_function(
     assert json.loads(actual_payload.decode("UTF-8")) == {
         "body": {},
         "headers": {"Content-Type": "application/json"},
-        "httpMethod": "/home",
+        "httpMethod": "GET",
         "isBase64Encoded": False,
         "multiValueQueryStringParameters": {},
-        "path": "GET",
+        "path": "/home",
         "pathParameters": {},
         "requestContext": {
-            "httpMethod": "/home",
-            "path": "GET",
+            "httpMethod": "GET",
+            "path": "/home",
             "requestId": ANY,
-            "resourcePath": "GET",
+            "resourcePath": "/home",
         },
-        "resource": "GET",
+        "resource": "/home",
         "stageVariables": {},
     }
 
@@ -322,8 +322,8 @@ def test__request__uses_all_parameters_provided_from_outside_to_get_response(
 
     result = LambdaClient.request(
         "test-function",
-        "/{pid}",
         "POST",
+        "/{pid}",
         path_params={"pid": "id-123"},
         query_params={"city": "Peters Enclave"},
         body={"x": "y"},
@@ -331,8 +331,8 @@ def test__request__uses_all_parameters_provided_from_outside_to_get_response(
     )
 
     assert result.to_dict() == {
-        "body": "{}",
-        "headers": {},
+        "body": '{"message":"Hello World!"}',
+        "headers": {"Content-Type": "application/json"},
         "isBase64Encoded": False,
         "statusCode": 200,
     }
@@ -345,17 +345,17 @@ def test__request__uses_all_parameters_provided_from_outside_to_get_response(
     assert json.loads(actual_payload.decode("UTF-8")) == {
         "body": {"x": "y"},
         "headers": {"Authz": "yolo"},
-        "httpMethod": "/{pid}",
+        "httpMethod": "POST",
         "isBase64Encoded": False,
         "multiValueQueryStringParameters": {"city": ["Peters Enclave"]},
-        "path": "POST",
+        "path": "/id-123",
         "pathParameters": {"pid": "id-123"},
         "requestContext": {
-            "httpMethod": "/{pid}",
-            "path": "POST",
+            "httpMethod": "POST",
+            "path": "/id-123",
             "requestId": ANY,
-            "resourcePath": "POST",
+            "resourcePath": "/{pid}",
         },
-        "resource": "POST",
+        "resource": "/{pid}",
         "stageVariables": {},
     }
