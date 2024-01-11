@@ -328,6 +328,16 @@ Released 2024-01-10
 
 - Adds the ability to make an HTTP request bypassing the API Gateway
 
+### Version 0.6.3
+Released 2024-01-10
+
+- Cleanup and requirements update
+
+### Version 0.6.4
+Released 2024-01-11
+
+- Package auto discovery
+
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)
 
