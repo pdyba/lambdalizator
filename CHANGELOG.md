@@ -328,6 +328,17 @@ Released 2024-01-10
 
 - Adds the ability to make an HTTP request bypassing the API Gateway
 
+### Version 0.6.3
+Released 2024-01-10
+
+- Cleans the repository after recent pull requests
+- Updates the requirements needed for deployment
+
+### Version 0.6.4
+Released 2024-01-11
+
+- Allows Lambdalizer to discover packages on its own
+
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)
 
