@@ -83,14 +83,6 @@ class Resource:
         self._post_request_hook()
         return self.response
 
-    def make_error_response(self, error: LambdaFWException) -> Response:
-        """Creates a proper standardised Response for Errors."""
-        resp_data = {"message": error.message, "request_id": self.request.context["requestId"]}
-        if error.error_code:
-            resp_data["error_code"] = error.error_code
-
-        return Response(resp_data, status_code=error.status_code)
-
     def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"
 
