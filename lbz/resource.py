@@ -74,12 +74,22 @@ class Resource:
                 logger.exception(err)
             else:
                 logger.warning(err, exc_info=is_in_debug_mode())
-            self.response = err.get_response(self.request.context["requestId"])
+            self.response = Response.from_exception(err, self.request.context["requestId"])
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
-            self.response = ServerError().get_response(self.request.context["requestId"])
+            self.response = Response.from_exception(
+                ServerError(), self.request.context["requestId"]
+            )
         self._post_request_hook()
         return self.response
+
+    def make_error_response(self, error: LambdaFWException) -> Response:
+        """Creates a proper standardised Response for Errors."""
+        resp_data = {"message": error.message, "request_id": self.request.context["requestId"]}
+        if error.error_code:
+            resp_data["error_code"] = error.error_code
+
+        return Response(resp_data, status_code=error.status_code)
 
     def __repr__(self) -> str:
         return f"<Resource {self.method} @ {self.urn} >"

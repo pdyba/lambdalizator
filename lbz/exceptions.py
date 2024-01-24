@@ -4,8 +4,6 @@ from collections.abc import Generator
 from http import HTTPStatus
 from typing import Any
 
-from lbz.response import Response
-
 
 class SecurityError(Exception):
     """Request did not match security requirements expected by server."""
@@ -39,14 +37,6 @@ class LambdaFWException(Exception):
         if self.error_code is not None:
             return f"[{self.status_code}] {self.error_code} - {self.message}"
         return f"[{self.status_code}] {self.message}"
-
-    def get_response(self, request_id: str) -> Response:
-        """Creates a proper standardised Response for Errors."""
-        resp_data = {"message": self.message, "request_id": request_id}
-        if self.error_code:
-            resp_data["error_code"] = self.error_code
-
-        return Response(resp_data, status_code=self.status_code)
 
 
 class LambdaFWClientException(LambdaFWException):

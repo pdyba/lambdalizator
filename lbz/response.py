@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import json
 
+from lbz.exceptions import LambdaFWException
 from lbz.misc import deprecated
 
 
 class Response:
     """Response from lambda.
 
-    Performs automatic dumping when body is dict. Otherwise payload just passes through."""
+    Performs automatic dumping when body is dict, otherwise payload just passes through."""
 
     def __init__(
         self,
@@ -73,3 +74,12 @@ class Response:
         if not self._json:
             self._json = json.loads(self.text)
         return self._json
+
+    @classmethod
+    def from_exception(cls, error: LambdaFWException, request_id: str) -> Response:
+        """Creates a proper standardised Response for Errors."""
+        resp_data = {"message": error.message, "request_id": request_id}
+        if error.error_code:
+            resp_data["error_code"] = error.error_code
+
+        return cls(resp_data, status_code=error.status_code)

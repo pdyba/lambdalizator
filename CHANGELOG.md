@@ -344,7 +344,7 @@ Released 2024-01-25
 
 - Extends Response object to be more useful when making lambda request
 - Migrates away from datetime.utwnow() to datetime.now(UTC)
-
+- moves get_response from exceptions classes to Response class from_exception
 
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)
