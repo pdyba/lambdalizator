@@ -339,6 +339,13 @@ Released 2024-01-11
 
 - Allows Lambdalizer to discover packages on its own
 
+### Version 0.6.5
+Released 2024-01-25
+
+- Extends Response object to be more useful when making lambda request
+- Migrates away from datetime.utwnow() to datetime.now(UTC)
+
+
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)
 

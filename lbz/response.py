@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 
+from lbz.misc import deprecated
+
 
 class Response:
     """Response from lambda.
@@ -17,7 +19,15 @@ class Response:
         base64_encoded: bool = False,
     ):
         self.body = body
-        self.is_json = isinstance(body, dict)
+
+        if isinstance(body, dict):
+            self.is_json = True
+            self._json: dict = body
+        else:
+            self.is_json = False
+            self._json = {}
+            self.text = body
+
         self.headers = headers if headers is not None else self.get_content_header()
         self.status_code = status_code
         self.is_base64 = base64_encoded
@@ -49,5 +59,17 @@ class Response:
 
         return response
 
+    @deprecated(message="Use `ok` method", version="0.7.0")
     def is_ok(self) -> bool:
+        return self.ok
+
+    @property
+    def ok(self) -> bool:
+        """Returns True if status_code is less than 400, False if not."""
+
         return self.status_code < 400
+
+    def json(self) -> dict:
+        if not self._json:
+            self._json = json.loads(self.text)
+        return self._json
