@@ -356,3 +356,4 @@ Release ETA 2024-02-31 ;)
 - Redesigns authorization from ground up
 - Adds helpers and reduces jwt-related operations.
 - Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource
+- Fixes vulnerability `GHSA-wj6h-64fc-37mp`
