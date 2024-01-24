@@ -9,7 +9,7 @@ from multidict import CIMultiDict
 
 from lbz._cfg import ALLOWED_PUBLIC_KEYS, CORS_HEADERS, CORS_ORIGIN
 from lbz.authentication import User
-from lbz.collector import AuthzCollector
+from lbz.collector import authz_collector
 from lbz.events.api import EventAPI
 from lbz.exceptions import (
     LambdaFWException,
@@ -31,7 +31,7 @@ logger = get_logger(__name__)
 class Resource:
     _name: str = ""
     _router = Router()
-    _authz_collector = AuthzCollector()
+    _authz_collector = authz_collector
 
     @classmethod
     def get_name(cls) -> str:
