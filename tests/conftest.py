@@ -1,6 +1,6 @@
 import json
 from collections.abc import Iterator
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from os import environ
 from unittest.mock import patch
 from uuid import uuid4
@@ -106,8 +106,8 @@ def sample_event() -> APIGatewayEvent:
 @pytest.fixture(scope="session", name="jwt_partial_payload")
 def jwt_partial_payload_fixture(allowed_audiences: list[str]) -> dict:
     return {
-        "exp": int((datetime.now(UTC) + timedelta(hours=6)).timestamp()),
-        "iat": int(datetime.now(UTC).timestamp()),
+        "exp": int((datetime.now(timezone.utc) + timedelta(hours=6)).timestamp()),
+        "iat": int(datetime.now(timezone.utc).timestamp()),
         "iss": "test-issuer",
         "aud": allowed_audiences[0],
     }

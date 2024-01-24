@@ -1,6 +1,6 @@
 # coding=utf-8
 import logging
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -31,7 +31,7 @@ class TestAuthorizerWithoutMockingJWT:
         )
 
     def test_validate_one_with_expired(self, full_access_authz_payload: dict) -> None:
-        expired_timestamp = int((datetime.now(UTC) - timedelta(seconds=1)).timestamp())
+        expired_timestamp = int((datetime.now(timezone.utc) - timedelta(seconds=1)).timestamp())
         with pytest.raises(Unauthorized):
             Authorizer(
                 Authorizer.sign_authz(
