@@ -17,4 +17,4 @@ def handle(event: dict, context: LambdaContext) -> dict | None:
             EventBroker(mapper=event_to_handler_map, event=event, context=context).react()
         return None
     except Exception:  # pylint: disable=broad-except
-        return Response.from_exception(LambdaFWException(), context.aws_request_id).to_dict()
+        return Response.from_exception(ServerError(), context.aws_request_id).to_dict()

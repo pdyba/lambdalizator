@@ -93,7 +93,7 @@ class TestResponse:
         assert response.is_ok() == outcome
 
     def test_from_exception(self) -> None:
-        response = Response.from_exception(LambdaFWException(), "req-id")
+        response = Response.from_exception(ServerError(), "req-id")
 
         assert response.to_dict() == {
             "body": '{"message":"Server got itself in trouble","request_id":"req-id"}',

@@ -21,4 +21,4 @@ def handle(event: dict, context: LambdaContext) -> dict:
     try:
         return HelloWorldExample(event)().to_dict()
     except Exception:  # pylint: disable=broad-except
-        return Response.from_exception(LambdaFWException(), context.aws_request_id).to_dict()
+        return Response.from_exception(ServerError(), context.aws_request_id).to_dict()

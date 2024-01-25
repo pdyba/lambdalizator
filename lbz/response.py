@@ -60,7 +60,7 @@ class Response:
 
         return response
 
-    @deprecated(message="Use `ok` method", version="0.7.0")
+    @deprecated(message="Use the ok property instead", version="0.7.0")
     def is_ok(self) -> bool:
         return self.ok
 
@@ -71,7 +71,7 @@ class Response:
         return self.status_code < 400
 
     def json(self) -> dict:
-        if not self._json:
+        if self._json is None:
             self._json = json.loads(self.text)
         return self._json
 

@@ -343,8 +343,8 @@ Released 2024-01-11
 Released 2024-01-25
 
 - Moves `get_response` from exceptions classes to Response class as `from_exception`
-- Deprecates `is_ok` method in favour to `ok` property
-- Extends Response object to be more useful when making lambda request by adding `json` method
+- Deprecates `is_ok` method in favour of `ok` property
+- Extends Response class to be more useful by adding `json` method
 - Migrates away from `datetime.utwnow()` to `datetime.now(UTC)`
 
 
