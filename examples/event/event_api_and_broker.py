@@ -3,7 +3,7 @@ from __future__ import annotations
 from examples.event.event_aware_resource import HelloWorldExample
 from examples.event.event_broker import event_to_handler_map
 from lbz.events import EventBroker
-from lbz.exceptions import LambdaFWException
+from lbz.exceptions import ServerError
 from lbz.lambdas import LambdaSource
 from lbz.response import Response
 from lbz.type_defs import LambdaContext

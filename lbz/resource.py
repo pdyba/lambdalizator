@@ -222,7 +222,7 @@ class EventAwareResource(Resource):
         self.event_api.clear()
 
     def post_request_hook(self) -> None:
-        if self.response.is_ok():
+        if self.response.ok:
             self.event_api.send()
         else:
             self.event_api.clear_pending()

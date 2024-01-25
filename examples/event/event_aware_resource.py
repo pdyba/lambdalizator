@@ -1,5 +1,5 @@
 from lbz.events import Event
-from lbz.exceptions import LambdaFWException
+from lbz.exceptions import ServerError
 from lbz.resource import EventAwareResource
 from lbz.response import Response
 from lbz.router import add_route

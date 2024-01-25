@@ -3,7 +3,7 @@
 """Simple Lambda Handler"""
 from lbz.dev.server import MyDevServer
 from lbz.dev.test import Client
-from lbz.exceptions import LambdaFWException
+from lbz.exceptions import ServerError
 from lbz.resource import Resource
 from lbz.response import Response
 from lbz.router import add_route

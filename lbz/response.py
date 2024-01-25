@@ -9,7 +9,8 @@ from lbz.misc import deprecated
 class Response:
     """Response from lambda.
 
-    Performs automatic dumping when body is dict, otherwise payload just passes through."""
+    Performs automatic dumping when body is dict, otherwise payload just passes through.
+    """
 
     def __init__(
         self,
@@ -20,29 +21,37 @@ class Response:
         base64_encoded: bool = False,
     ):
         self.body = body
-
-        if isinstance(body, dict):
-            self.is_json = True
-            self._json: dict = body
-        else:
-            self.is_json = False
-            self._json = {}
-            self.text = body
-
-        self.headers = headers if headers is not None else self.get_content_header()
+        self.headers = headers if headers is not None else self._get_content_header()
         self.status_code = status_code
+        # TODO: handle bae64 encoded responses appropriately
         self.is_base64 = base64_encoded
+        self._json: dict | None = None
+        if isinstance(body, dict):
+            self._json = body
 
     def __repr__(self) -> str:
         return f"<Response(status_code={self.status_code})>"
 
-    def get_content_header(self) -> dict:
-        """Adds necessary headers based on content type"""
-        if self.is_json:
-            return {"Content-Type": "application/json"}
-        if isinstance(self.body, str):
-            return {"Content-Type": "text/plain"}
-        raise RuntimeError("Response body type not supported yet.")
+    @classmethod
+    def from_exception(cls, error: LambdaFWException, request_id: str) -> Response:
+        """Creates a proper standardised Response for Errors."""
+        resp_data = {"message": error.message, "request_id": request_id}
+        if error.error_code:
+            resp_data["error_code"] = error.error_code
+
+        return cls(resp_data, status_code=error.status_code)
+
+    @property
+    def is_json(self) -> bool:
+        if isinstance(self.body, dict):
+            return True
+        if self.headers and self.headers.get("Content-Type") == "application/json":
+            return True
+        return False
+
+    @property
+    def ok(self) -> bool:
+        return self.status_code < 400
 
     def to_dict(self) -> dict:
         """Dumps response to AWS Lambda compatible response format."""
@@ -60,26 +69,21 @@ class Response:
 
         return response
 
+    def json(self) -> dict:
+        if self._json is None:
+            if not isinstance(self.body, str):
+                raise ValueError(f"Got unexpected type to decode {type(self.body)}")
+            self._json = json.loads(self.body)
+        return self._json
+
     @deprecated(message="Use the ok property instead", version="0.7.0")
     def is_ok(self) -> bool:
         return self.ok
 
-    @property
-    def ok(self) -> bool:
-        """Returns True if status_code is less than 400, False if not."""
-
-        return self.status_code < 400
-
-    def json(self) -> dict:
-        if self._json is None:
-            self._json = json.loads(self.text)
-        return self._json
-
-    @classmethod
-    def from_exception(cls, error: LambdaFWException, request_id: str) -> Response:
-        """Creates a proper standardised Response for Errors."""
-        resp_data = {"message": error.message, "request_id": request_id}
-        if error.error_code:
-            resp_data["error_code"] = error.error_code
-
-        return cls(resp_data, status_code=error.status_code)
+    def _get_content_header(self) -> dict:
+        """Adds necessary headers based on content type"""
+        if isinstance(self.body, dict):
+            return {"Content-Type": "application/json"}
+        if isinstance(self.body, str):
+            return {"Content-Type": "text/plain"}
+        raise RuntimeError("Response body type not supported yet.")

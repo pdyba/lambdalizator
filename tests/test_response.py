@@ -3,7 +3,7 @@ from base64 import b64encode
 
 import pytest
 
-from lbz.exceptions import LambdaFWException
+from lbz.exceptions import LambdaFWException, ServerError
 from lbz.response import Response
 
 
@@ -117,15 +117,10 @@ class TestResponse:
         }
 
     def test_json_when_body_is_a_string(self) -> None:
-        response = Response(
-            '{"message":"Server got itself in '
-            'trouble","request_id":"req-id","error_code":"RAND001"}'
-        )
+        response = Response('{"message":"Server got itself in trouble"}')
 
         assert response.json() == {
             "message": "Server got itself in trouble",
-            "request_id": "req-id",
-            "error_code": "RAND001",
         }
 
     def test_json_when_body_is_a_dict(self) -> None:
