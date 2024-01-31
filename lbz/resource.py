@@ -21,6 +21,7 @@ from lbz.exceptions import (
 from lbz.misc import get_logger, is_in_debug_mode
 from lbz.request import Request
 from lbz.response import Response
+from lbz.rest import ContentType
 from lbz.router import Router
 
 ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
@@ -74,10 +75,12 @@ class Resource:
                 logger.exception(err)
             else:
                 logger.warning(err, exc_info=is_in_debug_mode())
-            self.response = err.get_response(self.request.context["requestId"])
+            self.response = Response.from_exception(err, self.request.context["requestId"])
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
-            self.response = ServerError().get_response(self.request.context["requestId"])
+            self.response = Response.from_exception(
+                ServerError(), self.request.context["requestId"]
+            )
         self._post_request_hook()
         return self.response
 
@@ -180,7 +183,7 @@ class CORSResource(Resource):
     @property
     def resp_headers_json(self) -> dict:
         """Properly formatted json headers."""
-        return self.resp_headers(content_type="application/json")
+        return self.resp_headers(content_type=ContentType.JSON)
 
 
 class PaginatedCORSResource(CORSResource):
@@ -220,7 +223,7 @@ class EventAwareResource(Resource):
         self.event_api.clear()
 
     def post_request_hook(self) -> None:
-        if self.response.is_ok():
+        if self.response.ok:
             self.event_api.send()
         else:
             self.event_api.clear_pending()

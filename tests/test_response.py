@@ -1,16 +1,20 @@
-# coding=utf-8
+from __future__ import annotations
+
 from base64 import b64encode
+from typing import Any
 
 import pytest
 
+from lbz.exceptions import LambdaFWException, ServerError
 from lbz.response import Response
+from lbz.rest import ContentType
 
 
 class TestResponseInit:
     def test___init__(self) -> None:
         resp = Response({})
         assert isinstance(resp.body, dict)
-        assert resp.headers == {"Content-Type": "application/json"}
+        assert resp.headers == {"Content-Type": ContentType.JSON}
         assert resp.status_code == 200
         assert not resp.is_base64
 
@@ -37,7 +41,7 @@ class TestResponse:
         response = Response({"message": "xxx"}, status_code=666)
         assert response.to_dict() == {
             "body": '{"message":"xxx"}',
-            "headers": {"Content-Type": "application/json"},
+            "headers": {"Content-Type": ContentType.JSON},
             "statusCode": 666,
             "isBase64Encoded": False,
         }
@@ -85,6 +89,66 @@ class TestResponse:
             (666, False),
         ],
     )
-    def test_response_is_ok(self, code: int, outcome: bool) -> None:
+    def test__ok__returns_bool_result_based_on_status_code(self, code: int, outcome: bool) -> None:
         response = Response({"message": "xxx"}, headers={"xx": "xx"}, status_code=code)
+
+        assert response.ok == outcome
         assert response.is_ok() == outcome
+
+    def test__from_exception__builds_response_based_on_provided_internal_error(self) -> None:
+        response = Response.from_exception(ServerError(), "req-id")
+
+        assert response.to_dict() == {
+            "body": '{"message":"Server got itself in trouble","request_id":"req-id"}',
+            "headers": {"Content-Type": ContentType.JSON},
+            "isBase64Encoded": False,
+            "statusCode": 500,
+        }
+
+    def test__from_exception__adds_error_code_to_response_body_if_only_declared(self) -> None:
+        class RandomException(LambdaFWException):
+            error_code = "RAND001"
+
+        response = Response.from_exception(RandomException(), "req-id")
+
+        assert response.to_dict() == {
+            "body": (
+                '{"message":"Server got itself in trouble",'
+                '"request_id":"req-id",'
+                '"error_code":"RAND001"}'
+            ),
+            "headers": {"Content-Type": ContentType.JSON},
+            "isBase64Encoded": False,
+            "statusCode": 500,
+        }
+
+    @pytest.mark.parametrize(
+        "body",
+        [
+            {"message": "It is alive!"},
+            '{"message":"It is alive!"}',
+        ],
+    )
+    def test__json__returns_dict_based_on_declared_body(self, body: Any) -> None:
+        response = Response(body)
+
+        assert response.json() == {"message": "It is alive!"}
+
+    @pytest.mark.parametrize(
+        "body, headers, is_json",
+        [
+            ({"message": "It is alive!"}, {}, True),
+            ({"message": "It is alive!"}, {"Content-Type": ContentType.JSON}, True),
+            ({"message": "It is alive!"}, {"Content-Type": ContentType.TEXT}, True),
+            ('{"message":"It is alive!"}', {"Content-Type": ContentType.JSON}, True),
+            ('{"message":"It is alive!"}', {"Content-Type": ContentType.TEXT}, False),
+            ('{"message":"It is alive!"}', {}, False),
+            ("", {}, False),
+        ],
+    )
+    def test__is_json__returns_bool_based_on_declared_body_and_headers(
+        self, body: str | dict, headers: dict, is_json: bool
+    ) -> None:
+        response = Response(body, headers=headers)
+
+        assert response.is_json == is_json

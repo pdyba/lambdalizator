@@ -339,6 +339,15 @@ Released 2024-01-11
 
 - Allows Lambdalizer to discover packages on its own
 
+### Version 0.6.5
+Released 2024-01-31
+
+- Moves `get_response` from exceptions classes to Response class as `from_exception`
+- Deprecates `is_ok` method in favour of `ok` property
+- Extends Response class to be more useful by adding `json` method
+- Migrates away from `datetime.utwnow()` to `datetime.now(UTC)`
+
+
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)
 
@@ -347,3 +356,4 @@ Release ETA 2024-02-31 ;)
 - Redesigns authorization from ground up
 - Adds helpers and reduces jwt-related operations.
 - Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource
+- Fixes vulnerability `GHSA-wj6h-64fc-37mp`

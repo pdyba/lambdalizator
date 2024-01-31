@@ -11,6 +11,7 @@ from pytest_mock import MockerFixture
 
 from lbz.aws_boto3 import Boto3Client
 from lbz.lambdas import LambdaClient, LambdaError, LambdaResult, LambdaSource
+from lbz.rest import ContentType
 
 
 @pytest.fixture(name="lambda_client")
@@ -25,7 +26,7 @@ def rest_response_factory() -> dict:
                 {
                     "body": {"message": "Hello World!"},
                     "statusCode": 200,
-                    "headers": {"Content-Type": "application/json"},
+                    "headers": {"Content-Type": ContentType.JSON},
                     "isBase64Encoded": False,
                 }
             ).encode("utf-8")
@@ -259,7 +260,7 @@ def test__request__raises_error_when_response_could_not_be_read_correctly(
     assert logged_record.message == "Invalid response received from test-func Lambda"
     assert logged_record.payload == {  # type: ignore
         "body": {},
-        "headers": {"Content-Type": "application/json"},
+        "headers": {"Content-Type": ContentType.JSON},
         "httpMethod": "GET",
         "isBase64Encoded": False,
         "multiValueQueryStringParameters": {},
@@ -286,7 +287,7 @@ def test__request__returns_response_based_on_direct_answer_from_lambda_function(
 
     assert result.to_dict() == {
         "body": '{"message":"Hello World!"}',
-        "headers": {"Content-Type": "application/json"},
+        "headers": {"Content-Type": ContentType.JSON},
         "isBase64Encoded": False,
         "statusCode": 200,
     }
@@ -298,7 +299,7 @@ def test__request__returns_response_based_on_direct_answer_from_lambda_function(
     actual_payload: bytes = lambda_client.invoke.call_args_list[0].kwargs["Payload"]
     assert json.loads(actual_payload.decode("UTF-8")) == {
         "body": {},
-        "headers": {"Content-Type": "application/json"},
+        "headers": {"Content-Type": ContentType.JSON},
         "httpMethod": "GET",
         "isBase64Encoded": False,
         "multiValueQueryStringParameters": {},
@@ -332,7 +333,7 @@ def test__request__uses_all_parameters_provided_from_outside_to_get_response(
 
     assert result.to_dict() == {
         "body": '{"message":"Hello World!"}',
-        "headers": {"Content-Type": "application/json"},
+        "headers": {"Content-Type": ContentType.JSON},
         "isBase64Encoded": False,
         "statusCode": 200,
     }

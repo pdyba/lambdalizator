@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from os import environ
 from unittest.mock import MagicMock, patch
 
@@ -53,8 +53,8 @@ class TestDecodeJWT:
         assert decoded_jwt_data == full_access_authz_payload
 
     def test_expired_jwt(self) -> None:
-        iat = int((datetime.utcnow() - timedelta(hours=12)).timestamp())
-        exp = int((datetime.utcnow() - timedelta(hours=6)).timestamp())
+        iat = int((datetime.now(timezone.utc) - timedelta(hours=12)).timestamp())
+        exp = int((datetime.now(timezone.utc) - timedelta(hours=6)).timestamp())
         token_payload = {
             "exp": exp,
             "iat": iat,
@@ -66,8 +66,8 @@ class TestDecodeJWT:
             decode_jwt(jwt_token)
 
     def test_missing_correct_audiences(self, caplog: pytest.LogCaptureFixture) -> None:
-        iat = int(datetime.utcnow().timestamp())
-        exp = int((datetime.utcnow() + timedelta(hours=6)).timestamp())
+        iat = int(datetime.now(timezone.utc).timestamp())
+        exp = int((datetime.now(timezone.utc) + timedelta(hours=6)).timestamp())
         token_payload = {"exp": exp, "iat": iat, "iss": "test-issuer", "aud": "test"}
         jwt_token = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
         with pytest.raises(Unauthorized):
@@ -96,7 +96,7 @@ class TestDecodeJWT:
                 {
                     "allow": "*",
                     "deny": {},
-                    "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
+                    "exp": int((datetime.now(timezone.utc) + timedelta(hours=6)).timestamp()),
                 }
             )
 

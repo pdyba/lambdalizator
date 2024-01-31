@@ -1,5 +1,5 @@
 from lbz.events import Event
-from lbz.exceptions import LambdaFWException
+from lbz.exceptions import ServerError
 from lbz.resource import EventAwareResource
 from lbz.response import Response
 from lbz.router import add_route
@@ -21,4 +21,4 @@ def handle(event: dict, context: LambdaContext) -> dict:
     try:
         return HelloWorldExample(event)().to_dict()
     except Exception:  # pylint: disable=broad-except
-        return LambdaFWException().get_response(context.aws_request_id).to_dict()
+        return Response.from_exception(ServerError(), context.aws_request_id).to_dict()

@@ -22,7 +22,7 @@ def handle(event: dict, context: LambdaContext) -> dict:
     try:
         return HelloWorldWithAuthorization(event)().to_dict()
     except Exception:  # pylint: disable=broad-except
-        return ServerError().get_response(context.aws_request_id).to_dict()
+        return Response.from_exception(ServerError(), context.aws_request_id).to_dict()
 
 
 if __name__ == "__main__":

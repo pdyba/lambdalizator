@@ -1,7 +1,7 @@
 import uuid
 from unittest.mock import ANY, MagicMock, patch
 
-from lbz.rest import APIGatewayEvent
+from lbz.rest import APIGatewayEvent, ContentType
 
 
 class TestAPIGatewayEvent:
@@ -16,7 +16,7 @@ class TestAPIGatewayEvent:
 
         assert event == {
             "body": {},
-            "headers": {"Content-Type": "application/json"},
+            "headers": {"Content-Type": ContentType.JSON},
             "httpMethod": "GET",
             "multiValueQueryStringParameters": {},
             "path": "/",

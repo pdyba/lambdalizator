@@ -1,6 +1,6 @@
 import json
 from collections.abc import Iterator
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from os import environ
 from unittest.mock import patch
 from uuid import uuid4
@@ -27,7 +27,7 @@ from lbz.collector import authz_collector
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
-from lbz.rest import APIGatewayEvent
+from lbz.rest import APIGatewayEvent, ContentType
 from lbz.router import Router, add_route
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token
@@ -81,7 +81,7 @@ def sample_request() -> Request:
     return Request(
         method="GET",
         body="",
-        headers=CIMultiDict({"Content-Type": "application/json"}),
+        headers=CIMultiDict({"Content-Type": ContentType.JSON}),
         user=None,
         uri_params={},
         context={},
@@ -106,8 +106,8 @@ def sample_event() -> APIGatewayEvent:
 @pytest.fixture(scope="session", name="jwt_partial_payload")
 def jwt_partial_payload_fixture(allowed_audiences: list[str]) -> dict:
     return {
-        "exp": int((datetime.utcnow() + timedelta(hours=6)).timestamp()),
-        "iat": int(datetime.utcnow().timestamp()),
+        "exp": int((datetime.now(timezone.utc) + timedelta(hours=6)).timestamp()),
+        "iat": int(datetime.now(timezone.utc).timestamp()),
         "iss": "test-issuer",
         "aud": allowed_audiences[0],
     }
@@ -181,7 +181,7 @@ def sample_request_with_user(user: User) -> Request:
     return Request(
         method="GET",
         body="",
-        headers=CIMultiDict({"Content-Type": "application/json"}),
+        headers=CIMultiDict({"Content-Type": ContentType.JSON}),
         context={},
         user=user,
         stage_vars={},

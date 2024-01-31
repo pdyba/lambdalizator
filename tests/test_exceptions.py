@@ -20,10 +20,6 @@ def test__lambda_fw_exception__simulates_server_error_by_default() -> None:
     assert exception.message == "Server got itself in trouble"
     assert exception.error_code is None
     assert exception.status_code == 500
-    assert exception.get_response(request_id="test-req-id").body == {
-        "message": "Server got itself in trouble",
-        "request_id": "test-req-id",
-    }
 
 
 def test__lambda_fw_exception__respects_attributes_declared_on_inherited_class_level() -> None:
@@ -38,11 +34,6 @@ def test__lambda_fw_exception__respects_attributes_declared_on_inherited_class_l
     assert exception.message == "No error message"
     assert exception.error_code == "TEST_ERR"
     assert exception.status_code == 444
-    assert exception.get_response(request_id="test-req-id").body == {
-        "error_code": "TEST_ERR",
-        "message": "No error message",
-        "request_id": "test-req-id",
-    }
 
 
 def test__lambda_fw_exception__respects_values_provided_during_initialization() -> None:
@@ -52,11 +43,6 @@ def test__lambda_fw_exception__respects_values_provided_during_initialization() 
     assert exception.message == "Test error message"
     assert exception.error_code == "TEST_ERR"
     assert exception.status_code == 500
-    assert exception.get_response(request_id="test-req-id").body == {
-        "error_code": "TEST_ERR",
-        "message": "Test error message",
-        "request_id": "test-req-id",
-    }
 
 
 def test__unsupported_method__builds_message_based_on_method_provided_from_outside() -> None:

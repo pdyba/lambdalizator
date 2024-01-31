@@ -3,7 +3,7 @@
 """Simple Lambda Handler"""
 from lbz.dev.server import MyDevServer
 from lbz.dev.test import Client
-from lbz.exceptions import LambdaFWException
+from lbz.exceptions import ServerError
 from lbz.resource import Resource
 from lbz.response import Response
 from lbz.router import add_route
@@ -26,7 +26,7 @@ def handle(event: dict, context: LambdaContext) -> dict:
         resp = exp().to_dict()
         return resp
     except Exception:  # pylint: disable=broad-except
-        return LambdaFWException().get_response(context.aws_request_id).to_dict()
+        return Response.from_exception(ServerError(), context.aws_request_id).to_dict()
 
 
 class TestHelloWorld:

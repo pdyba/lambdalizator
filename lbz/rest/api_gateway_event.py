@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import uuid
 
-DEFAULT_HEADERS = {"Content-Type": "application/json"}
+from lbz.rest.enums import ContentType
+
+DEFAULT_HEADERS = {"Content-Type": ContentType.JSON}
 
 
 class APIGatewayEvent(dict):
