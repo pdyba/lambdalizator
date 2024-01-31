@@ -137,14 +137,16 @@ class TestResponse:
         "body, headers, is_json",
         [
             ({"message": "It is alive!"}, {}, True),
+            ({"message": "It is alive!"}, {"Content-Type": ContentType.JSON}, True),
+            ({"message": "It is alive!"}, {"Content-Type": ContentType.TEXT}, True),
             ('{"message":"It is alive!"}', {"Content-Type": ContentType.JSON}, True),
-            ('{"message":"It is alive!"}', {"Content-Type": "text/plain"}, False),
+            ('{"message":"It is alive!"}', {"Content-Type": ContentType.TEXT}, False),
             ('{"message":"It is alive!"}', {}, False),
             ("", {}, False),
         ],
     )
     def test__is_json__returns_bool_based_on_declared_body_and_headers(
-        self, body: Any, headers: dict, is_json: bool
+        self, body: str | dict, headers: dict, is_json: bool
     ) -> None:
         response = Response(body, headers=headers)
 
