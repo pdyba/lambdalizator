@@ -132,13 +132,6 @@ class TestResponse:
 
         assert response.json() == {"message": "It is alive!"}
 
-    def test__json__raises_value_error_when_body_is_not_a_string(self) -> None:
-        response = Response("")
-        response.body = []  # type: ignore
-
-        with pytest.raises(ValueError, match="Got unexpected type to decode <class 'list'>"):
-            assert response.json()
-
     @pytest.mark.parametrize(
         "body, headers, is_json",
         [

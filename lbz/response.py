@@ -69,9 +69,7 @@ class Response:
 
     def json(self) -> dict:
         if self._json is None:
-            if not isinstance(self.body, str):
-                raise ValueError(f"Got unexpected type to decode {type(self.body)}")
-            self._json = json.loads(self.body)
+            self._json = json.loads(self.body)  # type: ignore[arg-type]
         return self._json
 
     @deprecated(message="Use the ok property instead", version="0.7.0")
