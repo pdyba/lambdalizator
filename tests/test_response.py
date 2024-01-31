@@ -6,13 +6,14 @@ import pytest
 
 from lbz.exceptions import LambdaFWException, ServerError
 from lbz.response import Response
+from lbz.rest import ContentType
 
 
 class TestResponseInit:
     def test___init__(self) -> None:
         resp = Response({})
         assert isinstance(resp.body, dict)
-        assert resp.headers == {"Content-Type": "application/json"}
+        assert resp.headers == {"Content-Type": ContentType.JSON}
         assert resp.status_code == 200
         assert not resp.is_base64
 
@@ -39,7 +40,7 @@ class TestResponse:
         response = Response({"message": "xxx"}, status_code=666)
         assert response.to_dict() == {
             "body": '{"message":"xxx"}',
-            "headers": {"Content-Type": "application/json"},
+            "headers": {"Content-Type": ContentType.JSON},
             "statusCode": 666,
             "isBase64Encoded": False,
         }
@@ -98,7 +99,7 @@ class TestResponse:
 
         assert response.to_dict() == {
             "body": '{"message":"Server got itself in trouble","request_id":"req-id"}',
-            "headers": {"Content-Type": "application/json"},
+            "headers": {"Content-Type": ContentType.JSON},
             "isBase64Encoded": False,
             "statusCode": 500,
         }
@@ -115,7 +116,7 @@ class TestResponse:
                 '"request_id":"req-id",'
                 '"error_code":"RAND001"}'
             ),
-            "headers": {"Content-Type": "application/json"},
+            "headers": {"Content-Type": ContentType.JSON},
             "isBase64Encoded": False,
             "statusCode": 500,
         }
@@ -136,7 +137,7 @@ class TestResponse:
         "body, headers, is_json",
         [
             ({"message": "It is alive!"}, {}, True),
-            ('{"message":"It is alive!"}', {"Content-Type": "application/json"}, True),
+            ('{"message":"It is alive!"}', {"Content-Type": ContentType.JSON}, True),
             ('{"message":"It is alive!"}', {"Content-Type": "text/plain"}, False),
             ('{"message":"It is alive!"}', {}, False),
             ("", {}, False),

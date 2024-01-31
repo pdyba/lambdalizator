@@ -9,6 +9,7 @@ from multidict import CIMultiDict
 from lbz.authentication import User
 from lbz.exceptions import BadRequestError
 from lbz.misc import MultiDict, get_logger
+from lbz.rest import ContentType
 
 logger = get_logger(__name__)
 
@@ -73,7 +74,7 @@ class Request:
             content_type: str | None = self.headers.get("Content-Type")
             if content_type is None:  # pylint: disable=consider-using-assignment-expr
                 return None
-            if content_type.startswith("application/json"):
+            if content_type.startswith(ContentType.JSON):
                 if isinstance(self.raw_body, dict) or self.raw_body is None:
                     self._json_body = self.raw_body
                 else:

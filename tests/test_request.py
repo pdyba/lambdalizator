@@ -6,6 +6,7 @@ from multidict import CIMultiDict
 from lbz.exceptions import BadRequestError
 from lbz.misc import MultiDict
 from lbz.request import Request
+from lbz.rest import ContentType
 
 
 class TestRequestInit:
@@ -54,8 +55,8 @@ class TestRequestGeneral:
             assert isinstance(getattr(sample_request_with_user.user, str(custom_param)), str)
 
     def test_headers_are_case_insensitive(self, sample_request_with_user: Request) -> None:
-        assert sample_request_with_user.headers["content-type"] == "application/json"
-        assert sample_request_with_user.headers["CoNtEnT-TyPe"] == "application/json"
+        assert sample_request_with_user.headers["content-type"] == ContentType.JSON
+        assert sample_request_with_user.headers["CoNtEnT-TyPe"] == ContentType.JSON
 
 
 class TestRequestRawBody:
@@ -120,7 +121,7 @@ class TestRequestToDict:
     def test_to_dict(self, sample_request_with_user: Request) -> None:
         assert sample_request_with_user.to_dict() == {
             "context": {},
-            "headers": {"Content-Type": "application/json"},
+            "headers": {"Content-Type": ContentType.JSON},
             "method": "GET",
             "query_params": {},
             "stage_vars": {},

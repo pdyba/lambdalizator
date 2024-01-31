@@ -4,6 +4,7 @@ import json
 
 from lbz.exceptions import LambdaFWException
 from lbz.misc import deprecated
+from lbz.rest import ContentType
 
 
 class Response:
@@ -43,7 +44,7 @@ class Response:
     def is_json(self) -> bool:
         if isinstance(self.body, dict):
             return True
-        if self.headers.get("Content-Type") == "application/json":
+        if self.headers.get("Content-Type") == ContentType.JSON:
             return True
         return False
 
@@ -79,7 +80,7 @@ class Response:
     def _get_content_header(self) -> dict:
         """Adds necessary headers based on content type"""
         if isinstance(self.body, dict):
-            return {"Content-Type": "application/json"}
+            return {"Content-Type": ContentType.JSON}
         if isinstance(self.body, str):
-            return {"Content-Type": "text/plain"}
+            return {"Content-Type": ContentType.TEXT}
         raise RuntimeError("Response body type not supported yet.")

@@ -27,7 +27,7 @@ from lbz.collector import authz_collector
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
-from lbz.rest import APIGatewayEvent
+from lbz.rest import APIGatewayEvent, ContentType
 from lbz.router import Router, add_route
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token
@@ -81,7 +81,7 @@ def sample_request() -> Request:
     return Request(
         method="GET",
         body="",
-        headers=CIMultiDict({"Content-Type": "application/json"}),
+        headers=CIMultiDict({"Content-Type": ContentType.JSON}),
         user=None,
         uri_params={},
         context={},
@@ -181,7 +181,7 @@ def sample_request_with_user(user: User) -> Request:
     return Request(
         method="GET",
         body="",
-        headers=CIMultiDict({"Content-Type": "application/json"}),
+        headers=CIMultiDict({"Content-Type": ContentType.JSON}),
         context={},
         user=user,
         stage_vars={},

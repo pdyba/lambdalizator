@@ -27,7 +27,7 @@ from lbz.resource import (
     Resource,
 )
 from lbz.response import Response
-from lbz.rest import APIGatewayEvent
+from lbz.rest import APIGatewayEvent, ContentType
 from lbz.router import Router, add_route
 from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 
@@ -35,7 +35,7 @@ from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 
 req = Request(
     body="",
-    headers=CIMultiDict({"Content-Type": "application/json"}),
+    headers=CIMultiDict({"Content-Type": ContentType.JSON}),
     uri_params={},
     method="GET",  # pylint issue #214
     query_params=None,
@@ -102,7 +102,7 @@ class TestResource:
         resp = cls()
         assert isinstance(resp, Response), resp
         assert resp.to_dict() == {
-            "headers": {"Content-Type": "application/json"},
+            "headers": {"Content-Type": ContentType.JSON},
             "statusCode": 200,
             "body": '{"message":"x"}',
             "isBase64Encoded": False,
@@ -249,7 +249,7 @@ class TestResource:
         resp = XResource(event)()
         assert isinstance(resp, Response), resp
         assert resp.to_dict() == {
-            "headers": {"Content-Type": "application/json"},
+            "headers": {"Content-Type": ContentType.JSON},
             "statusCode": 500,
             "body": ANY,
             "isBase64Encoded": False,
@@ -348,7 +348,7 @@ class TestCORSResource:
         }
 
     def test_resp_headers_json(self) -> None:
-        assert self.make_cors_handler().resp_headers_json["Content-Type"] == "application/json"
+        assert self.make_cors_handler().resp_headers_json["Content-Type"] == ContentType.JSON
 
     def test_resp_headers_no_content_type_by_default(self) -> None:
         assert self.make_cors_handler().resp_headers().get("Content-Type") is None

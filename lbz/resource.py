@@ -21,6 +21,7 @@ from lbz.exceptions import (
 from lbz.misc import get_logger, is_in_debug_mode
 from lbz.request import Request
 from lbz.response import Response
+from lbz.rest import ContentType
 from lbz.router import Router
 
 ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
@@ -182,7 +183,7 @@ class CORSResource(Resource):
     @property
     def resp_headers_json(self) -> dict:
         """Properly formatted json headers."""
-        return self.resp_headers(content_type="application/json")
+        return self.resp_headers(content_type=ContentType.JSON)
 
 
 class PaginatedCORSResource(CORSResource):
