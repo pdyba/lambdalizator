@@ -21,13 +21,11 @@ class Response:
         base64_encoded: bool = False,
     ):
         self.body = body
+        self._json = body if isinstance(body, dict) else None
         self.headers = headers if headers is not None else self._get_content_header()
         self.status_code = status_code
         # TODO: handle bae64 encoded responses appropriately
         self.is_base64 = base64_encoded
-        self._json: dict | None = None
-        if isinstance(body, dict):
-            self._json = body
 
     def __repr__(self) -> str:
         return f"<Response(status_code={self.status_code})>"
@@ -45,7 +43,7 @@ class Response:
     def is_json(self) -> bool:
         if isinstance(self.body, dict):
             return True
-        if self.headers and self.headers.get("Content-Type") == "application/json":
+        if self.headers.get("Content-Type") == "application/json":
             return True
         return False
 

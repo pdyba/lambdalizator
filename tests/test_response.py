@@ -86,13 +86,13 @@ class TestResponse:
             (666, False),
         ],
     )
-    def test_response_ok(self, code: int, outcome: bool) -> None:
+    def test__ok__returns_bool_result_based_on_status_code(self, code: int, outcome: bool) -> None:
         response = Response({"message": "xxx"}, headers={"xx": "xx"}, status_code=code)
 
         assert response.ok == outcome
         assert response.is_ok() == outcome
 
-    def test_from_exception(self) -> None:
+    def test__from_exception__builds_response_based_on_provided_internal_error(self) -> None:
         response = Response.from_exception(ServerError(), "req-id")
 
         assert response.to_dict() == {
@@ -102,28 +102,31 @@ class TestResponse:
             "statusCode": 500,
         }
 
-    def test_from_exception_with_error_code(self) -> None:
+    def test__from_exception__adds_error_code_to_response_body_if_only_declared(self) -> None:
         class RandomException(LambdaFWException):
             error_code = "RAND001"
 
         response = Response.from_exception(RandomException(), "req-id")
 
         assert response.to_dict() == {
-            "body": '{"message":"Server got itself in '
-            'trouble","request_id":"req-id","error_code":"RAND001"}',
+            "body": (
+                '{"message":"Server got itself in trouble",'
+                '"request_id":"req-id",'
+                '"error_code":"RAND001"}'
+            ),
             "headers": {"Content-Type": "application/json"},
             "isBase64Encoded": False,
             "statusCode": 500,
         }
 
-    def test_json_when_body_is_a_string(self) -> None:
-        response = Response('{"message":"Server got itself in trouble"}')
+    @pytest.mark.parametrize(
+        "body",
+        [
+            {"message": "It is alive!"},
+            '{"message":"It is alive!"}',
+        ]
+    )
+    def test__json__returns_dict_based_on_declared_body(self, body: Any) -> None:
+        response = Response(body)
 
-        assert response.json() == {
-            "message": "Server got itself in trouble",
-        }
-
-    def test_json_when_body_is_a_dict(self) -> None:
-        response = Response({"some": "data"})
-
-        assert response.json() == {"some": "data"}
+        assert response.json() == {"message": "It is alive!"}
