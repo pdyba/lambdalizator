@@ -1,5 +1,6 @@
 # coding=utf-8
 from base64 import b64encode
+from typing import Any
 
 import pytest
 
@@ -124,9 +125,33 @@ class TestResponse:
         [
             {"message": "It is alive!"},
             '{"message":"It is alive!"}',
-        ]
+        ],
     )
     def test__json__returns_dict_based_on_declared_body(self, body: Any) -> None:
         response = Response(body)
 
         assert response.json() == {"message": "It is alive!"}
+
+    def test__json__raises_value_error_when_body_is_not_a_string(self) -> None:
+        response = Response("")
+        response.body = []  # type: ignore
+
+        with pytest.raises(ValueError, match="Got unexpected type to decode <class 'list'>"):
+            assert response.json()
+
+    @pytest.mark.parametrize(
+        "body, headers, is_json",
+        [
+            ({"message": "It is alive!"}, {}, True),
+            ('{"message":"It is alive!"}', {"Content-Type": "application/json"}, True),
+            ('{"message":"It is alive!"}', {"Content-Type": "text/plain"}, False),
+            ('{"message":"It is alive!"}', {}, False),
+            ("", {}, False),
+        ],
+    )
+    def test__is_json__returns_bool_based_on_declared_body_and_headers(
+        self, body: Any, headers: dict, is_json: bool
+    ) -> None:
+        response = Response(body, headers=headers)
+
+        assert response.is_json == is_json
