@@ -340,7 +340,7 @@ Released 2024-01-11
 - Allows Lambdalizer to discover packages on its own
 
 ### Version 0.6.5
-Released 2024-01-25
+Released 2024-01-31
 
 - Moves `get_response` from exceptions classes to Response class as `from_exception`
 - Deprecates `is_ok` method in favour of `ok` property

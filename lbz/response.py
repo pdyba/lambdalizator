@@ -44,7 +44,7 @@ class Response:
     def is_json(self) -> bool:
         if isinstance(self.body, dict):
             return True
-        if self.headers.get("Content-Type") == ContentType.JSON:
+        if self.headers.get("Content-Type", "").startswith(ContentType.JSON):
             return True
         return False
 
