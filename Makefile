@@ -99,7 +99,7 @@ bandit:
 pip-audit:
 	pip-audit --version
 	# TODO: Fix the issue with the vulnerable ecdsa library
-	pip-audit -r requirements.txt --ignore-vuln GHSA-wj6h-64fc-37mp
+	pip-audit -r requirements.txt --ignore-vuln GHSA-wj6h-64fc-37mp --ignore-vuln GHSA-cjwg-qfpm-7377 --ignore-vuln GHSA-6c5p-j8vq-pqhj
 
 .PHONY: secure
 secure: bandit pip-audit

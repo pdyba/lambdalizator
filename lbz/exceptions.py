@@ -20,14 +20,19 @@ class ConfigValueParsingFailed(Exception):
 
 
 class LambdaFWException(Exception):
-    """Standardised for AWS Lambda exception class."""
+    """Standardised for AWS Lambda exception class.
+
+    extra allows extending the response with additional data when needed"""
 
     message = HTTPStatus.INTERNAL_SERVER_ERROR.description
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
     error_code: str | None = None
 
-    def __init__(self, message: str = "", error_code: str | None = None) -> None:
+    def __init__(
+        self, message: str = "", error_code: str | None = None, extra: dict | None = None
+    ) -> None:
         super().__init__(message)
+        self.extra = extra or {}
         if message:
             self.message = message
         if error_code:
