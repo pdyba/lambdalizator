@@ -351,8 +351,7 @@ Released 2024-01-31
 Released 2024-05-24
 
 - Extends `LambdaFWException` with extra property for easier handling edge case exceptions
-- Whole `extra` is dumped alongside error into response when raised `LambdaFWException` during handling request. 
-
+- Dumps `extra` data into the response when raising an error during handling requests
 
 
 ### Version 0.7.0
