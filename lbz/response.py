@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 
 from lbz.exceptions import LambdaFWException
 from lbz.misc import deprecated

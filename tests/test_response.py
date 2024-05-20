@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from base64 import b64encode
 from typing import Any
+from unittest.mock import ANY
 
 import pytest
 
@@ -126,18 +127,21 @@ class TestResponse:
         class RandomException(LambdaFWException):
             error_code = "RAND001"
 
-        response = Response.from_exception(RandomException(extra={"extra": "random"}), "req-id")
+        response = Response.from_exception(
+            RandomException(extra={"added_data": "random"}), "req-id"
+        )
 
         assert response.to_dict() == {
-            "body": (
-                '{"message":"Server got itself in trouble",'
-                '"request_id":"req-id",'
-                '"extra":"random",'
-                '"error_code":"RAND001"}'
-            ),
+            "body": ANY,
             "headers": {"Content-Type": ContentType.JSON},
             "isBase64Encoded": False,
             "statusCode": 500,
+        }
+        assert response.body == {
+            "added_data": "random",
+            "message": "Server got itself in trouble",
+            "request_id": "req-id",
+            "error_code": "RAND001",
         }
 
     @pytest.mark.parametrize(

@@ -29,12 +29,10 @@ class LambdaFWException(Exception):
     def __init__(
         self, message: str = "", error_code: str | None = None, extra: dict | None = None
     ) -> None:
-        super().__init__(message)
-
         self.message = message or self.message
+        super().__init__(self.message)
         self.error_code = error_code or self.error_code
         self.extra = extra or {}
-            self.error_code = error_code
 
     def __str__(self) -> str:
         if self.error_code is not None:
