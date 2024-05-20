@@ -28,13 +28,13 @@ def test__lambda_fw_exception__respects_attributes_declared_on_inherited_class_l
         status_code = 444
         error_code = "TEST_ERR"
 
-    exception = TestException(extra={"extra": "data"})
+    exception = TestException()
 
     assert str(exception) == "[444] TEST_ERR - No error message"
     assert exception.message == "No error message"
     assert exception.error_code == "TEST_ERR"
     assert exception.status_code == 444
-    assert exception.extra == {"extra": "data"}
+    assert exception.extra == {}
 
 
 def test__lambda_fw_exception__respects_values_provided_during_initialization() -> None:
