@@ -34,15 +34,19 @@ def test__lambda_fw_exception__respects_attributes_declared_on_inherited_class_l
     assert exception.message == "No error message"
     assert exception.error_code == "TEST_ERR"
     assert exception.status_code == 444
+    assert exception.extra == {}
 
 
 def test__lambda_fw_exception__respects_values_provided_during_initialization() -> None:
-    exception = LambdaFWException(message="Test error message", error_code="TEST_ERR")
+    exception = LambdaFWException(
+        message="Test error message", error_code="TEST_ERR", extra={"fun": "stuff"}
+    )
 
     assert str(exception) == "[500] TEST_ERR - Test error message"
     assert exception.message == "Test error message"
     assert exception.error_code == "TEST_ERR"
     assert exception.status_code == 500
+    assert exception.extra == {"fun": "stuff"}
 
 
 def test__unsupported_method__builds_message_based_on_method_provided_from_outside() -> None:

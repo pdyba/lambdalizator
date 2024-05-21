@@ -26,12 +26,14 @@ class LambdaFWException(Exception):
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
     error_code: str | None = None
 
-    def __init__(self, message: str = "", error_code: str | None = None) -> None:
+    def __init__(
+        self, message: str = "", error_code: str | None = None, extra: dict | None = None
+    ) -> None:
         super().__init__(message)
-        if message:
-            self.message = message
-        if error_code:
-            self.error_code = error_code
+
+        self.message = message or self.message
+        self.error_code = error_code or self.error_code
+        self.extra = extra or {}
 
     def __str__(self) -> str:
         if self.error_code is not None:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 
 from lbz.exceptions import LambdaFWException
 from lbz.misc import deprecated
@@ -34,7 +35,7 @@ class Response:
     @classmethod
     def from_exception(cls, error: LambdaFWException, request_id: str) -> Response:
         """Creates a proper standardised Response for Errors."""
-        resp_data = {"message": error.message, "request_id": request_id}
+        resp_data = {**deepcopy(error.extra), "message": error.message, "request_id": request_id}
         if error.error_code:
             resp_data["error_code"] = error.error_code
 

@@ -122,6 +122,24 @@ class TestResponse:
             "statusCode": 500,
         }
 
+    def test__from_exception__adds_extra_data_to_response_body_if_only_declared(self) -> None:
+        class RandomException(LambdaFWException):
+            error_code = "RAND001"
+
+        response = Response.from_exception(
+            RandomException(extra={"added_data": "random"}), "req-id"
+        )
+
+        assert response.headers == {"Content-Type": ContentType.JSON}
+        assert response.is_base64 is False
+        assert response.status_code == 500
+        assert response.body == {
+            "added_data": "random",
+            "message": "Server got itself in trouble",
+            "request_id": "req-id",
+            "error_code": "RAND001",
+        }
+
     @pytest.mark.parametrize(
         "body",
         [

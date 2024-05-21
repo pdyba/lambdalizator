@@ -347,6 +347,12 @@ Released 2024-01-31
 - Extends Response class to be more useful by adding `json` method
 - Migrates away from `datetime.utwnow()` to `datetime.now(UTC)`
 
+### Version 0.6.6
+Released 2024-05-24
+
+- Extends `LambdaFWException` with extra property for easier handling edge case exceptions
+- Dumps `extra` data into the response when raising an error during handling requests
+
 
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)
