@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from base64 import b64encode
 from typing import Any
-from unittest.mock import ANY
 
 import pytest
 
@@ -131,12 +130,9 @@ class TestResponse:
             RandomException(extra={"added_data": "random"}), "req-id"
         )
 
-        assert response.to_dict() == {
-            "body": ANY,
-            "headers": {"Content-Type": ContentType.JSON},
-            "isBase64Encoded": False,
-            "statusCode": 500,
-        }
+        assert response.headers == {"Content-Type": ContentType.JSON}
+        assert response.is_base64 is False
+        assert response.status_code == 500
         assert response.body == {
             "added_data": "random",
             "message": "Server got itself in trouble",
