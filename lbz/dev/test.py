@@ -12,6 +12,7 @@ class Client:
         self.resource = resource
 
     def post(
+        # pylint: disable=too-many-positional-arguments
         self,
         path: str,
         params: dict | None = None,
@@ -22,6 +23,7 @@ class Client:
         return self._process(path, "POST", params, query_params, body, headers)
 
     def get(
+        # pylint: disable=too-many-positional-arguments
         self,
         path: str,
         params: dict | None = None,
@@ -32,6 +34,7 @@ class Client:
         return self._process(path, "GET", params, query_params, body, headers)
 
     def patch(
+        # pylint: disable=too-many-positional-arguments
         self,
         path: str,
         params: dict | None = None,
@@ -42,6 +45,7 @@ class Client:
         return self._process(path, "PATCH", params, query_params, body, headers)
 
     def put(
+        # pylint: disable=too-many-positional-arguments
         self,
         path: str,
         params: dict | None = None,
@@ -52,6 +56,7 @@ class Client:
         return self._process(path, "PUT", params, query_params, body, headers)
 
     def delete(
+        # pylint: disable=too-many-positional-arguments
         self,
         path: str,
         params: dict | None = None,
@@ -62,6 +67,7 @@ class Client:
         return self._process(path, "DELETE", params, query_params, body, headers)
 
     def _process(
+        # pylint: disable=too-many-positional-arguments
         self,
         path: str,
         method: str,

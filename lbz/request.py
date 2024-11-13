@@ -55,6 +55,7 @@ class Request(BaseRequest):
     """Represents request from HTTP API Gateway."""
 
     def __init__(
+        # pylint: disable=too-many-positional-arguments
         self,
         headers: CIMultiDict,
         uri_params: dict,
@@ -107,6 +108,7 @@ class WebSocketRequest(BaseRequest):
     """Represents request from Web Socket Secure API Gateway."""
 
     def __init__(
+        # pylint: disable=too-many-positional-arguments
         self,
         body: str | bytes | dict,
         request_details: dict,

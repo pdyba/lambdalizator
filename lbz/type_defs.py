@@ -2,6 +2,7 @@
 
 https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
 """
+
 from typing import Any
 
 

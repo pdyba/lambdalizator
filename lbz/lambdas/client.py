@@ -56,6 +56,7 @@ class LambdaClient:
 
     @classmethod
     def request(
+        # pylint: disable=too-many-positional-arguments
         cls,
         function_name: str,
         method: str,
