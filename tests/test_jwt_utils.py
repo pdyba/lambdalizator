@@ -3,8 +3,8 @@ from datetime import datetime, timedelta, timezone
 from os import environ
 from unittest.mock import MagicMock, patch
 
+import jwt
 import pytest
-from jose import jwt
 
 from lbz.authz.authorizer import Authorizer
 from lbz.exceptions import MissingConfigValue, SecurityError, Unauthorized
@@ -37,12 +37,11 @@ class TestDecodeJWT:
         with pytest.raises(Unauthorized):
             decode_jwt("x")
         get_matching_jwk_mock.assert_called_once_with("x")
-        assert "Failed decoding JWT with following details" in caplog.text
+        assert "Failed to find matching jwk" in caplog.text
 
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
     def test_invalid_type(self, get_matching_jwk_mock: MagicMock) -> None:
-        msg = "error occurred during decoding"
-        with pytest.raises(RuntimeError, match=msg):
+        with pytest.raises(Unauthorized):
             decode_jwt({"a"})  # type: ignore
         get_matching_jwk_mock.assert_called_once_with({"a"})
 

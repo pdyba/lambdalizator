@@ -11,8 +11,6 @@ from lbz.exceptions import Unauthorized
 from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token
 
-allowed_audiences = [str(uuid4()), str(uuid4())]
-
 
 def test__repr__username(jwt_partial_payload: dict) -> None:
     username = str(uuid4())
@@ -30,7 +28,9 @@ def test_decoding_user_raises_unauthorized_when_invalid_token(user_token: str) -
 
 
 @patch.dict(environ, {"ALLOWED_AUDIENCES": str(uuid4())})
-def test_decoding_user_raises_unauthorized_when_invalid_audience(user_token: str) -> None:
+def test_decoding_user_raises_unauthorized_when_invalid_audience(
+    user_token: str,
+) -> None:
     with pytest.raises(Unauthorized):
         User(user_token)
 
@@ -43,7 +43,9 @@ def test_decoding_user_raises_unauthorized_when_invalid_audience(user_token: str
         )
     },
 )
-def test_decoding_user_raises_unauthorized_when_invalid_public_key(user_token: str) -> None:
+def test_decoding_user_raises_unauthorized_when_invalid_public_key(
+    user_token: str,
+) -> None:
     with pytest.raises(Unauthorized):
         User(user_token)
 
@@ -79,10 +81,11 @@ def test_loading_user_does_not_parse_standard_claims(jwt_partial_payload: dict) 
         assert not hasattr(user, key)
 
 
-def test_user_raises_when_more_attributes_than_1000() -> None:
+def test_user_raises_when_more_attributes_than_1000(allowed_audiences: list[str]) -> None:
+    cognito_user = {str(uuid4()): str(uuid4()) for i in range(1001)}
+
     with pytest.raises(RuntimeError):
-        cognito_user = {str(uuid4()): str(uuid4()) for i in range(1001)}
-        User(encode_token(cognito_user))
+        User(encode_token({**cognito_user, "aud": allowed_audiences[0]}))
 
 
 def test_nth_cognito_client_validated_as_audience(user_cognito: dict) -> None:
