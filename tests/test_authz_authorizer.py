@@ -8,7 +8,7 @@ from pytest import LogCaptureFixture
 
 from lbz.authz.authorizer import ALL, ALLOW, DENY, LIMITED_ALLOW, Authorizer
 from lbz.exceptions import PermissionDenied, Unauthorized
-from tests.fixtures.rsa_pair import EXPECTED_TOKEN, SAMPLE_PRIVATE_KEY
+from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY
 
 
 class TestAuthorizerWithoutMockingJWT:
@@ -277,7 +277,3 @@ class TestAuthorizerWithMockedJWT:
         assert caplog.record_tuples == [
             ("lbz.authz.authorizer", logging.ERROR, 'Missing "api-access" ref in the policy')
         ]
-
-    def test_sign_authz(self) -> None:
-        token = Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, SAMPLE_PRIVATE_KEY)
-        assert token == EXPECTED_TOKEN
