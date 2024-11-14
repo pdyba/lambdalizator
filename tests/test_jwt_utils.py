@@ -2,8 +2,8 @@ from datetime import datetime, timedelta, timezone
 from os import environ
 from unittest.mock import MagicMock, patch
 
+import jwt
 import pytest
-from jose import jwt
 
 from lbz.authz.authorizer import Authorizer
 from lbz.exceptions import Unauthorized

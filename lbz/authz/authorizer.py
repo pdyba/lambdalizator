@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from jose import jwt
-
 from lbz.exceptions import PermissionDenied
-from lbz.jwt_utils import decode_jwt
+from lbz.jwt_utils import decode_jwt, sign
 from lbz.misc import deep_update, get_logger
 
 logger = get_logger(__name__)
@@ -126,10 +124,4 @@ class Authorizer:
     @staticmethod
     def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
         """Signs authorization in JWT format."""
-        authz: str = jwt.encode(
-            claims=authz_data,
-            key=private_key_jwk,
-            algorithm="RS256",
-            headers={"kid": private_key_jwk["kid"]},
-        )
-        return authz
+        return sign(authz_data, private_key_jwk)
