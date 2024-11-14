@@ -57,12 +57,9 @@ def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
         raise Unauthorized()
     for idx, aud in enumerate(ALLOWED_AUDIENCES.value, start=1):
         try:
-            private_key = PyJWK(
-                jwk,
-                algorithm="RS256",
-            )
+            public_key = PyJWK(jwk, algorithm="RS256")
             decoded_jwt: dict = jwt.decode(
-                auth_jwt_token, private_key.key, algorithms=["RS256"], audience=aud
+                auth_jwt_token, public_key.key, algorithms=["RS256"], audience=aud
             )
             validate_jwt_properties(decoded_jwt)
             return decoded_jwt
@@ -89,10 +86,7 @@ def sign(data: dict, private_key_jwk: dict) -> str:
         raise ValueError("private_key_jwk must be a jwk dict")
     if "kid" not in private_key_jwk:
         raise ValueError("private_key_jwk must have the 'kid' field")
-    private_key = PyJWK(
-        private_key_jwk,
-        algorithm="RS256",
-    )
+    private_key = PyJWK(private_key_jwk, algorithm="RS256")
     authz: str = jwt.encode(
         data,
         private_key.key,
