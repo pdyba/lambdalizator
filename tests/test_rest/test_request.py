@@ -1,25 +1,9 @@
-# coding=utf-8
-
 import pytest
 from multidict import CIMultiDict
 
 from lbz.exceptions import BadRequestError
 from lbz.misc import MultiDict
-from lbz.request import BaseRequest, HTTPRequest, WebSocketRequest
-from lbz.rest import ContentType
-from lbz.websocket import ActionType
-
-
-class TestBaseRequest:
-    def test__decode_base64_bytes(self) -> None:
-        encoded = b"asdasdsd"
-        output = BaseRequest._decode_base64(encoded)  # pylint: disable=protected-access
-        assert output == b"j\xc7Z\xb1\xdb\x1d"
-
-    def test__decode_base64_str(self) -> None:
-        encoded = "asdasdsd"
-        output = BaseRequest._decode_base64(encoded)  # pylint: disable=protected-access
-        assert output == b"j\xc7Z\xb1\xdb\x1d"
+from lbz.rest import ContentType, HTTPRequest
 
 
 class TestHTTPRequest:
@@ -48,6 +32,16 @@ class TestHTTPRequest:
 
     def test___repr__(self, sample_request: HTTPRequest) -> None:
         assert str(sample_request) == f"<Request {sample_request.method} >"
+
+    def test__decode_base64_bytes(self) -> None:
+        encoded = b"asdasdsd"
+        output = HTTPRequest._decode_base64(encoded)  # pylint: disable=protected-access
+        assert output == b"j\xc7Z\xb1\xdb\x1d"
+
+    def test__decode_base64_str(self) -> None:
+        encoded = "asdasdsd"
+        output = HTTPRequest._decode_base64(encoded)  # pylint: disable=protected-access
+        assert output == b"j\xc7Z\xb1\xdb\x1d"
 
     def test_raw_body_base64_bytes(self, sample_request: HTTPRequest) -> None:
         sample_request._body = b"asdasdsd"  # pylint: disable=protected-access
@@ -123,87 +117,3 @@ class TestHTTPRequest:
             "uri_params": {},
             "user": f"User username={sample_request_with_user.user.username}",  # type: ignore
         }
-
-
-class TestWebSocketRequest:
-    @pytest.mark.parametrize(
-        "action_type, is_connection_req",
-        [
-            (ActionType.CONNECT, True),
-            (ActionType.DISCONNECT, False),
-            (ActionType.MESSAGE, False),
-        ],
-    )
-    def test__is_connection_request__checks_if_request_was_a_connection_request(
-        self, action_type: str, is_connection_req: bool
-    ) -> None:
-        request = WebSocketRequest(
-            "",
-            {
-                "routeKey": "$connect",
-                "eventType": action_type,
-                "connectionId": "aaa123",
-                "domainName": "xxx.com",
-                "stage": "prod",
-            },
-            {},
-            False,
-        )
-
-        assert request.is_connection_request() == is_connection_req
-
-    @pytest.mark.parametrize(
-        "action_type, is_connection_req",
-        [
-            (ActionType.CONNECT, False),
-            (ActionType.DISCONNECT, True),
-            (ActionType.MESSAGE, False),
-        ],
-    )
-    def test__is_disconnection_request__checks_if_request_was_a_disconnection_request(
-        self, action_type: str, is_connection_req: bool
-    ) -> None:
-        request = WebSocketRequest(
-            "",
-            {
-                "routeKey": "$connect",
-                "eventType": action_type,
-                "connectionId": "aaa123",
-                "domainName": "xxx.com",
-                "stage": "prod",
-            },
-            {},
-            False,
-        )
-
-        assert request.is_disconnection_request() == is_connection_req
-
-    def test_json_body_dict(self) -> None:
-        request = WebSocketRequest(
-            {"x": "t1"},
-            {
-                "routeKey": "$connect",
-                "eventType": ActionType.MESSAGE,
-                "connectionId": "aaa123",
-                "domainName": "xxx.com",
-                "stage": "prod",
-            },
-            {},
-            False,
-        )
-        assert request.json_body == {"x": "t1"}
-
-    def test_json_body_json(self) -> None:
-        request = WebSocketRequest(
-            '{"x": "t1"}',
-            {
-                "routeKey": "$connect",
-                "eventType": ActionType.MESSAGE,
-                "connectionId": "aaa123",
-                "domainName": "xxx.com",
-                "stage": "prod",
-            },
-            {},
-            False,
-        )
-        assert request.json_body == {"x": "t1"}
