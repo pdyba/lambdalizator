@@ -51,11 +51,10 @@ class BaseRequest:
             raise BadRequestError(f"Invalid payload.\nPayload body:\n {repr(payload)}") from error
 
 
-class Request(BaseRequest):
+class HTTPRequest(BaseRequest):
     """Represents request from HTTP API Gateway."""
 
     def __init__(
-        # pylint: disable=too-many-positional-arguments
         self,
         headers: CIMultiDict,
         uri_params: dict,
@@ -79,14 +78,6 @@ class Request(BaseRequest):
     def __repr__(self) -> str:
         return f"<Request {self.method} >"
 
-    def to_dict(self) -> dict:
-        copied = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
-        copied["headers"] = dict(copied["headers"])
-        copied["user"] = repr(copied["user"])
-        if copied["query_params"] is not None:
-            copied["query_params"] = dict(copied["query_params"])
-        return copied
-
     @property
     def json_body(self) -> dict | None:
         if self._json_body is None:
@@ -103,12 +94,23 @@ class Request(BaseRequest):
                 raise BadRequestError(f"Content-Type header is missing or wrong: {content_type}")
         return self._json_body
 
+    def to_dict(self) -> dict:
+        copied = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
+        copied["headers"] = dict(copied["headers"])
+        copied["user"] = repr(copied["user"])
+        if copied["query_params"] is not None:
+            copied["query_params"] = dict(copied["query_params"])
+        return copied
+
 
 class WebSocketRequest(BaseRequest):
-    """Represents request from Web Socket Secure API Gateway."""
+    """Represents request from Web Socket Secure API Gateway.
+
+    rel: https://docs.aws.amazon.com/apigateway/latest/developerguide/
+    apigateway-websocket-api-mapping-template-reference.html
+    """
 
     def __init__(
-        # pylint: disable=too-many-positional-arguments
         self,
         body: str | bytes | dict,
         request_details: dict,
@@ -131,12 +133,6 @@ class WebSocketRequest(BaseRequest):
     def __repr__(self) -> str:
         return f"<Request {self.action_type} - {self.action} >"
 
-    def is_connection_request(self) -> bool:
-        return self.action_type is ActionType.CONNECT
-
-    def is_disconnection_request(self) -> bool:
-        return self.action_type is ActionType.DISCONNECT
-
     @property
     def json_body(self) -> dict | None:
         if self._json_body is None:
@@ -146,5 +142,8 @@ class WebSocketRequest(BaseRequest):
                 self._json_body = self._safe_json_loads(self.raw_body)
         return self._json_body
 
+    def is_connection_request(self) -> bool:
+        return self.action_type is ActionType.CONNECT
 
-HTTPRequest = Request
+    def is_disconnection_request(self) -> bool:
+        return self.action_type is ActionType.DISCONNECT

@@ -14,7 +14,6 @@ class APIGatewayEvent(dict):
     """
 
     def __init__(
-        # pylint: disable=too-many-positional-arguments
         self,
         method: str,
         resource_path: str,

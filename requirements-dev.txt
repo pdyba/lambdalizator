@@ -12,9 +12,9 @@ black==24.10.0
     # via -r requirements-dev.in
 boolean-py==4.0
     # via license-expression
-boto3-stubs[cognito-idp,dynamodb,events,lambda,s3,sns,sqs,ssm]==1.35.59
+boto3-stubs[cognito-idp,dynamodb,events,lambda,s3,sns,sqs,ssm]==1.34.158
     # via -r requirements-dev.in
-botocore-stubs==1.35.59
+botocore-stubs==1.34.158
     # via boto3-stubs
 build==1.2.2.post1
     # via pip-tools
@@ -30,7 +30,7 @@ click==8.1.7
     # via
     #   black
     #   pip-tools
-coverage[toml]==7.6.4
+coverage[toml]==7.6.5
     # via
     #   -r requirements-dev.in
     #   pytest-cov
@@ -72,21 +72,21 @@ msgpack==1.1.0
     # via cachecontrol
 mypy==1.13.0
     # via -r requirements-dev.in
-mypy-boto3-cognito-idp==1.35.18
+mypy-boto3-cognito-idp==1.34.158
     # via boto3-stubs
-mypy-boto3-dynamodb==1.35.54
+mypy-boto3-dynamodb==1.34.148
     # via boto3-stubs
-mypy-boto3-events==1.35.0
+mypy-boto3-events==1.34.151
     # via boto3-stubs
-mypy-boto3-lambda==1.35.58
+mypy-boto3-lambda==1.34.77
     # via boto3-stubs
-mypy-boto3-s3==1.35.46
+mypy-boto3-s3==1.34.162
     # via boto3-stubs
-mypy-boto3-sns==1.35.0
+mypy-boto3-sns==1.34.121
     # via boto3-stubs
-mypy-boto3-sqs==1.35.0
+mypy-boto3-sqs==1.34.121
     # via boto3-stubs
-mypy-boto3-ssm==1.35.21
+mypy-boto3-ssm==1.34.158
     # via boto3-stubs
 mypy-extensions==1.0.0
     # via
@@ -156,7 +156,7 @@ rich==13.9.4
     #   pip-audit
 six==1.16.0
     # via
-    #   -c /Users/dybapi/PycharmProjects/lambdalizator/requirements.txt
+    #   -c requirements.txt
     #   html5lib
 sortedcontainers==2.4.0
     # via cyclonedx-python-lib
@@ -181,6 +181,7 @@ types-s3transfer==0.10.3
     # via boto3-stubs
 typing-extensions==4.12.2
     # via
+    #   -c requirements.txt
     #   astroid
     #   black
     #   boto3-stubs
@@ -197,7 +198,7 @@ typing-extensions==4.12.2
     #   rich
 urllib3==1.26.20
     # via
-    #   -c /Users/dybapi/PycharmProjects/lambdalizator/requirements.txt
+    #   -c requirements.txt
     #   requests
 webencodings==0.5.1
     # via html5lib

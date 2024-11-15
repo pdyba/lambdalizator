@@ -16,7 +16,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-multidict==6.0.5
+multidict==6.1.0
     # via lbz (setup.py)
 pyasn1==0.6.1
     # via
@@ -34,5 +34,7 @@ six==1.16.0
     # via
     #   ecdsa
     #   python-dateutil
+typing-extensions==4.12.2
+    # via multidict
 urllib3==1.26.20
     # via botocore
