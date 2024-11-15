@@ -8,6 +8,7 @@
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org)
 [![Downloads](https://pepy.tech/badge/lbz)](https://pepy.tech/project/lbz/)  
 _If you want to work with Lambdalizator in Python 3.8, consider using version [0.5.19](https://pypi.org/project/lbz/0.5.19/)._
+_If you want to work with Lambdalizator in Python 3.9, consider using version [0.6.6](https://pypi.org/project/lbz/0.5.19/)._
 
 AWS Lambda Toolbox inspired by Flask. Currently supporting:
 - REST API
