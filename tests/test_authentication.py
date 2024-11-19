@@ -28,9 +28,7 @@ def test_decoding_user_raises_unauthorized_when_invalid_token(user_token: str) -
 
 
 @patch.dict(environ, {"ALLOWED_AUDIENCES": str(uuid4())})
-def test_decoding_user_raises_unauthorized_when_invalid_audience(
-    user_token: str,
-) -> None:
+def test_decoding_user_raises_unauthorized_when_invalid_audience(user_token: str) -> None:
     with pytest.raises(Unauthorized):
         User(user_token)
 
@@ -43,9 +41,7 @@ def test_decoding_user_raises_unauthorized_when_invalid_audience(
         )
     },
 )
-def test_decoding_user_raises_unauthorized_when_invalid_public_key(
-    user_token: str,
-) -> None:
+def test_decoding_user_raises_unauthorized_when_invalid_public_key(user_token: str) -> None:
     with pytest.raises(Unauthorized):
         User(user_token)
 

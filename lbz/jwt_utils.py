@@ -52,21 +52,20 @@ def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
     if any("kid" not in public_key for public_key in ALLOWED_PUBLIC_KEYS.value):
         raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
 
-    if not (jwk := get_matching_jwk(auth_jwt_token)):
-        logger.warning("Failed to find matching jwk.")
-        raise Unauthorized()
+    jwk = get_matching_jwk(auth_jwt_token)
     for idx, aud in enumerate(ALLOWED_AUDIENCES.value, start=1):
         try:
-            public_key = PyJWK(jwk, algorithm="RS256")
             decoded_jwt: dict = jwt.decode(
-                auth_jwt_token, public_key.key, algorithms=["RS256"], audience=aud
+                jwt=auth_jwt_token,
+                key=PyJWK(jwk, algorithm="RS256").key,
+                algorithms=["RS256"],
+                audience=aud,
             )
             validate_jwt_properties(decoded_jwt)
             return decoded_jwt
         except InvalidAudienceError as error:
             if idx == len(ALLOWED_AUDIENCES.value):
                 logger.warning("Failed decoding JWT with any of JWK - details: %r", error)
-
                 raise Unauthorized() from error
         except ExpiredSignatureError as error:
             raise Unauthorized("Your token has expired. Please refresh it.") from error
@@ -86,10 +85,10 @@ def sign(data: dict, private_key_jwk: dict) -> str:
         raise ValueError("private_key_jwk must be a jwk dict")
     if "kid" not in private_key_jwk:
         raise ValueError("private_key_jwk must have the 'kid' field")
-    private_key = PyJWK(private_key_jwk, algorithm="RS256")
+
     authz: str = jwt.encode(
-        data,
-        private_key.key,
+        payload=data,
+        key=PyJWK(private_key_jwk, algorithm="RS256").key,
         algorithm="RS256",
         headers={"kid": private_key_jwk["kid"]},
     )
