@@ -5,27 +5,18 @@ import json
 from typing import Any
 
 from lbz.exceptions import BadRequestError
-from lbz.misc import get_logger
-
-logger = get_logger(__name__)
 
 
-class _Request:
+class Request:
     def __init__(
         self,
         body: str | bytes | dict,
         is_base64_encoded: bool,
-    ):
+    ) -> None:
         self._is_base64_encoded = is_base64_encoded
         self._body = body
         self._json_body: dict | None = None
         self._raw_body: bytes | dict | None = None
-
-    @staticmethod
-    def _decode_base64(encoded: str | bytes) -> bytes:
-        if not isinstance(encoded, bytes):
-            encoded = encoded.encode("ascii")
-        return base64.b64decode(encoded)
 
     @property
     def raw_body(self) -> bytes | dict | None:
@@ -37,6 +28,12 @@ class _Request:
             else:
                 self._raw_body = self._body
         return self._raw_body
+
+    @staticmethod
+    def _decode_base64(encoded: str | bytes) -> bytes:
+        if not isinstance(encoded, bytes):
+            encoded = encoded.encode("ascii")
+        return base64.b64decode(encoded)
 
     @staticmethod
     def _safe_json_loads(payload: str | bytes) -> Any:

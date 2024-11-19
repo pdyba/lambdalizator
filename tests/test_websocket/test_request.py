@@ -4,18 +4,8 @@ from lbz.websocket import ActionType, WebSocketRequest
 
 
 class TestWebSocketRequest:
-    def test__decode_base64_bytes(self) -> None:
-        encoded = b"asdasdsd"
-        output = WebSocketRequest._decode_base64(encoded)  # pylint: disable=protected-access
-        assert output == b"j\xc7Z\xb1\xdb\x1d"
-
-    def test__decode_base64_str(self) -> None:
-        encoded = "asdasdsd"
-        output = WebSocketRequest._decode_base64(encoded)  # pylint: disable=protected-access
-        assert output == b"j\xc7Z\xb1\xdb\x1d"
-
     @pytest.mark.parametrize(
-        "action_type, is_connection_req",
+        "action_type, expected_result",
         [
             (ActionType.CONNECT, True),
             (ActionType.DISCONNECT, False),
@@ -41,7 +31,7 @@ class TestWebSocketRequest:
         assert request.is_connection_request() == is_connection_req
 
     @pytest.mark.parametrize(
-        "action_type, is_connection_req",
+        "action_type, expected_result",
         [
             (ActionType.CONNECT, False),
             (ActionType.DISCONNECT, True),

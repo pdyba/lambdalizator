@@ -16,6 +16,7 @@ class HTTPRequest(_Request):
 
     def __init__(
         self,
+        *,
         headers: CIMultiDict,
         uri_params: dict,
         method: str,

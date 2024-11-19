@@ -4,17 +4,13 @@ from multidict import CIMultiDict
 
 from lbz._request import _Request
 from lbz.authentication import User
-from lbz.misc import get_logger
 from lbz.websocket.enums import ActionType
-
-logger = get_logger(__name__)
 
 
 class WebSocketRequest(_Request):
     """Represents request from Web Socket Secure API Gateway.
 
-    rel: https://docs.aws.amazon.com/apigateway/latest/developerguide/
-    apigateway-websocket-api-mapping-template-reference.html
+    https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-mapping-template-reference.html
     """
 
     def __init__(
@@ -25,7 +21,8 @@ class WebSocketRequest(_Request):
         is_base64_encoded: bool,
         user: User | None = None,
         headers: CIMultiDict | None = None,
-    ):
+    ) -> None:
+        super().__init__(body=body, is_base64_encoded=is_base64_encoded)
         self.headers = headers
         self.context = context
         self.user = user
@@ -35,7 +32,6 @@ class WebSocketRequest(_Request):
         self.domain = request_details.pop("domainName")
         self.stage = request_details.pop("stage")
         self.details = request_details
-        super().__init__(body=body, is_base64_encoded=is_base64_encoded)
 
     def __repr__(self) -> str:
         return f"<Request {self.action_type} - {self.action} >"
