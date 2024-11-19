@@ -4,19 +4,19 @@ import json
 import logging
 from collections import defaultdict
 from collections.abc import Callable
+from copy import deepcopy
 from http import HTTPStatus
 from os import environ
 from typing import Any
 from unittest.mock import ANY, MagicMock, patch
 
-import jwt
 from multidict import CIMultiDict
 from pytest import LogCaptureFixture
 
-from lbz.authentication import User
 from lbz.collector import AuthzCollector
 from lbz.events.api import EventAPI
 from lbz.exceptions import NotFound, ServerError
+from lbz.jwt_utils import encode_jwt
 from lbz.misc import MultiDict
 from lbz.request import Request
 from lbz.resource import (
@@ -29,7 +29,7 @@ from lbz.resource import (
 from lbz.response import Response
 from lbz.rest import APIGatewayEvent, ContentType
 from lbz.router import Router, add_route
-from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
+from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY
 
 # TODO: Use fixtures yielded from conftest.py
 
@@ -150,48 +150,28 @@ class TestResource:
         resp = XResource({**event, "headers": {"authentication": "dummy"}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
-    @patch.object(User, "__init__", return_value=None)
     def test_user_loaded_when_cognito_authentication_configured_correctly(
-        self, load_user: MagicMock
+        self, user_cognito: dict
     ) -> None:
         class XResource(Resource):
             @add_route("/")
             def test_method(self) -> Response:
                 return Response("x")
 
-        key_id = SAMPLE_PUBLIC_KEY["kid"]
-        authentication_token = jwt.encode({"username": "x"}, "", headers={"kid": key_id})
-
-        XResource({**event, "headers": {"authentication": authentication_token}})()
-        load_user.assert_called_once_with(authentication_token)
-
-    def test_unauthorized_when_jwt_header_lacks_kid(self) -> None:
-        class XResource(Resource):
-            @add_route("/")
-            def test_method(self) -> Response:
-                return Response("x")
-
-        authentication_token = jwt.encode({"foo": "bar"}, "")
+        authentication_token = encode_jwt(data=user_cognito, private_jwk=SAMPLE_PRIVATE_KEY)
         resp = XResource({**event, "headers": {"authentication": authentication_token}})()
-        assert resp.status_code == HTTPStatus.UNAUTHORIZED
+        assert resp.status_code == HTTPStatus.OK
 
-    def test_unauthorized_when_no_matching_key_in_env_variable(self) -> None:
+    def test_unauthorized_when_no_matching_key_in_env_variable(self, user_cognito: dict) -> None:
         class XResource(Resource):
             @add_route("/")
             def test_method(self) -> Response:
                 return Response("x")
 
-        authentication_token = jwt.encode({"kid": "foobar"}, "")
+        private_key = deepcopy(SAMPLE_PRIVATE_KEY)
+        private_key["kid"] = "totally-different-key"
+        authentication_token = encode_jwt(data=user_cognito, private_jwk=private_key)
         resp = XResource({**event, "headers": {"authentication": authentication_token}})()
-        assert resp.status_code == HTTPStatus.UNAUTHORIZED
-
-    def test_unauthorized_when_jwt_header_malformed(self) -> None:
-        class XResource(Resource):
-            @add_route("/")
-            def test_method(self) -> Response:
-                return Response("x")
-
-        resp = XResource({**event, "headers": {"authentication": "12345"}})()
         assert resp.status_code == HTTPStatus.UNAUTHORIZED
 
     def test_pre_request_hook(self) -> None:

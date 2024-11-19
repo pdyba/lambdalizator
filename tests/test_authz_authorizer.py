@@ -8,6 +8,7 @@ from pytest import LogCaptureFixture
 
 from lbz.authz.authorizer import ALL, ALLOW, DENY, LIMITED_ALLOW, Authorizer
 from lbz.exceptions import PermissionDenied, Unauthorized
+from lbz.jwt_utils import encode_jwt
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY
 
 
@@ -34,15 +35,15 @@ class TestAuthorizerWithoutMockingJWT:
         expired_timestamp = int((datetime.now(timezone.utc) - timedelta(seconds=1)).timestamp())
         with pytest.raises(Unauthorized):
             Authorizer(
-                Authorizer.sign_authz(
-                    {
+                auth_jwt=encode_jwt(
+                    data={
                         **full_access_authz_payload,
                         "exp": expired_timestamp,
                     },
-                    SAMPLE_PRIVATE_KEY,
+                    private_jwk=SAMPLE_PRIVATE_KEY,
                 ),
-                "test_resource",
-                "permission_name",
+                resource_name="test_resource",
+                permission_name="permission_name",
             )
 
 

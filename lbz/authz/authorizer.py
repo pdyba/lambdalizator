@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from lbz.exceptions import PermissionDenied
-from lbz.jwt_utils import decode_jwt, sign
+from lbz.jwt_utils import decode_jwt
 from lbz.misc import deep_update, get_logger
 
 logger = get_logger(__name__)
@@ -120,8 +120,3 @@ class Authorizer:
     def restrictions(self) -> dict:
         """Provides restrictions in standardised format."""
         return {"allow": self.allowed_resource, "deny": self.denied_resource}
-
-    @staticmethod
-    def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
-        """Signs authorization in JWT format."""
-        return sign(authz_data, private_key_jwk)

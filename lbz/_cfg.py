@@ -1,3 +1,5 @@
+from jwt.types import JWKDict
+
 from lbz.configuration import ConfigParser, EnvValue
 
 # LBZ configuration
@@ -11,7 +13,7 @@ EVENTS_BUS_NAME = EnvValue[str]("EVENTS_BUS_NAME")
 
 # Authorization configuration
 AUTH_ENABLED = EnvValue[bool]("AUTH_ENABLED", default=True, parser=ConfigParser.cast_to_bool)
-ALLOWED_PUBLIC_KEYS = EnvValue[list[dict]](
+ALLOWED_PUBLIC_KEYS = EnvValue[list[JWKDict]](
     "ALLOWED_PUBLIC_KEYS", parser=ConfigParser.load_jwt_keys
 )
 ALLOWED_AUDIENCES = EnvValue[list[str]]("ALLOWED_AUDIENCES", parser=ConfigParser.split_by_comma)

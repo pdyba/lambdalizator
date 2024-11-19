@@ -27,7 +27,7 @@ upgrade-dependencies upgrade-deps:
 .PHONY: scan-dependencies scan-deps
 scan-dependencies scan-deps:
 	pip-audit --version
-	pip-audit --vulnerability-service osv -r requirements.txt --ignore-vuln CVE-2024-23342
+	pip-audit --vulnerability-service osv -r requirements.txt
 
 
 ###############################################################################
