@@ -357,8 +357,8 @@ Released 2024-05-24
 ### Version 0.7.0
 Release ETA 2024-02-31 ;)
 
-- Adds Python 3.13 build
-- Removes Python 3.9 builds
+- Adds Python 3.13 support
+- Removes Python 3.9 support
 - Moves REST (API Gateway) related modules into one package
 - Moves exceptions to related packages
 - Redesigns authorization from ground up
