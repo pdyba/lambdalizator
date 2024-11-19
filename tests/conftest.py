@@ -8,6 +8,7 @@ from uuid import uuid4
 import pytest
 from multidict import CIMultiDict
 
+from lbz import jwt_utils
 from lbz._cfg import (
     ALLOWED_AUDIENCES,
     ALLOWED_ISS,
@@ -21,16 +22,15 @@ from lbz._cfg import (
     LOGGING_LEVEL,
 )
 from lbz.authentication import User
-from lbz.authz.authorizer import Authorizer
 from lbz.authz.decorators import authorization
 from lbz.collector import authz_collector
+from lbz.jwt_utils import encode_jwt
 from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
 from lbz.rest import APIGatewayEvent, ContentType
 from lbz.router import Router, add_route
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
-from tests.utils import encode_token
 
 
 @pytest.fixture(scope="session", name="allowed_audiences")
@@ -126,7 +126,7 @@ def full_access_authz_payload_fixture(jwt_partial_payload: dict) -> dict:
 def full_access_auth_header(
     full_access_authz_payload: dict,
 ) -> str:
-    return Authorizer.sign_authz(
+    return jwt_utils.encode_jwt(
         full_access_authz_payload,
         SAMPLE_PRIVATE_KEY,
     )
@@ -136,7 +136,7 @@ def full_access_auth_header(
 def limited_access_auth_header(
     full_access_authz_payload: dict,
 ) -> str:
-    return Authorizer.sign_authz(
+    return jwt_utils.encode_jwt(
         {
             **full_access_authz_payload,
             "allow": {"test_res": {"perm-name": {"allow": "*"}}},
@@ -168,7 +168,7 @@ def user_cognito_fixture(username: str, jwt_partial_payload: dict) -> dict:
 
 @pytest.fixture(scope="session", name="user_token")
 def user_token_fixture(user_cognito: dict) -> str:
-    return encode_token(user_cognito)
+    return encode_jwt(user_cognito, SAMPLE_PRIVATE_KEY)
 
 
 @pytest.fixture(name="user")  # scope="session", - TODO: bring that back to reduce run time

@@ -40,7 +40,7 @@ def validate_jwt_properties(decoded_jwt: dict) -> None:
         raise Unauthorized(f"{issuer} is not an allowed token issuer")
 
 
-def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
+def decode_jwt(token: str) -> dict:  # noqa:C901
     """Decodes JWT token."""
 
     if not ALLOWED_PUBLIC_KEYS.value:
@@ -52,11 +52,11 @@ def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
     if any("kid" not in public_key for public_key in ALLOWED_PUBLIC_KEYS.value):
         raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
 
-    jwk = get_matching_jwk(auth_jwt_token)
+    jwk = get_matching_jwk(token)
     for idx, aud in enumerate(ALLOWED_AUDIENCES.value, start=1):
         try:
             decoded_jwt: dict = jwt.decode(
-                jwt=auth_jwt_token,
+                jwt=token,
                 key=PyJWK(jwk, algorithm="RS256").key,
                 algorithms=["RS256"],
                 audience=aud,
@@ -73,23 +73,23 @@ def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
             logger.warning("Failed decoding JWT with following details: %r", error)
             raise Unauthorized() from error
         except Exception as ex:
-            msg = f"An error occurred during decoding the token.\nToken body:\n{auth_jwt_token}"
+            msg = f"An error occurred during decoding the token.\nToken body:\n{token}"
             raise RuntimeError(msg) from ex
     logger.error("Failed decoding JWT for unknown reason.")
     raise Unauthorized
 
 
-def sign(data: dict, private_key_jwk: dict) -> str:
+def encode_jwt(data: dict, private_key_jwk: dict) -> str:
     """Signs authorization in JWT format."""
     if not isinstance(private_key_jwk, dict):
         raise ValueError("private_key_jwk must be a jwk dict")
     if "kid" not in private_key_jwk:
         raise ValueError("private_key_jwk must have the 'kid' field")
 
-    authz: str = jwt.encode(
+    encoded_data: str = jwt.encode(
         payload=data,
         key=PyJWK(private_key_jwk, algorithm="RS256").key,
         algorithm="RS256",
         headers={"kid": private_key_jwk["kid"]},
     )
-    return authz
+    return encoded_data

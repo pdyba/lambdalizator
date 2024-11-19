@@ -8,13 +8,15 @@ import pytest
 
 from lbz.authentication import User
 from lbz.exceptions import Unauthorized
-from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
-from tests.utils import encode_token
+from lbz.jwt_utils import encode_jwt
+from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 
 
 def test__repr__username(jwt_partial_payload: dict) -> None:
     username = str(uuid4())
-    sample_user = User(encode_token({"cognito:username": username, **jwt_partial_payload}))
+    sample_user = User(
+        encode_jwt({"cognito:username": username, **jwt_partial_payload}, SAMPLE_PRIVATE_KEY),
+    )
     assert repr(sample_user) == f"User username={username}"
 
 
@@ -28,7 +30,9 @@ def test_decoding_user_raises_unauthorized_when_invalid_token(user_token: str) -
 
 
 @patch.dict(environ, {"ALLOWED_AUDIENCES": str(uuid4())})
-def test_decoding_user_raises_unauthorized_when_invalid_audience(user_token: str) -> None:
+def test_decoding_user_raises_unauthorized_when_invalid_audience(
+    user_token: str,
+) -> None:
     with pytest.raises(Unauthorized):
         User(user_token)
 
@@ -41,7 +45,9 @@ def test_decoding_user_raises_unauthorized_when_invalid_audience(user_token: str
         )
     },
 )
-def test_decoding_user_raises_unauthorized_when_invalid_public_key(user_token: str) -> None:
+def test_decoding_user_raises_unauthorized_when_invalid_public_key(
+    user_token: str,
+) -> None:
     with pytest.raises(Unauthorized):
         User(user_token)
 
@@ -65,26 +71,31 @@ def test_loading_user_does_not_parse_standard_claims(jwt_partial_payload: dict) 
         "auth_time": current_ts,
     }
 
-    id_token = encode_token(
+    id_token = encode_jwt(
         {
             "cognito:username": str(uuid4()),
             "custom:id": str(uuid4()),
             **standard_claims,
-        }
+        },
+        SAMPLE_PRIVATE_KEY,
     )
     user = User(id_token)
     for key in standard_claims:
         assert not hasattr(user, key)
 
 
-def test_user_raises_when_more_attributes_than_1000(allowed_audiences: list[str]) -> None:
+def test_user_raises_when_more_attributes_than_1000(
+    allowed_audiences: list[str],
+) -> None:
     cognito_user = {str(uuid4()): str(uuid4()) for i in range(1001)}
 
     with pytest.raises(RuntimeError):
-        User(encode_token({**cognito_user, "aud": allowed_audiences[0]}))
+        User(encode_jwt({**cognito_user, "aud": allowed_audiences[0]}, SAMPLE_PRIVATE_KEY))
 
 
 def test_nth_cognito_client_validated_as_audience(user_cognito: dict) -> None:
     test_allowed_audiences = [str(uuid4()) for _ in range(10)]
     with patch.dict(environ, {"ALLOWED_AUDIENCES": ",".join(test_allowed_audiences)}):
-        assert User(encode_token({**user_cognito, "aud": test_allowed_audiences[9]}))
+        assert User(
+            encode_jwt({**user_cognito, "aud": test_allowed_audiences[9]}, SAMPLE_PRIVATE_KEY)
+        )

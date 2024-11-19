@@ -156,7 +156,7 @@ rich==13.9.4
     #   pip-audit
 six==1.16.0
     # via
-    #   -c /Users/dybapi/PycharmProjects/lambdalizator/requirements.txt
+    #   -c requirements.txt
     #   html5lib
 sortedcontainers==2.4.0
     # via cyclonedx-python-lib
@@ -197,7 +197,7 @@ typing-extensions==4.12.2
     #   rich
 urllib3==1.26.20
     # via
-    #   -c /Users/dybapi/PycharmProjects/lambdalizator/requirements.txt
+    #   -c requirements.txt
     #   requests
 webencodings==0.5.1
     # via html5lib
