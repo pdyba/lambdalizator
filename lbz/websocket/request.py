@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from multidict import CIMultiDict
 
-from lbz._request import _Request
+from lbz._request import Request
 from lbz.authentication import User
 from lbz.websocket.enums import ActionType
 
 
-class WebSocketRequest(_Request):
+class WebSocketRequest(Request):
     """Represents request from Web Socket Secure API Gateway.
 
     https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-mapping-template-reference.html
@@ -15,6 +15,7 @@ class WebSocketRequest(_Request):
 
     def __init__(
         self,
+        *,
         body: str | bytes | dict,
         request_details: dict,
         context: dict,
@@ -22,10 +23,13 @@ class WebSocketRequest(_Request):
         user: User | None = None,
         headers: CIMultiDict | None = None,
     ) -> None:
-        super().__init__(body=body, is_base64_encoded=is_base64_encoded)
+        super().__init__(
+            body=body,
+            is_base64_encoded=is_base64_encoded,
+            context=context,
+            user=user,
+        )
         self.headers = headers
-        self.context = context
-        self.user = user
         self.action = request_details.pop("routeKey")
         self.action_type = request_details.pop("eventType")
         self.connection_id = request_details.pop("connectionId")

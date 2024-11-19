@@ -13,7 +13,7 @@ class TestWebSocketRequest:
         ],
     )
     def test__is_connection_request__checks_if_request_was_a_connection_request(
-        self, action_type: str, is_connection_req: bool
+        self, action_type: str, expected_result: bool
     ) -> None:
         request = WebSocketRequest(
             body="",
@@ -28,7 +28,7 @@ class TestWebSocketRequest:
             is_base64_encoded=False,
         )
 
-        assert request.is_connection_request() == is_connection_req
+        assert request.is_connection_request() == expected_result
 
     @pytest.mark.parametrize(
         "action_type, expected_result",
@@ -39,7 +39,7 @@ class TestWebSocketRequest:
         ],
     )
     def test__is_disconnection_request__checks_if_request_was_a_disconnection_request(
-        self, action_type: str, is_connection_req: bool
+        self, action_type: str, expected_result: bool
     ) -> None:
         request = WebSocketRequest(
             body="",
@@ -54,7 +54,7 @@ class TestWebSocketRequest:
             is_base64_encoded=False,
         )
 
-        assert request.is_disconnection_request() == is_connection_req
+        assert request.is_disconnection_request() == expected_result
 
     def test__json_body__returns_dict_when_body_is_a_dict(self) -> None:
         request = WebSocketRequest(

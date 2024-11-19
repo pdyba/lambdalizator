@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from multidict import CIMultiDict
 
-from lbz._request import _Request
+from lbz._request import Request
 from lbz.authentication import User
 from lbz.exceptions import BadRequestError
 from lbz.misc import MultiDict, get_logger
@@ -11,7 +11,7 @@ from lbz.rest.enums import ContentType
 logger = get_logger(__name__)
 
 
-class HTTPRequest(_Request):
+class HTTPRequest(Request):
     """Represents request from HTTP API Gateway."""
 
     def __init__(
@@ -27,14 +27,18 @@ class HTTPRequest(_Request):
         query_params: dict | None = None,
         user: User | None = None,
     ):
-        self.query_params = MultiDict(query_params or {})
+        super().__init__(
+            body=body,
+            is_base64_encoded=is_base64_encoded,
+            context=context,
+            user=user,
+        )
         self.headers = headers
+        self.query_params = MultiDict(query_params or {})
         self.uri_params = uri_params
         self.method = method
         self.context = context
         self.stage_vars = stage_vars
-        self.user = user
-        super().__init__(body=body, is_base64_encoded=is_base64_encoded)
 
     def __repr__(self) -> str:
         return f"<Request {self.method} >"

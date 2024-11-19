@@ -4,6 +4,7 @@ import base64
 import json
 from typing import Any
 
+from lbz.authentication import User
 from lbz.exceptions import BadRequestError
 
 
@@ -12,7 +13,12 @@ class Request:
         self,
         body: str | bytes | dict,
         is_base64_encoded: bool,
+        context: dict,
+        user: User | None = None,
     ) -> None:
+
+        self.user = user
+        self.context = context
         self._is_base64_encoded = is_base64_encoded
         self._body = body
         self._json_body: dict | None = None

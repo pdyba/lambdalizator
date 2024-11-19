@@ -355,7 +355,7 @@ Released 2024-05-24
 
 
 ### Version 0.7.0
-Release ETA 2024-02-31 ;)
+Release ETA 2024-12-31 ;)
 
 - Adds support for API GW's Web Socket Secure (WSS) protocol
 - Moves REST (API Gateway) related modules into one package
