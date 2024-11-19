@@ -1,5 +1,6 @@
 import pytest
 
+from lbz.exceptions import BadRequestError
 from lbz.websocket import ActionType, WebSocketRequest
 
 
@@ -60,7 +61,7 @@ class TestWebSocketRequest:
         request = WebSocketRequest(
             body={"x": "t1"},
             request_details={
-                "routeKey": "$connect",
+                "routeKey": "send_message",
                 "eventType": ActionType.MESSAGE,
                 "connectionId": "aaa123",
                 "domainName": "xxx.com",
@@ -75,7 +76,7 @@ class TestWebSocketRequest:
         request = WebSocketRequest(
             body='{"x": "t1"}',
             request_details={
-                "routeKey": "$connect",
+                "routeKey": "send_message",
                 "eventType": ActionType.MESSAGE,
                 "connectionId": "aaa123",
                 "domainName": "xxx.com",
@@ -85,3 +86,34 @@ class TestWebSocketRequest:
             is_base64_encoded=False,
         )
         assert request.json_body == {"x": "t1"}
+
+    def test__json_body___handles_none_as_none(self) -> None:
+        request = WebSocketRequest(
+            body=None,  # type: ignore
+            request_details={
+                "routeKey": "send_message",
+                "eventType": ActionType.MESSAGE,
+                "connectionId": "aaa123",
+                "domainName": "xxx.com",
+                "stage": "prod",
+            },
+            context={},
+            is_base64_encoded=False,
+        )
+        assert request.json_body is None
+
+    def test__json_body___malformated_json(self) -> None:
+        request = WebSocketRequest(
+            body="[]: []",
+            request_details={
+                "routeKey": "send_message",
+                "eventType": ActionType.MESSAGE,
+                "connectionId": "aaa123",
+                "domainName": "xxx.com",
+                "stage": "prod",
+            },
+            context={},
+            is_base64_encoded=False,
+        )
+        with pytest.raises(BadRequestError):
+            request.json_body  # pylint: disable=pointless-statement
