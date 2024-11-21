@@ -1,0 +1,4 @@
+class ActionType:
+    CONNECT = "CONNECT"
+    DISCONNECT = "DISCONNECT"
+    MESSAGE = "MESSAGE"
