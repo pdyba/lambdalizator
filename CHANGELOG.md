@@ -355,11 +355,12 @@ Released 2024-05-24
 
 
 ### Version 0.7.0
-Release ETA 2024-02-31 ;)
+Release ETA 2024-12-31 ;)
 
+- Adds support for API GW's Web Socket Secure (WSS) protocol
 - Moves REST (API Gateway) related modules into one package
 - Moves exceptions to related packages
-- Redesigns authorization from ground up
-- Adds helpers and reduces jwt-related operations.
 - Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource
+- Redesigns authorization from ground up
 - Fixes vulnerability `GHSA-wj6h-64fc-37mp`
+- Adds helpers and reduces jwt-related operations.

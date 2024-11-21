@@ -24,10 +24,9 @@ from lbz.authentication import User
 from lbz.authz.authorizer import Authorizer
 from lbz.authz.decorators import authorization
 from lbz.collector import authz_collector
-from lbz.request import Request
 from lbz.resource import Resource
 from lbz.response import Response
-from lbz.rest import APIGatewayEvent, ContentType
+from lbz.rest import APIGatewayEvent, ContentType, HTTPRequest
 from lbz.router import Router, add_route
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 from tests.utils import encode_token
@@ -76,9 +75,9 @@ def clear_router_collector() -> Iterator[None]:
 
 
 @pytest.fixture()
-def sample_request() -> Request:
+def sample_request() -> HTTPRequest:
     # TODO: change to simple factory / parametrise it
-    return Request(
+    return HTTPRequest(
         method="GET",
         body="",
         headers=CIMultiDict({"Content-Type": ContentType.JSON}),
@@ -177,8 +176,8 @@ def user_fixture(user_token: str) -> User:
 
 
 @pytest.fixture()
-def sample_request_with_user(user: User) -> Request:
-    return Request(
+def sample_request_with_user(user: User) -> HTTPRequest:
+    return HTTPRequest(
         method="GET",
         body="",
         headers=CIMultiDict({"Content-Type": ContentType.JSON}),
