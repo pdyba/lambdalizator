@@ -19,9 +19,8 @@ from lbz.exceptions import (
     UnsupportedMethod,
 )
 from lbz.misc import get_logger, is_in_debug_mode
-from lbz.request import Request
 from lbz.response import Response
-from lbz.rest import ContentType
+from lbz.rest import ContentType, HTTPRequest
 from lbz.router import Router
 
 ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin"
@@ -44,7 +43,7 @@ class Resource:
         self.path_params = event.get("pathParameters") or {}  # DO NOT refactor
         self.method = event["requestContext"]["httpMethod"]
         headers = CIMultiDict(event.get("headers", {}))
-        self.request = Request(
+        self.request = HTTPRequest(
             headers=headers,
             uri_params=self.path_params,
             method=self.method,

@@ -18,7 +18,6 @@ from lbz.collector import AuthzCollector
 from lbz.events.api import EventAPI
 from lbz.exceptions import NotFound, ServerError
 from lbz.misc import MultiDict
-from lbz.request import Request
 from lbz.resource import (
     ALLOW_ORIGIN_HEADER,
     CORSResource,
@@ -27,13 +26,13 @@ from lbz.resource import (
     Resource,
 )
 from lbz.response import Response
-from lbz.rest import APIGatewayEvent, ContentType
+from lbz.rest import APIGatewayEvent, ContentType, HTTPRequest
 from lbz.router import Router, add_route
 from tests.fixtures.rsa_pair import SAMPLE_PUBLIC_KEY
 
 # TODO: Use fixtures yielded from conftest.py
 
-req = Request(
+req = HTTPRequest(
     body="",
     headers=CIMultiDict({"Content-Type": ContentType.JSON}),
     uri_params={},
@@ -75,7 +74,7 @@ class TestResource:
         assert isinstance(self.res.method, str)
         assert self.res.method == "GET"
         assert self.res.path_params == {}
-        assert isinstance(self.res.request, Request)
+        assert isinstance(self.res.request, HTTPRequest)
         assert self.res._router is not None  # pylint: disable=protected-access
         assert isinstance(self.res._router, Router)  # pylint: disable=protected-access
         assert self.res.request.user is None
