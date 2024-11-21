@@ -97,7 +97,7 @@ class TestHTTPRequest:
         sample_request.headers = CIMultiDict({"Content-Type": "application/dzejson"})
         with pytest.raises(BadRequestError) as err:
             sample_request.json_body  # pylint: disable=pointless-statement
-            assert err.value.message.startswith("Content-Type header is missing or wrong")
+        assert err.value.message.startswith("Content-Type header is missing or wrong")
 
     def test_json_body_none_when_no_content_type(self, sample_request: HTTPRequest) -> None:
         sample_request.headers = CIMultiDict({})
