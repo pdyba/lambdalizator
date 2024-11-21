@@ -358,6 +358,8 @@ Released 2024-05-24
 Release ETA 2024-12-31 ;)
 
 - Adds support for API GW's Web Socket Secure (WSS) protocol
+- Adds Python 3.13 support
+- Removes Python 3.9 support
 - Moves REST (API Gateway) related modules into one package
 - Moves exceptions to related packages
 - Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource
