@@ -37,7 +37,7 @@ class TestDecodeJWT:
         with patch.dict(environ, {"ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [public_key]})}):
             with pytest.raises(Unauthorized):
                 decode_jwt("x")
-        assert "rror finding matching JWK " in caplog.text
+        assert "Error finding matching JWK " in caplog.text
 
     @patch("lbz.jwt_utils.get_matching_jwk", return_value=SAMPLE_PUBLIC_KEY)
     def test_invalid_type(self, get_matching_jwk_mock: MagicMock) -> None:
@@ -83,20 +83,6 @@ class TestDecodeJWT:
         with pytest.raises(Unauthorized):
             validate_jwt_properties({**full_access_authz_payload, "iss": "test2"})
 
-
-class TestSign:
-    def test_sign_authz(self) -> None:
-        token = encode_jwt({"allow": {ALL: ALL}, "deny": {}}, SAMPLE_PRIVATE_KEY)
-        assert token == EXPECTED_TOKEN
-
-    def test_sign_authz_not_a_dict_error(self) -> None:
-        with pytest.raises(ValueError, match="private_key_jwk must be a jwk dict"):
-            encode_jwt({}, private_key_jwk="")  # type: ignore
-
-    def test_sign_authz_no_kid_error(self) -> None:
-        with pytest.raises(ValueError, match="private_key_jwk must have the 'kid' field"):
-            encode_jwt({}, private_key_jwk={})
-
     def test_expired_jwt(self) -> None:
         iat = int((datetime.now(timezone.utc) - timedelta(hours=12)).timestamp())
         exp = int((datetime.now(timezone.utc) - timedelta(hours=6)).timestamp())
@@ -121,3 +107,17 @@ class TestSign:
             decode_jwt(jwt_token)
 
         assert "Failed decoding JWT with any of JWK - details" in caplog.text
+
+
+class TestEncodeJWT:
+    def test_sign_authz(self) -> None:
+        token = encode_jwt({"allow": {ALL: ALL}, "deny": {}}, SAMPLE_PRIVATE_KEY)
+        assert token == EXPECTED_TOKEN
+
+    def test_sign_authz_not_a_dict_error(self) -> None:
+        with pytest.raises(ValueError, match="private_key_jwk must be a jwk dict"):
+            encode_jwt({}, private_key_jwk="")  # type: ignore
+
+    def test_sign_authz_no_kid_error(self) -> None:
+        with pytest.raises(ValueError, match="private_key_jwk must have the 'kid' field"):
+            encode_jwt({}, private_key_jwk={})

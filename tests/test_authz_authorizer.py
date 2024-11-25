@@ -6,9 +6,9 @@ from unittest.mock import MagicMock, call, patch
 import pytest
 from pytest import LogCaptureFixture
 
-from lbz import jwt_utils
 from lbz.authz.authorizer import ALL, ALLOW, DENY, LIMITED_ALLOW, Authorizer
 from lbz.exceptions import PermissionDenied, Unauthorized
+from lbz.jwt_utils import encode_jwt
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY
 
 
@@ -35,7 +35,7 @@ class TestAuthorizerWithoutMockingJWT:
         expired_timestamp = int((datetime.now(timezone.utc) - timedelta(seconds=1)).timestamp())
         with pytest.raises(Unauthorized):
             Authorizer(
-                jwt_utils.encode_jwt(
+                encode_jwt(
                     {
                         **full_access_authz_payload,
                         "exp": expired_timestamp,

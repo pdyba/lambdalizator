@@ -8,7 +8,6 @@ from uuid import uuid4
 import pytest
 from multidict import CIMultiDict
 
-from lbz import jwt_utils
 from lbz._cfg import (
     ALLOWED_AUDIENCES,
     ALLOWED_ISS,
@@ -125,7 +124,7 @@ def full_access_authz_payload_fixture(jwt_partial_payload: dict) -> dict:
 def full_access_auth_header(
     full_access_authz_payload: dict,
 ) -> str:
-    return jwt_utils.encode_jwt(
+    return encode_jwt(
         full_access_authz_payload,
         SAMPLE_PRIVATE_KEY,
     )
@@ -135,7 +134,7 @@ def full_access_auth_header(
 def limited_access_auth_header(
     full_access_authz_payload: dict,
 ) -> str:
-    return jwt_utils.encode_jwt(
+    return encode_jwt(
         {
             **full_access_authz_payload,
             "allow": {"test_res": {"perm-name": {"allow": "*"}}},

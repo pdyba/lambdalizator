@@ -9,10 +9,10 @@ from lbz.misc import get_logger
 logger = get_logger(__name__)
 
 
-def get_matching_jwk(encoded_token: str) -> dict:
+def get_matching_jwk(token: str) -> dict:
     """Checks provided JWT token against allowed tokens."""
     try:
-        kid_from_jwt_header = jwt.get_unverified_header(encoded_token)["kid"]
+        kid_from_jwt_header = jwt.get_unverified_header(token)["kid"]
         for key in ALLOWED_PUBLIC_KEYS.value:
             if key["kid"] == kid_from_jwt_header:
                 return key
