@@ -30,9 +30,7 @@ def test_decoding_user_raises_unauthorized_when_invalid_token(user_token: str) -
 
 
 @patch.dict(environ, {"ALLOWED_AUDIENCES": str(uuid4())})
-def test_decoding_user_raises_unauthorized_when_invalid_audience(
-    user_token: str,
-) -> None:
+def test_decoding_user_raises_unauthorized_when_invalid_audience(user_token: str) -> None:
     with pytest.raises(Unauthorized):
         User(user_token)
 
@@ -45,9 +43,7 @@ def test_decoding_user_raises_unauthorized_when_invalid_audience(
         )
     },
 )
-def test_decoding_user_raises_unauthorized_when_invalid_public_key(
-    user_token: str,
-) -> None:
+def test_decoding_user_raises_unauthorized_when_invalid_public_key(user_token: str) -> None:
     with pytest.raises(Unauthorized):
         User(user_token)
 
@@ -84,9 +80,7 @@ def test_loading_user_does_not_parse_standard_claims(jwt_partial_payload: dict) 
         assert not hasattr(user, key)
 
 
-def test_user_raises_when_more_attributes_than_1000(
-    allowed_audiences: list[str],
-) -> None:
+def test_user_raises_when_more_attributes_than_1000(allowed_audiences: list[str]) -> None:
     cognito_user = {str(uuid4()): str(uuid4()) for i in range(1001)}
 
     with pytest.raises(RuntimeError):
