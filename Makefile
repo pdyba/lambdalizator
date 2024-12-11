@@ -98,7 +98,6 @@ bandit:
 .PHONY: pip-audit
 pip-audit:
 	pip-audit --version
-	# TODO: Fix the issue with the vulnerable ecdsa and jose libraries
 	pip-audit -r requirements.txt
 
 .PHONY: secure

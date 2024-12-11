@@ -33,11 +33,18 @@ class TestGetMatchingJWK:
 class TestDecodeJWT:
     def test_did_not_find_matching_jwk(self, caplog: pytest.LogCaptureFixture) -> None:
         public_key = deepcopy(SAMPLE_PUBLIC_KEY)
-        public_key["kid"] = "x"
+        public_key["kid"] = "9494ad75-aaaa-aaaa-aaaa-c1a17da22b35"
+        token_payload = {
+            "iss": "test-issuer",
+            "aud": "test-audience",
+            "kid": "x",
+        }
+        jwt_token = encode_jwt(token_payload, SAMPLE_PRIVATE_KEY)
+
         with patch.dict(environ, {"ALLOWED_PUBLIC_KEYS": json.dumps({"keys": [public_key]})}):
             with pytest.raises(Unauthorized):
-                decode_jwt("x")
-        assert "Error finding matching JWK " in caplog.text
+                decode_jwt(jwt_token)
+        assert "The key with id=" in caplog.text
 
     @patch("lbz.jwt_utils.get_matching_jwk", return_value=SAMPLE_PUBLIC_KEY)
     def test_invalid_type(self, get_matching_jwk_mock: MagicMock) -> None:
