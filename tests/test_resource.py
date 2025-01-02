@@ -9,7 +9,7 @@ from os import environ
 from typing import Any
 from unittest.mock import ANY, MagicMock, patch
 
-from jose import jwt
+import jwt
 from multidict import CIMultiDict
 from pytest import LogCaptureFixture
 

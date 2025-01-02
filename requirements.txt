@@ -4,36 +4,32 @@
 #
 #    pip-compile
 #
-boto3==1.34.162
+boto3==1.35.78
     # via lbz (setup.py)
-botocore==1.34.162
+botocore==1.35.78
     # via
     #   boto3
     #   s3transfer
-ecdsa==0.19.0
-    # via python-jose
+cffi==1.17.1
+    # via cryptography
+cryptography==43.0.3
+    # via lbz (setup.py)
 jmespath==1.0.1
     # via
     #   boto3
     #   botocore
 multidict==6.1.0
     # via lbz (setup.py)
-pyasn1==0.6.1
-    # via
-    #   python-jose
-    #   rsa
+pycparser==2.22
+    # via cffi
+pyjwt==2.9.0
+    # via lbz (setup.py)
 python-dateutil==2.9.0.post0
     # via botocore
-python-jose==3.3.0
-    # via lbz (setup.py)
-rsa==4.9
-    # via python-jose
-s3transfer==0.10.3
+s3transfer==0.10.4
     # via boto3
-six==1.16.0
-    # via
-    #   ecdsa
-    #   python-dateutil
+six==1.17.0
+    # via python-dateutil
 typing-extensions==4.12.2
     # via multidict
 urllib3==1.26.20
