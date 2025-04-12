@@ -73,7 +73,7 @@ def test__custom_exception__contains_message_and_status_code_according_to_its_do
 
 
 def test__all_lbz_errors__returns_all_subclasses_of_lambda_fw_exception() -> None:
-    result = list(all_lbz_errors())
+    result = set(all_lbz_errors())
 
     assert BadRequestError in result
     assert ServerError in result
