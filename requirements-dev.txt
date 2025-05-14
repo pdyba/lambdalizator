@@ -176,6 +176,7 @@ types-s3transfer==0.12.0
     # via boto3-stubs
 typing-extensions==4.13.2
     # via
+    #   -c requirements.txt
     #   astroid
     #   black
     #   boto3-stubs
@@ -193,7 +194,7 @@ typing-extensions==4.13.2
     #   rich
 urllib3==1.26.20
     # via
-    #   -c /Users/dybapi/PycharmProjects/lambdalizator/requirements.txt
+    #   -c requirements.txt
     #   requests
 wheel==0.45.1
     # via pip-tools

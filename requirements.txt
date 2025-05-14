@@ -4,9 +4,9 @@
 #
 #    pip-compile
 #
-boto3==1.34.162
+boto3==1.38.16
     # via lbz (setup.py)
-botocore==1.34.162
+botocore==1.38.16
     # via
     #   boto3
     #   s3transfer
@@ -16,7 +16,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-multidict==6.0.5
+multidict==6.4.3
     # via lbz (setup.py)
 pyasn1==0.4.8
     # via
@@ -28,11 +28,13 @@ python-jose==3.4.0
     # via lbz (setup.py)
 rsa==4.9.1
     # via python-jose
-s3transfer==0.10.4
+s3transfer==0.12.0
     # via boto3
 six==1.17.0
     # via
     #   ecdsa
     #   python-dateutil
+typing-extensions==4.13.2
+    # via multidict
 urllib3==1.26.20
     # via botocore
