@@ -71,7 +71,7 @@ class Authorizer:
         if self.outcome == DENY:
             self._raise_permission_denied()
 
-    def _deny_if_all(self, permission: dict | str) -> None:
+    def _deny_if_all(self, permission: dict | str | None) -> None:
         if permission == ALL:
             self._raise_permission_denied()
 
@@ -91,7 +91,7 @@ class Authorizer:
                 self._deny_if_all(key)
                 self._deny_if_all(value)
 
-    def _allow_if_allow_all(self, permission: str | dict) -> bool:
+    def _allow_if_allow_all(self, permission: str | dict | None) -> bool:
         if permission == ALL:
             self.outcome = ALLOW
             self.allowed_resource = ALL
