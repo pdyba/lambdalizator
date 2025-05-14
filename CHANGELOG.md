@@ -354,10 +354,10 @@ Released 2024-05-24
 - Dumps `extra` data into the response when raising an error during handling requests
 
 ### Version 0.6.7
-Released 2025-05-24
+Released 2025-08-28
 
 - Updates python-jose to remove security vulnerability (PYSEC-2024-232,  PYSEC-2024-233)
-
+- Updates dependencies to newest version
 
 
 ### Version 0.7.0
