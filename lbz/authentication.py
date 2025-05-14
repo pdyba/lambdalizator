@@ -1,4 +1,5 @@
 """JWT based Authentication module."""
+
 from lbz._cfg import AUTH_REMOVE_PREFIXES
 from lbz.jwt_utils import decode_jwt
 

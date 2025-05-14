@@ -43,7 +43,7 @@ class Resource:
         self.path = event.get("requestContext", {}).get("resourcePath")
         self.path_params = event.get("pathParameters") or {}  # DO NOT refactor
         self.method = event["requestContext"]["httpMethod"]
-        headers = CIMultiDict(event.get("headers", {}))
+        headers: CIMultiDict = CIMultiDict(event.get("headers", {}))
         self.request = Request(
             headers=headers,
             uri_params=self.path_params,
