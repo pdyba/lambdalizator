@@ -18,7 +18,7 @@ setup(
     install_requires=[
         "boto3>=1.34.11,<1.35.0",
         "multidict>=6.0.4,<6.1.0",
-        "python-jose>=3.3.0,<3.4.0",
+        "python-jose>=3.5.0,<3.6.0",
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
