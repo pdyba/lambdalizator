@@ -353,9 +353,15 @@ Released 2024-05-24
 - Extends `LambdaFWException` with extra property for easier handling edge case exceptions
 - Dumps `extra` data into the response when raising an error during handling requests
 
+### Version 0.6.7
+Released 2025-05-24
+
+- Updates python-jose to remove security vulnerability (PYSEC-2024-232,  PYSEC-2024-233)
+
+
 
 ### Version 0.7.0
-Release ETA 2024-02-31 ;)
+Release ETA 2025-12-31 ;)
 
 - Moves REST (API Gateway) related modules into one package
 - Moves exceptions to related packages
