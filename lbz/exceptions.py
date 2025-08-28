@@ -340,7 +340,7 @@ class NetworkAuthenticationRequired(LambdaFWServerException):
 
 def all_lbz_errors(
     cls: type[LambdaFWException] = LambdaFWException,
-) -> Generator[type[LambdaFWException], None, None]:
+) -> Generator[type[LambdaFWException]]:
     for subcls in cls.__subclasses__():
         if subcls not in [LambdaFWClientException, LambdaFWServerException]:
             yield subcls
