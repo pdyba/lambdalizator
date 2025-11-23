@@ -93,7 +93,6 @@ class TestResponse:
         response = Response({"message": "xxx"}, headers={"xx": "xx"}, status_code=code)
 
         assert response.ok == outcome
-        assert response.is_ok() == outcome
 
     def test__from_exception__builds_response_based_on_provided_internal_error(self) -> None:
         response = Response.from_exception(ServerError(), "req-id")
