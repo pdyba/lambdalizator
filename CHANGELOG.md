@@ -359,9 +359,19 @@ Released 2025-08-28
 - Updates python-jose to remove security vulnerability (PYSEC-2024-232,  PYSEC-2024-233)
 - Updates dependencies to newest version
 
+## 0.7.x
 
 ### Version 0.7.0
-Release ETA 2025-12-31 ;)
+Released 2026-03-07
+
+- Stop supporting Python 3.9, which ended its life last year
+- Add the newest versions of Python to keep the library up-to-date
+- Systematically run the GitHub Actions workflow to scan vulnerabilities
+- Remove all deprecated methods marked for removal in version 0.7.0
+- Remove the universal @error_catcher decorator as a wrong pattern
+
+### Version 0.8.0
+Release ETA 2026-12-31 ;)
 
 - Moves REST (API Gateway) related modules into one package
 - Moves exceptions to related packages
