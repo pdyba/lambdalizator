@@ -23,11 +23,8 @@ jobs:
       - run: make install-dev
       - run: make black-check
       - run: make isort-check
-      - run: make flake8
-      - run: make mypy
-      - run: make pylint
-      - run: make bandit
-      - run: make pip-audit
+      - run: make lint
+      - run: make secure
 
   unit_tests:
     name: Run unit tests

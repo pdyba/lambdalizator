@@ -24,6 +24,11 @@ upgrade-dependencies upgrade-deps:
 	pip-compile --upgrade
 	pip-compile --upgrade requirements-dev.in
 
+.PHONY: scan-dependencies scan-deps
+scan-dependencies scan-deps:
+	pip-audit --version
+	pip-audit --vulnerability-service osv -r requirements.txt --ignore-vuln CVE-2024-23342
+
 
 ###############################################################################
 # Packaging and Distributing
@@ -91,14 +96,8 @@ bandit:
 	bandit --version
 	bandit --recursive lbz setup.py
 
-.PHONY: pip-audit
-pip-audit:
-	pip-audit --version
-	# TODO: Fix the issue with the vulnerable ecdsa and jose libraries
-	pip-audit -r requirements.txt --ignore-vuln GHSA-pq67-6m6q-mj2v --ignore-vuln GHSA-wj6h-64fc-37mp
-
 .PHONY: secure
-secure: bandit pip-audit
+secure: bandit
 
 .PHONY: format-lint-secure
 format-lint-secure: format lint secure
