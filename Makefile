@@ -14,17 +14,13 @@ install:
 install-dev:
 	pip install -r requirements.txt -r requirements-dev.txt
 
-.PHONY: lock-dependencies
-lock-dependencies:
+.PHONY: lock-dependencies lock-deps
+lock-dependencies lock-deps:
 	pip-compile
 	pip-compile requirements-dev.in
 
-.PHONY: upgrade-dev
-upgrade-dev:
-	pip-compile --upgrade requirements-dev.in
-
-.PHONY: upgrade-all
-upgrade-all:
+.PHONY: upgrade-dependencies upgrade-deps
+upgrade-dependencies upgrade-deps:
 	pip-compile --upgrade
 	pip-compile --upgrade requirements-dev.in
 
