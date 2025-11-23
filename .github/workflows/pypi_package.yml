@@ -9,6 +9,9 @@ jobs:
   pypi:
     name: Publish to PyPI
 
+    permissions:
+      contents: read
+
     runs-on: ubuntu-latest
 
     steps:

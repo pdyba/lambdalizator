@@ -8,6 +8,9 @@ jobs:
   vulnerability_scanner:
     name: Scan vulnerabilities
 
+    permissions:
+      contents: read
+
     runs-on: ubuntu-latest
 
     steps:
