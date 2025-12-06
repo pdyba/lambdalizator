@@ -370,6 +370,12 @@ Released 2026-03-07
 - Remove all deprecated methods marked for removal in version 0.7.0
 - Remove the universal @error_catcher decorator as a wrong pattern
 
+### Version 0.7.1
+Released 2025-03-07
+
+- Fix the type annotations around the Singleton pattern implementation
+- Add the method that allows dropping the already initialized class
+
 ### Version 0.8.0
 Release ETA 2026-12-31 ;)
 
