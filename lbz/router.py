@@ -1,9 +1,12 @@
 import json
 from collections.abc import Callable, Iterator
 from functools import wraps
-from typing import Any
+from typing import Any, ParamSpec, TypeVar
 
 from lbz.misc import NestedDict, Singleton
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 class Router(metaclass=Singleton):
@@ -36,16 +39,16 @@ class Router(metaclass=Singleton):
         self._routes = NestedDict()
 
 
-def add_route(route: str, method: str = "GET") -> Callable:
+def add_route(route: str, method: str = "GET") -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Flask-like wrapper for adding routes."""
 
-    def wrapper(func: Callable) -> Callable:
+    def wrapper(function: Callable[P, R]) -> Callable[P, R]:
         router = Router()
-        router.add_route(route, method, func.__name__)
+        router.add_route(route, method, function.__name__)
 
-        @wraps(func)
-        def wrapped(self: Any, *func_args: Any, **func_kwargs: Any) -> Any:
-            return func(self, *func_args, **func_kwargs)
+        @wraps(function)
+        def wrapped(*args: P.args, **kwargs: P.kwargs) -> R:
+            return function(*args, **kwargs)
 
         return wrapped
 
