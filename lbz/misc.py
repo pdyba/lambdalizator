@@ -35,15 +35,13 @@ class Singleton(type):
     # Unfortunately, mypy does not work well with type annotations in more generic metaclasses
     # It was noticed years ago (closed/unresolved): https://github.com/python/mypy/issues/3625
     def __call__(cls: type[T], *args: Any, **kwargs: Any) -> T:  # type: ignore[misc]
-        def _del(a_cls: Any) -> None:
-            """Enables deletion of singletons"""
-            del cls._instances[a_cls._cls_name]  # pylint: disable=protected-access
-
         if cls not in cls._instances:
-            cls._del = _del
-            cls._cls_name = cls
             cls._instances[cls] = type.__call__(cls, *args, **kwargs)
         return cls._instances[cls]
+
+    @classmethod
+    def drop_instance(mcs, cls: type[T]) -> None:
+        mcs._instances.pop(cls, None)
 
 
 class MultiDict(MutableMapping):
