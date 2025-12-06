@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from copy import deepcopy
 from functools import wraps
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, ParamSpec, TypeVar
 
 from lbz._cfg import AWS_LAMBDA_FUNCTION_NAME, EVENTS_BUS_NAME
 from lbz.aws_boto3 import client
@@ -14,6 +14,9 @@ else:
     PutEventsRequestEntryTypeDef = dict
 
 logger = get_logger(__name__)
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 # https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEvents.html
 MAX_EVENTS_TO_SEND_AT_ONCE = 10
@@ -104,12 +107,12 @@ class EventAPI(metaclass=Singleton):
         }
 
 
-def event_emitter(function: Callable) -> Callable:
+def event_emitter(function: Callable[P, R]) -> Callable[P, R]:
     """Decorator that makes function an emitter - automatically sends pending events on success"""
     EventAPI().clear()
 
     @wraps(function)
-    def wrapped(*args: Any, **kwargs: Any) -> Any:
+    def wrapped(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             result = function(*args, **kwargs)
             EventAPI().send()
