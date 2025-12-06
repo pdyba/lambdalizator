@@ -6,11 +6,13 @@ import logging.handlers
 import warnings
 from collections.abc import Callable, Hashable, Iterable, Iterator, MutableMapping
 from functools import wraps
-from typing import Any, TypeVar
+from typing import Any, ParamSpec, TypeVar
 
 from lbz._cfg import LBZ_DEBUG_MODE, LOGGING_LEVEL
 
 T = TypeVar("T")
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 class NestedDict(dict):
@@ -107,21 +109,21 @@ def is_in_debug_mode() -> bool:
     return LBZ_DEBUG_MODE.value
 
 
-def deprecated(*, message: str, version: str) -> Callable:
+def deprecated(*, message: str, version: str) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """This is a decorator which can be used to mark functions as deprecated.
 
     It will result in a warning being emitted when the function is used.
     """
 
-    def decorator(func: Callable) -> Callable:
-        @wraps(func)
-        def wrapped(*args: Any, **kwargs: Any) -> Any:
+    def decorator(function: Callable[P, R]) -> Callable[P, R]:
+        @wraps(function)
+        def wrapped(*args: P.args, **kwargs: P.kwargs) -> R:
             warnings.warn(
-                f"{func.__name__} - {message} (will be removed in {version}).",
+                f"{function.__name__} - {message} (will be removed in {version}).",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
-            return func(*args, **kwargs)
+            return function(*args, **kwargs)
 
         return wrapped
 
