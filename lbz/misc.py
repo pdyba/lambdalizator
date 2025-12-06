@@ -34,10 +34,10 @@ class Singleton(type):
 
     # Unfortunately, mypy does not work well with type annotations in more generic metaclasses
     # It was noticed years ago (closed/unresolved): https://github.com/python/mypy/issues/3625
-    def __call__(cls: type[T], *args: Any, **kwargs: Any) -> T:  # type: ignore[misc]
-        if cls not in cls._instances:
-            cls._instances[cls] = type.__call__(cls, *args, **kwargs)
-        return cls._instances[cls]
+    def __call__(cls: type[T], *args: Any, **kwargs: Any) -> T:
+        if cls not in cls._instances:  # type: ignore[attr-defined]
+            cls._instances[cls] = type.__call__(cls, *args, **kwargs)  # type: ignore[attr-defined]
+        return cls._instances[cls]  # type: ignore[attr-defined,no-any-return]
 
     @classmethod
     def drop_instance(mcs, cls: type[T]) -> None:
