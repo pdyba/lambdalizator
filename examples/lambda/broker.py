@@ -7,8 +7,8 @@ def get_user_data(data: dict) -> LambdaResponse:
     return lambda_ok_response({"user_name": "Moszeusz"})
 
 
-def send_spam_to_all_users(_data: dict) -> LambdaResponse:
-    return lambda_ok_response()
+def send_spam_to_all_users(data: dict) -> LambdaResponse:
+    return lambda_ok_response(data)
 
 
 operation_to_handler_map = {

@@ -1,7 +1,8 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from copy import deepcopy
 
 from lbz.events.event import Event
+from lbz.events.protocols import EventHandler
 from lbz.handlers import BaseHandler
 from lbz.misc import get_logger
 from lbz.type_defs import LambdaContext
@@ -12,7 +13,7 @@ logger = get_logger(__name__)
 class BaseEventBroker(BaseHandler[None]):
     def __init__(
         self,
-        mapper: Mapping[str, list[Callable[[Event], None]]],
+        mapper: Mapping[str, list[EventHandler]],
         event: dict,
         context: LambdaContext,
         *,
@@ -34,7 +35,7 @@ class BaseEventBroker(BaseHandler[None]):
 
         self.post_handle()
 
-    def _get_handlers(self) -> list[Callable]:
+    def _get_handlers(self) -> list[EventHandler]:
         try:
             return self.mapper[self.event.type]
         except KeyError as err:
@@ -44,7 +45,7 @@ class BaseEventBroker(BaseHandler[None]):
 class EventBroker(BaseEventBroker):
     def __init__(
         self,
-        mapper: Mapping[str, list[Callable[[Event], None]]],
+        mapper: Mapping[str, list[EventHandler]],
         event: dict,
         context: LambdaContext,
     ) -> None:
@@ -54,7 +55,7 @@ class EventBroker(BaseEventBroker):
 class CognitoEventBroker(BaseEventBroker):
     def __init__(
         self,
-        mapper: Mapping[str, list[Callable[[Event], None]]],
+        mapper: Mapping[str, list[EventHandler]],
         event: dict,
         context: LambdaContext,
     ) -> None:
