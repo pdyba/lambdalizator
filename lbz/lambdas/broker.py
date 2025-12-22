@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 
+from lbz.brokers import BaseBroker
 from lbz.exceptions import LambdaFWException
-from lbz.handlers import BaseHandler
 from lbz.lambdas.enums import LambdaResult
 from lbz.lambdas.protocols import LambdaAPIFunction
 from lbz.lambdas.response import LambdaResponse, lambda_error_response
@@ -11,7 +11,7 @@ from lbz.type_defs import LambdaContext
 logger = get_logger(__name__)
 
 
-class LambdaBroker(BaseHandler[LambdaResponse]):
+class LambdaBroker(BaseBroker[LambdaResponse]):
     def __init__(
         self,
         mapper: Mapping[str, LambdaAPIFunction],

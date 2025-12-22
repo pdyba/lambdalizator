@@ -1,16 +1,16 @@
 from collections.abc import Mapping
 from copy import deepcopy
 
+from lbz.brokers import BaseBroker
 from lbz.events.event import Event
 from lbz.events.protocols import EventHandler
-from lbz.handlers import BaseHandler
 from lbz.misc import get_logger
 from lbz.type_defs import LambdaContext
 
 logger = get_logger(__name__)
 
 
-class BaseEventBroker(BaseHandler[None]):
+class BaseEventBroker(BaseBroker[None]):
     def __init__(
         self,
         mapper: Mapping[str, list[EventHandler]],

@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
-class BaseHandler(Generic[T], metaclass=ABCMeta):
+class BaseBroker(Generic[T], metaclass=ABCMeta):
     def __init__(self, event: dict, context: LambdaContext) -> None:
         self.raw_event = event
         self.context = context
