@@ -25,15 +25,11 @@ class BaseEventBroker(BaseBroker[None]):
         self.event = Event(event[data_key], event_type=event[type_key])
 
     def handle(self) -> None:
-        self.pre_handle()
-
         for handler in self._get_handlers():
             try:
                 handler(deepcopy(self.event))
             except Exception:  # pylint: disable=broad-except
                 logger.exception("Handling event failed, event: %s", self.event)
-
-        self.post_handle()
 
     def pre_handle(self) -> None:
         pass
