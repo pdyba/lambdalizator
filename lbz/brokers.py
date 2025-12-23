@@ -20,7 +20,13 @@ class BaseBroker(Generic[T], metaclass=ABCMeta):
     def react(self) -> T:
         self.pre_handle()
         self.response = self.handle()
-        self._post_handle()
+
+        # Post-handle should not affect the response, so exceptions are logged but not raised
+        try:
+            self.post_handle()
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
+
         return self.response
 
     @abstractmethod
@@ -34,10 +40,3 @@ class BaseBroker(Generic[T], metaclass=ABCMeta):
     @abstractmethod
     def post_handle(self) -> None:
         pass
-
-    def _post_handle(self) -> None:
-        """Makes the post_handle runtime friendly."""
-        try:
-            self.post_handle()
-        except Exception as err:  # pylint: disable=broad-except
-            logger.exception(err)
