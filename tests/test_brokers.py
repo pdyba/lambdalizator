@@ -12,6 +12,12 @@ class CustomBroker(BaseBroker):
     def handle(self) -> str:
         return "something"
 
+    def pre_handle(self) -> None:
+        pass
+
+    def post_handle(self) -> None:
+        pass
+
 
 @patch.object(CustomBroker, "post_handle", autospec=True)
 @patch.object(CustomBroker, "pre_handle", autospec=True)

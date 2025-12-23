@@ -36,3 +36,9 @@ class LambdaBroker(BaseBroker[LambdaResponse]):
         except Exception as err:  # pylint: disable=broad-except
             logger.exception('Unexpected error in "%s" function!', handler.__name__)
             return lambda_error_response(LambdaResult.SERVER_ERROR, repr(err))
+
+    def pre_handle(self) -> None:
+        pass
+
+    def post_handle(self) -> None:
+        pass

@@ -27,9 +27,11 @@ class BaseBroker(Generic[T], metaclass=ABCMeta):
     def handle(self) -> T:
         pass
 
+    @abstractmethod
     def pre_handle(self) -> None:
         pass
 
+    @abstractmethod
     def post_handle(self) -> None:
         pass
 

@@ -35,6 +35,12 @@ class BaseEventBroker(BaseBroker[None]):
 
         self.post_handle()
 
+    def pre_handle(self) -> None:
+        pass
+
+    def post_handle(self) -> None:
+        pass
+
     def _get_handlers(self) -> list[EventHandler]:
         try:
             return self.mapper[self.event.type]
