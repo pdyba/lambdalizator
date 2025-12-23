@@ -24,8 +24,15 @@ class BaseEventBroker(BaseBroker[None]):
         self.mapper = mapper
         self.event = Event(event[data_key], event_type=event[type_key])
 
+    @property
+    def handlers(self) -> list[EventHandler]:
+        try:
+            return self.mapper[self.event.type]
+        except KeyError as err:
+            raise NotImplementedError(f"No handlers implemented for {self.event.type}") from err
+
     def handle(self) -> None:
-        for handler in self._get_handlers():
+        for handler in self.handlers:
             try:
                 handler(deepcopy(self.event))
             except Exception:  # pylint: disable=broad-except
@@ -36,12 +43,6 @@ class BaseEventBroker(BaseBroker[None]):
 
     def post_handle(self) -> None:
         pass
-
-    def _get_handlers(self) -> list[EventHandler]:
-        try:
-            return self.mapper[self.event.type]
-        except KeyError as err:
-            raise NotImplementedError(f"No handlers implemented for {self.event.type}") from err
 
 
 class EventBroker(BaseEventBroker):
