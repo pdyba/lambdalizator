@@ -36,6 +36,8 @@ more-itertools==10.1.0
     # via jaraco-classes
 nh3==0.2.15
     # via readme-renderer
+packaging==26.0
+    # via wheel
 pkginfo==1.9.6
     # via twine
 pycparser==2.21
@@ -64,7 +66,7 @@ urllib3==2.1.0
     # via
     #   requests
     #   twine
-wheel==0.42.0
+wheel==0.46.2
     # via -r requirements-deploy.in
 zipp==3.17.0
     # via importlib-metadata
