@@ -93,26 +93,6 @@ def get_logger(name: str) -> logging.Logger:
     return logger_obj
 
 
-logger = get_logger(__name__)
-
-
-def error_catcher(function: Callable, default_return: Any = False) -> Callable:
-    """Universal Error Catcher"""
-
-    @wraps(function)
-    def wrapped(*args: Any, **kwargs: Any) -> Any:
-        try:
-            return function(*args, **kwargs)
-        except Exception as error:  # pylint: disable=broad-except
-            if len(args) > 0 and hasattr(args[0], "logger"):
-                args[0].logger.exception(error)
-            else:
-                logger.exception(error)
-            return default_return
-
-    return wrapped
-
-
 def deep_update(dict_to_update: dict, update_data: dict) -> None:
     """Recursively updates keys in the first dict with the data in the second dict."""
     for key, value in update_data.items():

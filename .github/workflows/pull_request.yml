@@ -8,11 +8,14 @@ jobs:
   code_quality:
     name: Check code quality
 
+    permissions:
+      contents: read
+
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -23,20 +26,20 @@ jobs:
       - run: make install-dev
       - run: make black-check
       - run: make isort-check
-      - run: make flake8
-      - run: make mypy
-      - run: make pylint
-      - run: make bandit
-      - run: make pip-audit
+      - run: make lint
+      - run: make secure
 
   unit_tests:
     name: Run unit tests
+
+    permissions:
+      contents: read
 
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -49,6 +52,9 @@ jobs:
 
   version_check:
     name: Check version
+
+    permissions:
+      contents: read
 
     runs-on: ubuntu-latest
 

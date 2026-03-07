@@ -14,19 +14,20 @@ install:
 install-dev:
 	pip install -r requirements.txt -r requirements-dev.txt
 
-.PHONY: lock-dependencies
-lock-dependencies:
+.PHONY: lock-dependencies lock-deps
+lock-dependencies lock-deps:
 	pip-compile
 	pip-compile requirements-dev.in
 
-.PHONY: upgrade-dev
-upgrade-dev:
-	pip-compile --upgrade requirements-dev.in
-
-.PHONY: upgrade-all
-upgrade-all:
+.PHONY: upgrade-dependencies upgrade-deps
+upgrade-dependencies upgrade-deps:
 	pip-compile --upgrade
 	pip-compile --upgrade requirements-dev.in
+
+.PHONY: scan-dependencies scan-deps
+scan-dependencies scan-deps:
+	pip-audit --version
+	pip-audit --vulnerability-service osv -r requirements.txt --ignore-vuln CVE-2024-23342
 
 
 ###############################################################################
@@ -52,12 +53,12 @@ build-nocache clean-and-build cab: clean build
 .PHONY: black
 black:
 	black --version
-	black --target-version py39 --line-length 99 examples lbz tests setup.py
+	black --target-version py310 --line-length 99 examples lbz tests setup.py
 
 .PHONY: black-check
 black-check:
 	black --version
-	black --target-version py39 --line-length 99 --check examples lbz tests setup.py
+	black --target-version py310 --line-length 99 --check examples lbz tests setup.py
 
 .PHONY: isort
 isort:
@@ -95,14 +96,8 @@ bandit:
 	bandit --version
 	bandit --recursive lbz setup.py
 
-.PHONY: pip-audit
-pip-audit:
-	pip-audit --version
-	# TODO: Fix the issue with the vulnerable ecdsa and jose libraries
-	pip-audit -r requirements.txt --ignore-vuln GHSA-pq67-6m6q-mj2v --ignore-vuln GHSA-wj6h-64fc-37mp
-
 .PHONY: secure
-secure: bandit pip-audit
+secure: bandit
 
 .PHONY: format-lint-secure
 format-lint-secure: format lint secure
@@ -123,3 +118,10 @@ test-unit-verbose tuv:
 
 .PHONY: test
 test: test-unit
+
+
+###############################################################################
+# Custom Scripts
+# -----------------------------------------------------------------------------
+.PHONY: qa
+qa: format-lint-secure test

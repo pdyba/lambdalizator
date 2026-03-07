@@ -5,15 +5,7 @@ from typing import Any
 import pytest
 from pytest import LogCaptureFixture
 
-from lbz.misc import (
-    MultiDict,
-    NestedDict,
-    Singleton,
-    deep_update,
-    deprecated,
-    error_catcher,
-    get_logger,
-)
+from lbz.misc import MultiDict, NestedDict, Singleton, deep_update, deprecated, get_logger
 
 
 def test_nested_dict() -> None:
@@ -65,30 +57,6 @@ def test_get_logger(caplog: LogCaptureFixture) -> None:
         a_loger.exception(err)
         assert "Traceback" in caplog.text
         assert "ZeroDivisionError" in caplog.text
-
-
-def test_error_catcher(caplog: LogCaptureFixture) -> None:
-    @error_catcher
-    def zero_division() -> float:
-        return 2 / 0
-
-    zero_division()
-    assert "Traceback" in caplog.text
-    assert "ZeroDivisionError" in caplog.text
-
-
-def test_error_catcher_class(caplog: LogCaptureFixture) -> None:
-    class AClass:
-        logger = get_logger("xxxxx")
-
-        @error_catcher
-        def zero_division(self) -> float:
-            return 2 / 0
-
-    AClass().zero_division()
-    assert "xxxxx" in caplog.text
-    assert "Traceback" in caplog.text
-    assert "ZeroDivisionError" in caplog.text
 
 
 def test__deep_update__does_nothing_if_empty_data_given() -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from collections.abc import Generator
 from http import HTTPStatus
 from typing import Any
@@ -149,11 +150,21 @@ class PreconditionFailed(LambdaFWClientException):
     status_code = HTTPStatus.PRECONDITION_FAILED.value
 
 
-class PayloadTooLarge(LambdaFWClientException):
-    """413 - Entity is too large"""
+if sys.version_info >= (3, 13):
 
-    message = HTTPStatus.REQUEST_ENTITY_TOO_LARGE.description
-    status_code = HTTPStatus.REQUEST_ENTITY_TOO_LARGE.value
+    class ContentTooLarge(LambdaFWClientException):
+        """413 - Content is too large"""
+
+        message = HTTPStatus.CONTENT_TOO_LARGE.description
+        status_code = HTTPStatus.CONTENT_TOO_LARGE.value
+
+else:
+
+    class PayloadTooLarge(LambdaFWClientException):
+        """413 - Entity is too large"""
+
+        message = HTTPStatus.REQUEST_ENTITY_TOO_LARGE.description
+        status_code = HTTPStatus.REQUEST_ENTITY_TOO_LARGE.value
 
 
 class URITooLong(LambdaFWClientException):
@@ -199,21 +210,30 @@ class MisdirectedRequest(LambdaFWClientException):
 
 
 class UnprocessableEntity(LambdaFWClientException):
-    """422 -"""
+    if sys.version_info >= (3, 14):
+        __doc__ = """422 - Server is not able to process the contained instructions"""
+    else:
+        __doc__ = """422 -"""
 
     message = HTTPStatus.UNPROCESSABLE_ENTITY.description
     status_code = HTTPStatus.UNPROCESSABLE_ENTITY.value
 
 
 class Locked(LambdaFWClientException):
-    """423 -"""
+    if sys.version_info >= (3, 14):
+        __doc__ = """423 - Resource of a method is locked"""
+    else:
+        __doc__ = """423 -"""
 
     message = HTTPStatus.LOCKED.description
     status_code = HTTPStatus.LOCKED.value
 
 
 class FailedDependency(LambdaFWClientException):
-    """424 -"""
+    if sys.version_info >= (3, 14):
+        __doc__ = """424 - Dependent action of the request failed"""
+    else:
+        __doc__ = """424 -"""
 
     message = HTTPStatus.FAILED_DEPENDENCY.description
     status_code = HTTPStatus.FAILED_DEPENDENCY.value
@@ -227,7 +247,10 @@ class TooEarly(LambdaFWClientException):
 
 
 class UpgradeRequired(LambdaFWClientException):
-    """426 -"""
+    if sys.version_info >= (3, 14):
+        __doc__ = """426 - Server refuses to perform the request using the current protocol"""
+    else:
+        __doc__ = """426 -"""
 
     message = HTTPStatus.UPGRADE_REQUIRED.description
     status_code = HTTPStatus.UPGRADE_REQUIRED.value
@@ -304,28 +327,40 @@ class HTTPVersionNotSupported(LambdaFWServerException):
 
 
 class VariantAlsoNegotiates(LambdaFWServerException):
-    """506 -"""
+    if sys.version_info >= (3, 14):
+        __doc__ = """506 - Server has an internal configuration error"""
+    else:
+        __doc__ = """506 -"""
 
     message = HTTPStatus.VARIANT_ALSO_NEGOTIATES.description
     status_code = HTTPStatus.VARIANT_ALSO_NEGOTIATES.value
 
 
 class InsufficientStorage(LambdaFWServerException):
-    """507 -"""
+    if sys.version_info >= (3, 14):
+        __doc__ = """507 - Server is not able to store the representation"""
+    else:
+        __doc__ = """507 -"""
 
     message = HTTPStatus.INSUFFICIENT_STORAGE.description
     status_code = HTTPStatus.INSUFFICIENT_STORAGE.value
 
 
 class LoopDetected(LambdaFWServerException):
-    """508 -"""
+    if sys.version_info >= (3, 14):
+        __doc__ = """508 - Server encountered an infinite loop while processing a request"""
+    else:
+        __doc__ = """508 -"""
 
     message = HTTPStatus.LOOP_DETECTED.description
     status_code = HTTPStatus.LOOP_DETECTED.value
 
 
 class NotExtended(LambdaFWServerException):
-    """510 -"""
+    if sys.version_info >= (3, 14):
+        __doc__ = """510 - Request does not meet the resource access policy"""
+    else:
+        __doc__ = """510 -"""
 
     message = HTTPStatus.NOT_EXTENDED.description
     status_code = HTTPStatus.NOT_EXTENDED.value

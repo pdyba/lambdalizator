@@ -1,0 +1,23 @@
+name: Vulnerability scanner
+
+on:
+  schedule:
+    - cron: "0 0 * * 2"
+
+jobs:
+  vulnerability_scanner:
+    name: Scan vulnerabilities
+
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - run: make install-dev
+      - run: make scan-dependencies

@@ -16,9 +16,9 @@ setup(
     long_description_content_type="text/markdown",
     long_description=pathlib.Path("README.md").read_text("utf-8"),
     install_requires=[
-        "boto3>=1.40.0,<1.41.0",
-        "multidict>=6.6.0,<6.7.0",
-        "python-jose>=3.5.0,<3.6.0",
+        "boto3>=1.39.9",
+        "multidict>=6.7.0",
+        "python-jose>=3.5.0",
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -26,11 +26,12 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.10",
 )

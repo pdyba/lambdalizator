@@ -4,7 +4,6 @@ import json
 from copy import deepcopy
 
 from lbz.exceptions import LambdaFWException
-from lbz.misc import deprecated
 from lbz.rest import ContentType
 
 
@@ -73,10 +72,6 @@ class Response:
         if self._json is None:
             self._json = json.loads(self.body)  # type: ignore[arg-type]
         return self._json
-
-    @deprecated(message="Use the ok property instead", version="0.7.0")
-    def is_ok(self) -> bool:
-        return self.ok
 
     def _get_content_header(self) -> dict:
         """Adds necessary headers based on content type"""
