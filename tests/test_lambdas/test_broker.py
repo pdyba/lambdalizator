@@ -9,14 +9,14 @@ from lbz.lambdas import LambdaBroker, LambdaResponse, LambdaResult, lambda_ok_re
 from lbz.type_defs import LambdaContext
 
 
-def simple_func(_data: dict | None = None) -> LambdaResponse:
-    return lambda_ok_response()
+def simple_func(data: dict) -> LambdaResponse:
+    return lambda_ok_response(data)
 
 
 class TestEventBroker:
     def test_broker_works_properly_when_data_is_provided(self) -> None:
-        def func(_data: dict) -> LambdaResponse:
-            return lambda_ok_response({"some": "data"})
+        def func(data: dict) -> LambdaResponse:
+            return lambda_ok_response(data)
 
         mapper = {"x": func}
         event = {"op": "x", "data": {"y": 1}}
@@ -25,7 +25,7 @@ class TestEventBroker:
 
         assert resp == {
             "result": LambdaResult.OK,
-            "data": {"some": "data"},
+            "data": {"y": 1},
         }
 
     def test_broker_responds_with_contract_error_when_op_is_not_recognized(
@@ -71,7 +71,7 @@ class TestEventBroker:
     def test_broker_handles_unexpected_lbz_exception_outcome(
         self, caplog: LogCaptureFixture
     ) -> None:
-        def func(_data: dict) -> LambdaResponse:
+        def func(data: dict) -> LambdaResponse:
             raise NotFound()
 
         mapper = {"x": func}
@@ -90,7 +90,7 @@ class TestEventBroker:
     def test_broker_handles_unexpected_lbz_exception_outcome_with_error_code(
         self, caplog: LogCaptureFixture
     ) -> None:
-        def func(_data: dict) -> LambdaResponse:
+        def func(data: dict) -> LambdaResponse:
             raise NotFound(error_code="NN404")
 
         mapper = {"x": func}
@@ -111,7 +111,7 @@ class TestEventBroker:
         ]
 
     def test_broker_handles_unexpected_error_outcome(self, caplog: LogCaptureFixture) -> None:
-        def func(_data: dict) -> LambdaResponse:
+        def func(data: dict) -> LambdaResponse:
             raise EOFError("oops")
 
         mapper = {"x": func}

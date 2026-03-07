@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
-class BaseHandler(Generic[T], metaclass=ABCMeta):
+class BaseBroker(Generic[T], metaclass=ABCMeta):
     def __init__(self, event: dict, context: LambdaContext) -> None:
         self.raw_event = event
         self.context = context
@@ -20,22 +20,23 @@ class BaseHandler(Generic[T], metaclass=ABCMeta):
     def react(self) -> T:
         self.pre_handle()
         self.response = self.handle()
-        self._post_handle()
+
+        # Post-handle should not affect the response, so exceptions are logged but not raised
+        try:
+            self.post_handle()
+        except Exception as err:  # pylint: disable=broad-except
+            logger.exception(err)
+
         return self.response
 
     @abstractmethod
     def handle(self) -> T:
         pass
 
+    @abstractmethod
     def pre_handle(self) -> None:
         pass
 
+    @abstractmethod
     def post_handle(self) -> None:
         pass
-
-    def _post_handle(self) -> None:
-        """Makes the post_handle runtime friendly."""
-        try:
-            self.post_handle()
-        except Exception as err:  # pylint: disable=broad-except
-            logger.exception(err)

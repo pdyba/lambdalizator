@@ -381,7 +381,18 @@ Released 2026-03-07
 
 - Fix the type annotations around all the implemented decorators
 
+## 0.8.x
+
 ### Version 0.8.0
+Released 2026-03-07
+
+- Introduce protocols to have much better control over type annotations
+- Distinguish more directly between the brokers and all their handlers
+- Make the pre/post handle methods required to increase their visibility
+- Do not run pre/post handle methods directly inside the handle
+- Add the ability to implement what should happen when the handler fails
+
+### Version 0.9.0
 Release ETA 2026-12-31 ;)
 
 - Moves REST (API Gateway) related modules into one package

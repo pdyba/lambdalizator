@@ -1,18 +1,19 @@
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from copy import deepcopy
 
+from lbz.brokers import BaseBroker
 from lbz.events.event import Event
-from lbz.handlers import BaseHandler
+from lbz.events.protocols import EventHandler
 from lbz.misc import get_logger
 from lbz.type_defs import LambdaContext
 
 logger = get_logger(__name__)
 
 
-class BaseEventBroker(BaseHandler[None]):
+class BaseEventBroker(BaseBroker[None]):
     def __init__(
         self,
-        mapper: Mapping[str, list[Callable[[Event], None]]],
+        mapper: Mapping[str, list[EventHandler]],
         event: dict,
         context: LambdaContext,
         *,
@@ -23,28 +24,34 @@ class BaseEventBroker(BaseHandler[None]):
         self.mapper = mapper
         self.event = Event(event[data_key], event_type=event[type_key])
 
-    def handle(self) -> None:
-        self.pre_handle()
-
-        for handler in self._get_handlers():
-            try:
-                handler(deepcopy(self.event))
-            except Exception:  # pylint: disable=broad-except
-                logger.exception("Handling event failed, event: %s", self.event)
-
-        self.post_handle()
-
-    def _get_handlers(self) -> list[Callable]:
+    @property
+    def handlers(self) -> list[EventHandler]:
         try:
             return self.mapper[self.event.type]
-        except KeyError as err:
-            raise NotImplementedError(f"No handlers implemented for {self.event.type}") from err
+        except KeyError as error:
+            raise NotImplementedError(f"No handlers implemented for {self.event.type}") from error
+
+    def handle(self) -> None:
+        for handler in self.handlers:
+            try:
+                handler(deepcopy(self.event))
+            except Exception as error:  # pylint: disable=broad-except
+                self.on_error(error)
+
+    def on_error(self, error: Exception) -> None:  # pylint: disable=unused-argument
+        logger.exception("Handling event failed, event: %s", self.event)
+
+    def pre_handle(self) -> None:
+        pass
+
+    def post_handle(self) -> None:
+        pass
 
 
 class EventBroker(BaseEventBroker):
     def __init__(
         self,
-        mapper: Mapping[str, list[Callable[[Event], None]]],
+        mapper: Mapping[str, list[EventHandler]],
         event: dict,
         context: LambdaContext,
     ) -> None:
@@ -54,7 +61,7 @@ class EventBroker(BaseEventBroker):
 class CognitoEventBroker(BaseEventBroker):
     def __init__(
         self,
-        mapper: Mapping[str, list[Callable[[Event], None]]],
+        mapper: Mapping[str, list[EventHandler]],
         event: dict,
         context: LambdaContext,
     ) -> None:
