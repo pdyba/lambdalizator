@@ -8,6 +8,7 @@ from pytest import LogCaptureFixture
 from lbz.aws_boto3 import Boto3Client
 from lbz.events.api import EventAPI, event_emitter
 from lbz.events.event import Event
+from lbz.misc import Singleton
 
 
 class MyTestEvent(Event):
@@ -20,7 +21,7 @@ class TestEventAPI:
         self.event_api = EventAPI()
 
     def teardown_method(self, _test_method: Callable) -> None:
-        self.event_api._del()  # type: ignore # pylint: disable=protected-access
+        Singleton.drop_instance(cls=EventAPI)
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
     def test___repr__(self) -> None:

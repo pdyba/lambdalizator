@@ -1,5 +1,3 @@
-"""Misc Helpers of Lambda Framework."""
-
 from __future__ import annotations
 
 import copy
@@ -8,9 +6,11 @@ import logging.handlers
 import warnings
 from collections.abc import Callable, Hashable, Iterable, Iterator, MutableMapping
 from functools import wraps
-from typing import Any
+from typing import Any, TypeVar
 
 from lbz._cfg import LBZ_DEBUG_MODE, LOGGING_LEVEL
+
+T = TypeVar("T")
 
 
 class NestedDict(dict):
@@ -32,16 +32,16 @@ class Singleton(type):
 
     _instances: dict = {}
 
-    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
-        def _del(a_cls: Any) -> None:
-            """Enables deletion of singletons"""
-            del Singleton._instances[a_cls._cls_name]  # pylint: disable=protected-access
+    # Unfortunately, mypy does not work well with type annotations in more generic metaclasses
+    # It was noticed years ago (closed/unresolved): https://github.com/python/mypy/issues/3625
+    def __call__(cls: type[T], *args: Any, **kwargs: Any) -> T:
+        if cls not in cls._instances:  # type: ignore[attr-defined]
+            cls._instances[cls] = type.__call__(cls, *args, **kwargs)  # type: ignore[attr-defined]
+        return cls._instances[cls]  # type: ignore[attr-defined,no-any-return]
 
-        if cls not in cls._instances:
-            cls._del = _del
-            cls._cls_name = cls
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+    @classmethod
+    def drop_instance(mcs, cls: type[T]) -> None:
+        mcs._instances.pop(cls, None)
 
 
 class MultiDict(MutableMapping):

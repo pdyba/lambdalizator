@@ -8,23 +8,29 @@ from pytest import LogCaptureFixture
 from lbz.misc import MultiDict, NestedDict, Singleton, deep_update, deprecated, get_logger
 
 
+class DummySingletonBasedClass(metaclass=Singleton):
+    pass
+
+
+def test__singleton__creates_only_one_instance_per_class() -> None:
+    instance_1 = DummySingletonBasedClass()
+    instance_2 = DummySingletonBasedClass()
+
+    assert instance_1 is instance_2
+
+
+def test__singleton__allows_to_drop_instance_on_demand() -> None:
+    instance_1 = DummySingletonBasedClass()
+    Singleton.drop_instance(cls=DummySingletonBasedClass)
+    instance_2 = DummySingletonBasedClass()
+
+    assert instance_1 is not instance_2
+
+
 def test_nested_dict() -> None:
     nest = NestedDict()
     nest["a"]["b"]["c"]["d"]["e"] = "z"
     assert nest == {"a": {"b": {"c": {"d": {"e": "z"}}}}}
-
-
-def test_singleton() -> None:
-    class AClass(metaclass=Singleton):
-        pass
-
-    a_inst = AClass()
-    b_inst = AClass()
-    c_inst = AClass()
-    assert a_inst is b_inst is c_inst
-    assert Singleton._instances[AClass] == a_inst  # pylint: disable=protected-access
-    a_inst._del()  # type: ignore  # pylint: disable=protected-access
-    assert Singleton._instances.get(AClass) is None  # pylint: disable=protected-access
 
 
 def test_multi_dict() -> None:
