@@ -8,7 +8,7 @@ astroid==4.0.4
     # via pylint
 bandit==1.9.4
     # via -r requirements-dev.in
-black==26.3.0
+black==26.3.1
     # via -r requirements-dev.in
 boolean-py==5.0
     # via license-expression
@@ -19,7 +19,9 @@ botocore-stubs==1.42.41
 build==1.4.0
     # via pip-tools
 cachecontrol[filecache]==0.14.4
-    # via pip-audit
+    # via
+    #   cachecontrol
+    #   pip-audit
 certifi==2026.2.25
     # via requests
 charset-normalizer==3.4.5
