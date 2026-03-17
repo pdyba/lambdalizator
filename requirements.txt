@@ -18,7 +18,7 @@ jmespath==1.1.0
     #   botocore
 multidict==6.7.1
     # via lbz (setup.py)
-pyasn1==0.6.2
+pyasn1==0.6.3
     # via
     #   python-jose
     #   rsa
