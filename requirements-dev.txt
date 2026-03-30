@@ -19,7 +19,9 @@ botocore-stubs==1.42.41
 build==1.4.0
     # via pip-tools
 cachecontrol[filecache]==0.14.4
-    # via pip-audit
+    # via
+    #   cachecontrol
+    #   pip-audit
 certifi==2026.2.25
     # via requests
 charset-normalizer==3.4.5
@@ -125,7 +127,7 @@ pycodestyle==2.14.0
     # via flake8
 pyflakes==3.4.0
     # via flake8
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   pytest
     #   rich
