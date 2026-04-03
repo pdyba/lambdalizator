@@ -12,13 +12,14 @@ from lbz.authentication import User
 from lbz.collector import authz_collector
 from lbz.events.api import EventAPI
 from lbz.exceptions import (
-    LambdaFWException,
+    LambdaFWClientException,
+    LambdaFWServerException,
     NotFound,
     ServerError,
     Unauthorized,
     UnsupportedMethod,
 )
-from lbz.misc import get_logger, is_in_debug_mode
+from lbz.misc import get_logger
 from lbz.request import Request
 from lbz.response import Response
 from lbz.rest import ContentType
@@ -70,11 +71,11 @@ class Resource:
             self.request.user = self._get_user(self.request.headers)
             endpoint: Callable = getattr(self, self._router[self.path][self.method])
             self.response = endpoint(**self.path_params)
-        except LambdaFWException as err:
-            if 500 <= err.status_code < 600:
-                logger.exception(err)
-            else:
-                logger.warning(err, exc_info=is_in_debug_mode())
+        except LambdaFWClientException as err:
+            logger.debug(err, exc_info=True)
+            self.response = Response.from_exception(err, self.request.context["requestId"])
+        except LambdaFWServerException as err:
+            logger.exception(err)
             self.response = Response.from_exception(err, self.request.context["requestId"])
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
