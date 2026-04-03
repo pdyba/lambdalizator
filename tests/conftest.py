@@ -17,7 +17,6 @@ from lbz._cfg import (
     CORS_HEADERS,
     CORS_ORIGIN,
     EVENTS_BUS_NAME,
-    LBZ_DEBUG_MODE,
     LOGGING_LEVEL,
 )
 from lbz.authentication import User
@@ -50,7 +49,6 @@ def setting_initial_lbz_configuration(allowed_audiences: list[str]) -> Iterator[
         "AWS_DEFAULT_REGION": "us-west-2",
     }
     with patch.dict(environ, patched_environ):
-        LBZ_DEBUG_MODE.reset()
         LOGGING_LEVEL.reset()
         CORS_HEADERS.reset()
         CORS_ORIGIN.reset()

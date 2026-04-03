@@ -8,7 +8,7 @@ from collections.abc import Callable, Hashable, Iterable, Iterator, MutableMappi
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
 
-from lbz._cfg import LBZ_DEBUG_MODE, LOGGING_LEVEL
+from lbz._cfg import LOGGING_LEVEL
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -103,10 +103,6 @@ def deep_update(dict_to_update: dict, update_data: dict) -> None:
                 deep_update(dict_to_update[key], value)
                 continue
         dict_to_update[key] = copy.deepcopy(value)
-
-
-def is_in_debug_mode() -> bool:
-    return LBZ_DEBUG_MODE.value
 
 
 def deprecated(*, message: str, version: str) -> Callable[[Callable[P, R]], Callable[P, R]]:

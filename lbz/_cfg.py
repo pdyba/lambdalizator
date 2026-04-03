@@ -1,7 +1,6 @@
 from lbz.configuration import ConfigParser, EnvValue
 
 # LBZ configuration
-LBZ_DEBUG_MODE = EnvValue("LBZ_DEBUG_MODE", default=False, parser=ConfigParser.cast_to_bool)
 LOGGING_LEVEL = EnvValue("LOGGING_LEVEL", default="INFO")
 CORS_HEADERS = EnvValue[list[str]]("CORS_HEADERS", default=[], parser=ConfigParser.split_by_comma)
 CORS_ORIGIN = EnvValue[list[str]]("CORS_ORIGIN", default=[], parser=ConfigParser.split_by_comma)
