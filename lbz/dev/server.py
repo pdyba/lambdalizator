@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import json
-import logging
 import urllib.parse
 from abc import ABCMeta, abstractmethod
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 
+from lbz.misc import get_logger
 from lbz.resource import Resource
 from lbz.rest import APIGatewayEvent
+
+logger = get_logger(__name__)
 
 
 class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
@@ -112,7 +114,7 @@ class MyLambdaDevHandler(BaseHTTPRequestHandler, metaclass=ABCMeta):
                 response_as_dict = {}
             self._send_json(code, response_as_dict, resp_headers)
         except Exception:  # pylint: disable=broad-except
-            logging.exception("Fail trying to send json")
+            logger.exception("Fail trying to send json")
         self._error(500, "Server error")
 
     def do_GET(self) -> None:  # pylint: disable=invalid-name
