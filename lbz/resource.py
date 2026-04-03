@@ -64,8 +64,7 @@ class Resource:
             self.pre_request_hook()
 
             if self.path is None or self.path not in self._router:
-                logger.warning("Couldn't find %s in current paths: %s", self.path, self._router)
-                raise NotFound
+                raise NotFound(f"Nothing matches the given URI: {self.path}")
             if self.method not in self._router[self.path]:
                 raise UnsupportedMethod(method=self.method)
             self.request.user = self._get_user(self.request.headers)
