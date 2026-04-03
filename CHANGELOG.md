@@ -392,6 +392,14 @@ Released 2026-03-07
 - Do not run pre/post handle methods directly inside the handle
 - Add the ability to implement what should happen when the handler fails
 
+### Version 0.8.1
+Released 2026-04-15
+
+- Do not log an extra warning when the Content-Type is not JSON-compatible
+- Do not treat the client-side errors as real warnings worth noting
+- Raise the appropriate error whenever the given URI is not recognized
+- Get rid of the dedicated DEBUG mode, which stopped being used anywhere
+
 ### Version 0.9.0
 Release ETA 2026-12-31 ;)
 
