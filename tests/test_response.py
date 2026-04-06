@@ -106,6 +106,8 @@ class TestResponse:
 
     def test__from_exception__adds_error_code_to_response_body_if_only_declared(self) -> None:
         class RandomException(LambdaFWException):
+            message = "Server got itself in trouble"
+            status_code = 500
             error_code = "RAND001"
 
         response = Response.from_exception(RandomException(), "req-id")
@@ -123,6 +125,8 @@ class TestResponse:
 
     def test__from_exception__adds_extra_data_to_response_body_if_only_declared(self) -> None:
         class RandomException(LambdaFWException):
+            message = "Server got itself in trouble"
+            status_code = 500
             error_code = "RAND001"
 
         response = Response.from_exception(
