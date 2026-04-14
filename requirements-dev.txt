@@ -19,7 +19,9 @@ botocore-stubs==1.42.41
 build==1.4.0
     # via pip-tools
 cachecontrol[filecache]==0.14.4
-    # via pip-audit
+    # via
+    #   cachecontrol
+    #   pip-audit
 certifi==2026.2.25
     # via requests
 charset-normalizer==3.4.5
@@ -137,7 +139,7 @@ pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
-pytest==9.0.2
+pytest==9.0.3
     # via
     #   -r requirements-dev.in
     #   pytest-cov
