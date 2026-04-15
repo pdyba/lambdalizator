@@ -1,4 +1,3 @@
-# coding=utf-8
 import pytest
 
 from lbz.exceptions import (
@@ -12,16 +11,6 @@ from lbz.exceptions import (
 )
 
 
-def test__lambda_fw_exception__simulates_server_error_by_default() -> None:
-    exception = LambdaFWException()
-
-    # this exception should only be used as a base class for all the other more specific ones
-    assert str(exception) == "[500] Server got itself in trouble"
-    assert exception.message == "Server got itself in trouble"
-    assert exception.error_code is None
-    assert exception.status_code == 500
-
-
 def test__lambda_fw_exception__respects_attributes_declared_on_inherited_class_level() -> None:
     class TestException(LambdaFWException):
         message = "No error message"
@@ -32,20 +21,23 @@ def test__lambda_fw_exception__respects_attributes_declared_on_inherited_class_l
 
     assert str(exception) == "[444] TEST_ERR - No error message"
     assert exception.message == "No error message"
-    assert exception.error_code == "TEST_ERR"
     assert exception.status_code == 444
+    assert exception.error_code == "TEST_ERR"
     assert exception.extra == {}
 
 
 def test__lambda_fw_exception__respects_values_provided_during_initialization() -> None:
     exception = LambdaFWException(
-        message="Test error message", error_code="TEST_ERR", extra={"fun": "stuff"}
+        message="Test error message",
+        status_code=555,
+        error_code="TEST_ERR",
+        extra={"fun": "stuff"},
     )
 
-    assert str(exception) == "[500] TEST_ERR - Test error message"
+    assert str(exception) == "[555] TEST_ERR - Test error message"
     assert exception.message == "Test error message"
+    assert exception.status_code == 555
     assert exception.error_code == "TEST_ERR"
-    assert exception.status_code == 500
     assert exception.extra == {"fun": "stuff"}
 
 
@@ -62,14 +54,11 @@ def test__custom_exception__contains_message_and_status_code_according_to_its_do
     custom_exception: type[LambdaFWException],
 ) -> None:
     exception = custom_exception()
-    try:
-        code, message = exception.__doc__.split(" - ")  # type: ignore
-    except ValueError:  # black removes the intentional white space
-        code, message = exception.__doc__.split(" -")  # type: ignore
+    code, message = custom_exception().__doc__.split("-", maxsplit=1)  # type: ignore[union-attr]
 
     assert issubclass(custom_exception, LambdaFWException)
-    assert exception.message == message
-    assert exception.status_code == int(code)
+    assert exception.message == message.strip()
+    assert exception.status_code == int(code.strip())
 
 
 def test__all_lbz_errors__returns_all_subclasses_of_lambda_fw_exception() -> None:

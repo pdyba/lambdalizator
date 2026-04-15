@@ -21,18 +21,26 @@ class ConfigValueParsingFailed(Exception):
 
 
 class LambdaFWException(Exception):
-    """Standardised for AWS Lambda exception class."""
+    """Standardised way for all AWS Lambda Exception classes.
 
-    message = HTTPStatus.INTERNAL_SERVER_ERROR.description
-    status_code = HTTPStatus.INTERNAL_SERVER_ERROR.value
+    This Exception should not be raised directly, but rather one of its subclasses.
+    """
+
+    message = "Unspecified"
+    status_code = 999
     error_code: str | None = None
 
     def __init__(
-        self, message: str = "", error_code: str | None = None, extra: dict | None = None
+        self,
+        message: str = "",
+        status_code: int | None = None,
+        error_code: str | None = None,
+        extra: dict | None = None,
     ) -> None:
         super().__init__(message)
 
         self.message = message or self.message
+        self.status_code = status_code or self.status_code
         self.error_code = error_code or self.error_code
         self.extra = extra or {}
 

@@ -400,6 +400,11 @@ Released 2026-04-15
 - Raise the appropriate error whenever the given URI is not recognized
 - Get rid of the dedicated DEBUG mode, which stopped being used anywhere
 
+### Version 0.8.2
+Released 2026-04-15
+
+- Treat the LambdaFWException as the real base class for all Exceptions
+
 ### Version 0.9.0
 Release ETA 2026-12-31 ;)
 
