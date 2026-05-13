@@ -131,7 +131,17 @@ class TestResource:
         self.res.urn = "/foo/id-12345/bar"
         assert str(self.res) == "<Resource GET @ /foo/id-12345/bar >"
 
-    def test_unauthorized_when_authentication_not_configured(self) -> None:
+    @patch.dict(environ, {"AUTH_ENABLED": "false"})
+    def test_silently_skips_authentication_token_when_auth_is_disabled(self) -> None:
+        class XResource(Resource):
+            @add_route("/")
+            def test_method(self) -> Response:
+                return Response("x")
+
+        resp = XResource({**event, "headers": {"authentication": "dummy"}})()
+        assert resp.status_code == HTTPStatus.OK
+
+    def test_unauthorized_when_authentication_token_is_malformed(self) -> None:
         class XResource(Resource):
             @add_route("/")
             def test_method(self) -> Response:

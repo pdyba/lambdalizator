@@ -87,10 +87,10 @@ class Resource:
         return f"<Resource {self.method} @ {self.urn} >"
 
     def _get_user(self, headers: CIMultiDict) -> User | None:
+        # TODO: Make a User always available, even if they are a guest user with no permissions
+        # TODO: Do not allow using the Authentication header alone (without Authorization)
         if AUTH_ENABLED.value and (authentication := headers.get("Authentication")):
             return User(authentication)
-        if authentication:
-            raise Unauthorized("Authentication method not supported")
         return None
 
     def _post_request_hook(self) -> None:
