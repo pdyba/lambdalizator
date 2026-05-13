@@ -12,6 +12,7 @@ from lbz._cfg import (
     ALLOWED_AUDIENCES,
     ALLOWED_ISS,
     ALLOWED_PUBLIC_KEYS,
+    AUTH_ENABLED,
     AUTH_REMOVE_PREFIXES,
     AWS_LAMBDA_FUNCTION_NAME,
     CORS_HEADERS,
@@ -54,6 +55,7 @@ def setting_initial_lbz_configuration(allowed_audiences: list[str]) -> Iterator[
         CORS_ORIGIN.reset()
         AWS_LAMBDA_FUNCTION_NAME.reset()
         EVENTS_BUS_NAME.reset()
+        AUTH_ENABLED.reset()
         ALLOWED_PUBLIC_KEYS.reset()
         ALLOWED_AUDIENCES.reset()
         ALLOWED_ISS.reset()

@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 
 from multidict import CIMultiDict
 
-from lbz._cfg import ALLOWED_PUBLIC_KEYS, CORS_HEADERS, CORS_ORIGIN
+from lbz._cfg import AUTH_ENABLED, CORS_HEADERS, CORS_ORIGIN
 from lbz.authentication import User
 from lbz.collector import authz_collector
 from lbz.events.api import EventAPI
@@ -16,7 +16,6 @@ from lbz.exceptions import (
     LambdaFWServerException,
     NotFound,
     ServerError,
-    Unauthorized,
     UnsupportedMethod,
 )
 from lbz.misc import get_logger
@@ -88,8 +87,7 @@ class Resource:
         return f"<Resource {self.method} @ {self.urn} >"
 
     def _get_user(self, headers: CIMultiDict) -> User | None:
-        authentication = headers.get("Authentication")
-        if authentication and ALLOWED_PUBLIC_KEYS.value:
+        if AUTH_ENABLED.value and (authentication := headers.get("Authentication")):
             return User(authentication)
         if authentication:
             raise Unauthorized("Authentication method not supported")
