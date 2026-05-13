@@ -43,13 +43,6 @@ class TestDecodeJWT:
         get_matching_jwk_mock.assert_called_once_with("x")
         assert "Failed decoding JWT with following details" in caplog.text
 
-    @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_invalid_type(self, get_matching_jwk_mock: MagicMock) -> None:
-        msg = "error occurred during decoding"
-        with pytest.raises(RuntimeError, match=msg):
-            decode_jwt({"a"})  # type: ignore
-        get_matching_jwk_mock.assert_called_once_with({"a"})
-
     def test_proper_jwt(
         self, full_access_authz_payload: dict, full_access_auth_header: str
     ) -> None:

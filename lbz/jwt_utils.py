@@ -56,8 +56,6 @@ def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
         except JWTError as error:
             logger.warning("Failed decoding JWT with following details: %r", error)
             raise Unauthorized() from error
-        except Exception as ex:
-            msg = f"An error occurred during decoding the token.\nToken body:\n{auth_jwt_token}"
-            raise RuntimeError(msg) from ex
+
     logger.error("Failed decoding JWT for unknown reason.")
     raise Unauthorized
