@@ -10,6 +10,7 @@ AWS_LAMBDA_FUNCTION_NAME = EnvValue[str]("AWS_LAMBDA_FUNCTION_NAME")
 EVENTS_BUS_NAME = EnvValue[str]("EVENTS_BUS_NAME")
 
 # Authorization configuration
+AUTH_ENABLED = EnvValue[bool]("AUTH_ENABLED", default=True, parser=ConfigParser.cast_to_bool)
 ALLOWED_PUBLIC_KEYS = EnvValue[list[dict]](
     "ALLOWED_PUBLIC_KEYS", parser=ConfigParser.load_jwt_keys
 )
