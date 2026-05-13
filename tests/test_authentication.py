@@ -80,8 +80,12 @@ def test_loading_user_does_not_parse_standard_claims(jwt_partial_payload: dict) 
 
 
 def test_user_raises_when_more_attributes_than_1000() -> None:
-    with pytest.raises(RuntimeError):
-        cognito_user = {str(uuid4()): str(uuid4()) for i in range(1001)}
+    with pytest.raises(RuntimeError, match="Too many attributes"):
+        cognito_user = {
+            "iss": "test-issuer",
+            "exp": int(time.time()) + 1000,
+            **{f"custom-attr-{i}": "value" for i in range(1001)},
+        }
         User(encode_token(cognito_user))
 
 
