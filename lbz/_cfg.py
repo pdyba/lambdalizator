@@ -1,7 +1,7 @@
 from lbz.configuration import ConfigParser, EnvValue
 
 # LBZ configuration
-LOGGING_LEVEL = EnvValue("LOGGING_LEVEL", default="INFO")
+LOGGING_LEVEL = EnvValue[str]("LOGGING_LEVEL", default="INFO")
 CORS_HEADERS = EnvValue[list[str]]("CORS_HEADERS", default=[], parser=ConfigParser.split_by_comma)
 CORS_ORIGIN = EnvValue[list[str]]("CORS_ORIGIN", default=[], parser=ConfigParser.split_by_comma)
 
@@ -13,8 +13,8 @@ EVENTS_BUS_NAME = EnvValue[str]("EVENTS_BUS_NAME")
 ALLOWED_PUBLIC_KEYS = EnvValue[list[dict]](
     "ALLOWED_PUBLIC_KEYS", default=[], parser=ConfigParser.load_jwt_keys
 )
-ALLOWED_AUDIENCES = EnvValue("ALLOWED_AUDIENCES", parser=ConfigParser.split_by_comma)
-ALLOWED_ISS = EnvValue("ALLOWED_ISS", default="")
-AUTH_REMOVE_PREFIXES = EnvValue(
+ALLOWED_AUDIENCES = EnvValue[list[str]]("ALLOWED_AUDIENCES", parser=ConfigParser.split_by_comma)
+ALLOWED_ISS = EnvValue[str]("ALLOWED_ISS", default="")
+AUTH_REMOVE_PREFIXES = EnvValue[bool](
     "AUTH_REMOVE_PREFIXES", default=False, parser=ConfigParser.cast_to_bool
 )
