@@ -2,14 +2,13 @@ from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 
 from lbz._cfg import ALLOWED_AUDIENCES, ALLOWED_ISS, ALLOWED_PUBLIC_KEYS
-from lbz.exceptions import MissingConfigValue, SecurityError, Unauthorized
+from lbz.exceptions import SecurityError, Unauthorized
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
 
 
 def get_matching_jwk(auth_jwt_token: str) -> dict:
-    """Checks provided JWT token against allowed tokens."""
     try:
         kid_from_jwt_header = jwt.get_unverified_header(auth_jwt_token)["kid"]
         for key in ALLOWED_PUBLIC_KEYS.value:
@@ -39,14 +38,6 @@ def validate_jwt_properties(decoded_jwt: dict) -> None:
 
 
 def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
-    """Decodes JWT token."""
-
-    if not ALLOWED_PUBLIC_KEYS.value:
-        raise MissingConfigValue("ALLOWED_PUBLIC_KEYS")
-
-    if not ALLOWED_AUDIENCES.value:
-        raise MissingConfigValue("ALLOWED_AUDIENCES")
-
     if any("kid" not in public_key for public_key in ALLOWED_PUBLIC_KEYS.value):
         raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
 
