@@ -6,7 +6,7 @@ import pytest
 from jose import jwt
 
 from lbz.authz.authorizer import Authorizer
-from lbz.exceptions import SecurityError, Unauthorized
+from lbz.exceptions import Unauthorized
 from lbz.jwt_utils import decode_jwt, get_matching_jwk, validate_jwt_properties
 from tests.fixtures.rsa_pair import SAMPLE_PRIVATE_KEY, SAMPLE_PUBLIC_KEY
 
@@ -71,20 +71,16 @@ class TestDecodeJWT:
             decode_jwt(jwt_token)
         assert "Failed decoding JWT with any of JWK - details" in caplog.text
 
-    def test_validate_missing_iss_exception(self) -> None:
-        with pytest.raises(SecurityError, match="'exp'"):
+
+class TestValidateJWTProperties:
+    def test_raises_error_when_exp_field_is_missing(self) -> None:
+        with pytest.raises(Unauthorized, match="The auth token could not be fully validated."):
             validate_jwt_properties({"allow": "*", "deny": {}})
 
-    def test_validate_missing_exp_exception(self) -> None:
-        with pytest.raises(SecurityError, match="'iss'"):
-            validate_jwt_properties(
-                {
-                    "allow": "*",
-                    "deny": {},
-                    "exp": int((datetime.now(timezone.utc) + timedelta(hours=6)).timestamp()),
-                }
-            )
+    def test_raises_error_when_iss_field_is_missing(self) -> None:
+        with pytest.raises(Unauthorized, match="The auth token could not be fully validated."):
+            validate_jwt_properties({"allow": "*", "deny": {}, "exp": 1778710870})
 
-    def test_wrong_iss(self, full_access_authz_payload: dict) -> None:
-        with pytest.raises(Unauthorized):
+    def test_raises_error_when_not_allowed_iss(self, full_access_authz_payload: dict) -> None:
+        with pytest.raises(Unauthorized, match="The auth token could not be fully validated."):
             validate_jwt_properties({**full_access_authz_payload, "iss": "test2"})

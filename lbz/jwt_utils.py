@@ -2,7 +2,7 @@ from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 
 from lbz._cfg import ALLOWED_AUDIENCES, ALLOWED_ISS, ALLOWED_PUBLIC_KEYS, AUTH_ENABLED
-from lbz.exceptions import SecurityError, Unauthorized
+from lbz.exceptions import Unauthorized
 from lbz.misc import get_logger
 
 logger = get_logger(__name__)
@@ -29,12 +29,9 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
 
 def validate_jwt_properties(decoded_jwt: dict) -> None:
     if "exp" not in decoded_jwt:
-        raise SecurityError("The auth token doesn't have the 'exp' field.")
-    if "iss" not in decoded_jwt:
-        raise SecurityError("The auth token doesn't have the 'iss' field.")
-    issuer = decoded_jwt["iss"]
-    if not issuer or issuer not in ALLOWED_ISS.value:
-        raise Unauthorized(f"{issuer} is not an allowed token issuer")
+        raise Unauthorized("The auth token could not be fully validated.")
+    if "iss" not in decoded_jwt or decoded_jwt["iss"] not in ALLOWED_ISS.value:
+        raise Unauthorized("The auth token could not be fully validated.")
 
 
 def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
