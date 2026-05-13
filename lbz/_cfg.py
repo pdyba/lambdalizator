@@ -11,7 +11,7 @@ EVENTS_BUS_NAME = EnvValue[str]("EVENTS_BUS_NAME")
 
 # Authorization configuration
 ALLOWED_PUBLIC_KEYS = EnvValue[list[dict]](
-    "ALLOWED_PUBLIC_KEYS", default=[], parser=ConfigParser.load_jwt_keys
+    "ALLOWED_PUBLIC_KEYS", parser=ConfigParser.load_jwt_keys
 )
 ALLOWED_AUDIENCES = EnvValue[list[str]]("ALLOWED_AUDIENCES", parser=ConfigParser.split_by_comma)
 ALLOWED_ISS = EnvValue[list[str]]("ALLOWED_ISS", parser=ConfigParser.split_by_comma)
