@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from os import environ
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -28,6 +29,11 @@ class TestGetMatchingJWK:
 
 
 class TestDecodeJWT:
+    @patch.dict(environ, {"AUTH_ENABLED": "false"})
+    def test_raises_error_when_auth_explicitly_disabled(self) -> None:
+        with pytest.raises(RuntimeError, match="AUTH-dedicated features are explicitly disabled!"):
+            decode_jwt("x")
+
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
     def test_did_not_find_matching_jwk(
         self, get_matching_jwk_mock: MagicMock, caplog: pytest.LogCaptureFixture
