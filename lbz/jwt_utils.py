@@ -41,9 +41,6 @@ def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
     if not AUTH_ENABLED.value:
         raise RuntimeError("AUTH-dedicated features are explicitly disabled!")
 
-    if any("kid" not in public_key for public_key in ALLOWED_PUBLIC_KEYS.value):
-        raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
-
     jwk = get_matching_jwk(auth_jwt_token)
     for idx, aud in enumerate(ALLOWED_AUDIENCES.value, start=1):
         try:
