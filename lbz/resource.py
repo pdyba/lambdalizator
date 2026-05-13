@@ -89,8 +89,6 @@ class Resource:
     def _get_user(self, headers: CIMultiDict) -> User | None:
         if (authentication := headers.get("Authentication")) and AUTH_ENABLED.value:
             return User(authentication)
-        if authentication:
-            raise Unauthorized("Authentication method not supported")
         return None
 
     def _post_request_hook(self) -> None:
