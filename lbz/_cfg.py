@@ -14,7 +14,7 @@ ALLOWED_PUBLIC_KEYS = EnvValue[list[dict]](
     "ALLOWED_PUBLIC_KEYS", default=[], parser=ConfigParser.load_jwt_keys
 )
 ALLOWED_AUDIENCES = EnvValue[list[str]]("ALLOWED_AUDIENCES", parser=ConfigParser.split_by_comma)
-ALLOWED_ISS = EnvValue[str]("ALLOWED_ISS", default="")
+ALLOWED_ISS = EnvValue[list[str]]("ALLOWED_ISS", parser=ConfigParser.split_by_comma)
 AUTH_REMOVE_PREFIXES = EnvValue[bool](
     "AUTH_REMOVE_PREFIXES", default=False, parser=ConfigParser.cast_to_bool
 )
