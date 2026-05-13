@@ -1,7 +1,7 @@
 from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 
-from lbz._cfg import ALLOWED_AUDIENCES, ALLOWED_ISS, ALLOWED_PUBLIC_KEYS
+from lbz._cfg import ALLOWED_AUDIENCES, ALLOWED_ISS, ALLOWED_PUBLIC_KEYS, AUTH_ENABLED
 from lbz.exceptions import SecurityError, Unauthorized
 from lbz.misc import get_logger
 
@@ -38,6 +38,9 @@ def validate_jwt_properties(decoded_jwt: dict) -> None:
 
 
 def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
+    if not AUTH_ENABLED.value:
+        raise RuntimeError("AUTH-dedicated features are explicitly disabled!")
+
     if any("kid" not in public_key for public_key in ALLOWED_PUBLIC_KEYS.value):
         raise RuntimeError("One of the provided public keys doesn't have the 'kid' field")
 
