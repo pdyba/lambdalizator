@@ -1,8 +1,3 @@
-"""This code is only for static type checking.
-
-https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
-"""
-
 from typing import Any
 
 
@@ -25,7 +20,9 @@ class LambdaCognitoIdentity:
     cognito_identity_pool_id: str
 
 
-class LambdaContext:
+class LambdaContext:  # TODO: Replace with typing.Protocol to avoid using this class in production
+    """https://docs.aws.amazon.com/lambda/latest/dg/python-context.html"""
+
     function_name: str
     function_version: str
     invoked_function_arn: str
@@ -36,6 +33,5 @@ class LambdaContext:
     identity: LambdaCognitoIdentity
     client_context: LambdaClientContext
 
-    @staticmethod
-    def get_remaining_time_in_millis() -> int:
-        raise NotImplementedError
+    def get_remaining_time_in_millis(self) -> int:
+        raise NotImplementedError()
