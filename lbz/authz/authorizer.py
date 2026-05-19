@@ -131,12 +131,10 @@ class Authorizer:
     @staticmethod
     def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
         """Signs authorization in JWT format."""
-        if not isinstance(private_key_jwk, dict):
-            raise ValueError("private_key_jwk must be a jwk dict")
-        if "kid" not in private_key_jwk:
-            raise ValueError("private_key_jwk must have the 'kid' field")
-
         authz: str = jwt.encode(
-            authz_data, private_key_jwk, algorithm="RS256", headers={"kid": private_key_jwk["kid"]}
+            claims=authz_data,
+            key=private_key_jwk,
+            algorithm="RS256",
+            headers={"kid": private_key_jwk["kid"]},
         )
         return authz
