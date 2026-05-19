@@ -16,6 +16,7 @@ DENY = 0
 LIMITED_ALLOW = -1
 
 
+# TODO: Reimplement the entire Authorizer class to be more intuitive and much much easier to use
 class Authorizer:
     """Authorizer class responsible for Authorization."""
 
@@ -52,10 +53,6 @@ class Authorizer:
         self.allow = policy.get("allow", {})
         self.deny = policy.get("deny", {})
 
-    def _raise_permission_denied(self) -> None:
-        logger.debug("You don't have permission to %s on %s", self.permission, self.resource)
-        raise PermissionDenied()
-
     def check_access(self) -> None:
         """Main authorization checking logic."""
         self.outcome = DENY
@@ -66,11 +63,11 @@ class Authorizer:
         if self.denied_resource and self.outcome:
             self.outcome = LIMITED_ALLOW
         if self.outcome == DENY:
-            self._raise_permission_denied()
+            raise PermissionDenied()
 
     def _deny_if_all(self, permission: dict | str | None) -> None:
         if permission == ALL:
-            self._raise_permission_denied()
+            raise PermissionDenied()
 
     def _check_deny(self) -> None:
         self._deny_if_all(self.deny.get("*", self.allow.get(self.resource)))
@@ -100,13 +97,13 @@ class Authorizer:
             if ref_name not in self.refs:
                 logger.error('Missing "%s" ref in the policy', ref_name)
                 self.outcome = DENY
-                self._raise_permission_denied()
+                raise PermissionDenied()
             return self.refs[ref_name]
         return permissions
 
     def _check_allow_and_set_resources(self) -> None:
         if not self.allow:
-            self._raise_permission_denied()
+            raise PermissionDenied()
         if self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(
             self.allow.get("*", self.allow.get(self.resource))
         ):
