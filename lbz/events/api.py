@@ -104,10 +104,11 @@ class EventAPI(metaclass=Singleton):
 
 def event_emitter(function: Callable[P, R]) -> Callable[P, R]:
     """Decorator that makes function an emitter - automatically sends pending events on success"""
-    EventAPI().clear()
 
     @wraps(function)
     def wrapped(*args: P.args, **kwargs: P.kwargs) -> R:
+        EventAPI().clear()
+
         try:
             result = function(*args, **kwargs)
             EventAPI().send()

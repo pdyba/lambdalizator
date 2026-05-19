@@ -297,23 +297,22 @@ class TestEventEmitter:
             EventAPI().register(MyTestEvent({"x": 1}))
             raise RuntimeError
 
-        EventAPI().register(MyTestEvent({"x": 2}))
-        EventAPI().send()
         with pytest.raises(RuntimeError):
             decorated_function()
 
-        assert EventAPI().sent_events == [MyTestEvent({"x": 2})]
+        assert not EventAPI().sent_events
         assert not EventAPI().pending_events
         assert not EventAPI().failed_events
 
-    def test_always_clears_queues_before_actually_decorating_function(self) -> None:
-        EventAPI().register(MyTestEvent({"x": 1}))
-        EventAPI().send()
-        EventAPI().register(MyTestEvent({"x": 2}))
-
+    def test_always_clears_queues_before_actually_triggering_function(self) -> None:
         @event_emitter
         def decorated_function() -> None:
             pass
+
+        EventAPI().register(MyTestEvent({"x": 1}))
+        EventAPI().send()
+        EventAPI().register(MyTestEvent({"x": 2}))
+        decorated_function()
 
         assert not EventAPI().sent_events
         assert not EventAPI().pending_events
