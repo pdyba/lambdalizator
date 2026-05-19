@@ -66,7 +66,6 @@ class EventAPI(metaclass=Singleton):
         self._pending_events.append(new_event)
 
     def send(self) -> None:
-        success = True
         while self._pending_events:
             events = self._pending_events[:MAX_EVENTS_TO_SEND_AT_ONCE]
             try:
@@ -76,12 +75,8 @@ class EventAPI(metaclass=Singleton):
             except Exception as err:  # pylint: disable=broad-except
                 self._failed_events.extend(events)
                 logger.exception(err)
-                success = False
 
             self._pending_events = self._pending_events[MAX_EVENTS_TO_SEND_AT_ONCE:]
-
-        if not success:
-            raise RuntimeError("Sending events has failed. Check logs for more details!")
 
     def clear(self) -> None:
         self.clear_sent()
