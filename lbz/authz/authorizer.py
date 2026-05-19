@@ -49,11 +49,8 @@ class Authorizer:
         if auth_jwt is not None:
             deep_update(policy, decode_jwt(auth_jwt))
         self.refs = policy.get("refs", {})
-        try:
-            self.allow = policy["allow"]
-            self.deny = policy["deny"]
-        except KeyError as error:
-            raise PermissionDenied("Invalid policy in the authorization token") from error
+        self.allow = policy.get("allow", {})
+        self.deny = policy.get("deny", {})
 
     def _raise_permission_denied(self) -> None:
         logger.debug("You don't have permission to %s on %s", self.permission, self.resource)

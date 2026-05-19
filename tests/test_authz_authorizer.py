@@ -52,10 +52,6 @@ class TestAuthorizerWithMockedJWT:
         with patch("lbz.authz.authorizer.decode_jwt", lambda _: token_payload):
             return Authorizer("xx", "test_resource", "permission_name")
 
-    def test_wrong_jwt_authz_payload_raises_permission_denied(self) -> None:
-        with pytest.raises(PermissionDenied):
-            self._make_mocked_authorizer({})
-
     def test_check_deny_res(self, full_access_authz_payload: dict) -> None:
         authz = self._make_mocked_authorizer(full_access_authz_payload)
         authz.deny = {"test_resource": ALL}
@@ -89,7 +85,7 @@ class TestAuthorizerWithMockedJWT:
     def test__check_access__outcome_deny_bcs_allow_none(
         self, full_access_authz_payload: dict
     ) -> None:
-        authz = self._make_mocked_authorizer({**full_access_authz_payload, "allow": {ALL: None}})
+        authz = self._make_mocked_authorizer({**full_access_authz_payload, "allow": {}})
         with pytest.raises(PermissionDenied):
             authz.check_access()
 
