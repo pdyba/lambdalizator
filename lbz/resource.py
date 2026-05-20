@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from copy import deepcopy
 from http import HTTPStatus
@@ -70,7 +71,7 @@ class Resource:
             endpoint: Callable = getattr(self, self._router[self.path][self.method])
             self.response = endpoint(**self.path_params)
         except LambdaFWClientException as err:
-            logger.debug(err, exc_info=True)
+            logger.info(err, exc_info=logger.isEnabledFor(logging.DEBUG))
             self.response = Response.from_exception(err, self.request.context["requestId"])
         except LambdaFWServerException as err:
             logger.exception(err)
