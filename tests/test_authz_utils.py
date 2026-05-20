@@ -2,7 +2,7 @@
 import pytest
 
 from lbz.authz.utils import check_permission, has_permission
-from lbz.exceptions import PermissionDenied, Unauthorized
+from lbz.exceptions import PermissionDenied
 from lbz.resource import Resource
 from lbz.rest import APIGatewayEvent
 
@@ -29,7 +29,7 @@ class TestAuthorizationUtils:
         self, sample_event: APIGatewayEvent, sample_resource_with_authorization: type[Resource]
     ) -> None:
         res_instance = sample_resource_with_authorization(sample_event)
-        with pytest.raises(Unauthorized):
+        with pytest.raises(PermissionDenied):
             check_permission(res_instance, "perm-name")
 
     def test_has_permission_true(

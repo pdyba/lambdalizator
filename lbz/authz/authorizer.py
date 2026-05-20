@@ -22,7 +22,7 @@ class Authorizer:
 
     def __init__(
         self,
-        auth_jwt: str | None,
+        auth_jwt: str | None,  # TODO: Accept an already-cooked policy instead of the Auth token
         resource_name: str,
         permission_name: str,
         base_permission_policy: dict | None = None,
@@ -95,6 +95,7 @@ class Authorizer:
     def _get_effective_permissions(self, permissions: dict) -> dict:
         if ref_name := permissions.get("ref"):
             if ref_name not in self.refs:
+                # TODO: Implement a function that will verify the policy at an early stage
                 logger.error('Missing "%s" ref in the policy', ref_name)
                 self.outcome = DENY
                 raise PermissionDenied()
