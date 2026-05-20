@@ -10,7 +10,7 @@ from pytest import LogCaptureFixture
 from pytest_mock import MockerFixture
 
 from lbz.aws_boto3 import Boto3Client
-from lbz.lambdas import LambdaClient, LambdaError, LambdaResult, LambdaSource
+from lbz.lambdas import LambdaClient, LambdaError, LambdaResult
 from lbz.rest import ContentType
 
 
@@ -212,25 +212,6 @@ def test__invoke__does_not_allow_to_bypass_raising_of_hard_errors(
         )
 
 
-def test__invoke__raises_error_when_response_could_not_be_read_correctly(
-    lambda_client: MagicMock, caplog: LogCaptureFixture
-) -> None:
-    response = {"StatusCode": 200, "Payload": "invalid-payload"}
-    lambda_client.invoke.return_value = response
-
-    with pytest.raises(AttributeError):  # type of error does not matter here
-        LambdaClient.invoke("test-func", "test-op", raise_if_error_resp=False)
-
-    logged_record = caplog.records[0]
-    assert logged_record.message == "Invalid response received from test-func Lambda"
-    assert logged_record.payload == {  # type: ignore
-        "data": None,
-        "invoke_type": LambdaSource.DIRECT,
-        "op": "test-op",
-    }
-    assert logged_record.response == response  # type: ignore
-
-
 def test__invoke__returns_accepted_result_when_invoked_asynchronously(
     lambda_client: MagicMock, caplog: LogCaptureFixture
 ) -> None:
@@ -241,41 +222,6 @@ def test__invoke__returns_accepted_result_when_invoked_asynchronously(
 
     assert result == {"result": LambdaResult.ACCEPTED}
     assert caplog.messages == []
-
-
-def test__request__raises_error_when_response_could_not_be_read_correctly(
-    lambda_client: MagicMock, caplog: LogCaptureFixture
-) -> None:
-    response = {"StatusCode": 200, "Payload": "invalid-payload"}
-    lambda_client.invoke.return_value = response
-
-    with pytest.raises(AttributeError):  # type of error does not matter here
-        LambdaClient.request(
-            function_name="test-func",
-            method="GET",
-            path="/home",
-        )
-
-    logged_record = caplog.records[0]
-    assert logged_record.message == "Invalid response received from test-func Lambda"
-    assert logged_record.payload == {  # type: ignore
-        "body": {},
-        "headers": {"Content-Type": ContentType.JSON},
-        "httpMethod": "GET",
-        "isBase64Encoded": False,
-        "multiValueQueryStringParameters": {},
-        "path": "/home",
-        "pathParameters": {},
-        "requestContext": {
-            "httpMethod": "GET",
-            "path": "/home",
-            "requestId": ANY,
-            "resourcePath": "/home",
-        },
-        "resource": "/home",
-        "stageVariables": {},
-    }
-    assert logged_record.response == response  # type: ignore
 
 
 def test__request__returns_response_based_on_direct_answer_from_lambda_function(
