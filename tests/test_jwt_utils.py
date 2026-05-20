@@ -35,13 +35,10 @@ class TestDecodeJWT:
             decode_jwt("x")
 
     @patch("lbz.jwt_utils.get_matching_jwk", return_value={})
-    def test_did_not_find_matching_jwk(
-        self, get_matching_jwk_mock: MagicMock, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_did_not_find_matching_jwk(self, get_matching_jwk_mock: MagicMock) -> None:
         with pytest.raises(Unauthorized):
             decode_jwt("x")
         get_matching_jwk_mock.assert_called_once_with("x")
-        assert "Failed decoding JWT with following details" in caplog.text
 
     def test_proper_jwt(
         self, full_access_authz_payload: dict, full_access_auth_header: str
@@ -62,25 +59,24 @@ class TestDecodeJWT:
         with pytest.raises(Unauthorized, match="Your token has expired. Please refresh it."):
             decode_jwt(jwt_token)
 
-    def test_missing_correct_audiences(self, caplog: pytest.LogCaptureFixture) -> None:
+    def test_missing_correct_audiences(self) -> None:
         iat = int(datetime.now(timezone.utc).timestamp())
         exp = int((datetime.now(timezone.utc) + timedelta(hours=6)).timestamp())
         token_payload = {"exp": exp, "iat": iat, "iss": "test-issuer", "aud": "test"}
         jwt_token = Authorizer.sign_authz(token_payload, SAMPLE_PRIVATE_KEY)
         with pytest.raises(Unauthorized):
             decode_jwt(jwt_token)
-        assert "Failed decoding JWT with any of JWK - details" in caplog.text
 
 
 class TestValidateJWTProperties:
     def test_raises_error_when_exp_field_is_missing(self) -> None:
-        with pytest.raises(Unauthorized, match="The auth token could not be fully validated."):
+        with pytest.raises(Unauthorized):
             validate_jwt_properties({"allow": "*", "deny": {}})
 
     def test_raises_error_when_iss_field_is_missing(self) -> None:
-        with pytest.raises(Unauthorized, match="The auth token could not be fully validated."):
+        with pytest.raises(Unauthorized):
             validate_jwt_properties({"allow": "*", "deny": {}, "exp": 1778710870})
 
     def test_raises_error_when_not_allowed_iss(self, full_access_authz_payload: dict) -> None:
-        with pytest.raises(Unauthorized, match="The auth token could not be fully validated."):
+        with pytest.raises(Unauthorized):
             validate_jwt_properties({**full_access_authz_payload, "iss": "test2"})

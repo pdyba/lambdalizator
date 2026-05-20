@@ -3,9 +3,6 @@ from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 
 from lbz._cfg import ALLOWED_AUDIENCES, ALLOWED_ISS, ALLOWED_PUBLIC_KEYS, AUTH_ENABLED
 from lbz.exceptions import Unauthorized
-from lbz.misc import get_logger
-
-logger = get_logger(__name__)
 
 
 def get_matching_jwk(auth_jwt_token: str) -> dict:
@@ -14,24 +11,18 @@ def get_matching_jwk(auth_jwt_token: str) -> dict:
         for key in ALLOWED_PUBLIC_KEYS.value:
             if key["kid"] == kid_from_jwt_header:
                 return key
-
-        logger.warning(
-            "The key with id=%s was not found in the environment variable.", kid_from_jwt_header
-        )
-        raise Unauthorized
+        raise Unauthorized()
     except JWTError as error:
-        logger.warning("Error finding matching JWK %r", error)
-        raise Unauthorized from error
+        raise Unauthorized() from error
     except KeyError as error:
-        logger.warning("The key %s was not found in the JWK.", error.args[0])
-        raise Unauthorized from error
+        raise Unauthorized() from error
 
 
 def validate_jwt_properties(decoded_jwt: dict) -> None:
     if "exp" not in decoded_jwt:
-        raise Unauthorized("The auth token could not be fully validated.")
+        raise Unauthorized()
     if "iss" not in decoded_jwt or decoded_jwt["iss"] not in ALLOWED_ISS.value:
-        raise Unauthorized("The auth token could not be fully validated.")
+        raise Unauthorized()
 
 
 def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
@@ -46,13 +37,11 @@ def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
             return decoded_jwt
         except JWTClaimsError as error:
             if idx == len(ALLOWED_AUDIENCES.value):
-                logger.warning("Failed decoding JWT with any of JWK - details: %r", error)
                 raise Unauthorized() from error
         except ExpiredSignatureError as error:
+            # All the other cases mean the token is malformed/invalid and must be reissued
             raise Unauthorized("Your token has expired. Please refresh it.") from error
         except JWTError as error:
-            logger.warning("Failed decoding JWT with following details: %r", error)
             raise Unauthorized() from error
 
-    logger.error("Failed decoding JWT for unknown reason.")
-    raise Unauthorized
+    raise Unauthorized()
