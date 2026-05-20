@@ -25,22 +25,21 @@ def validate_jwt_properties(decoded_jwt: dict) -> None:
         raise Unauthorized()
 
 
-def decode_jwt(auth_jwt_token: str) -> dict:  # noqa:C901
+def decode_jwt(auth_jwt_token: str) -> dict:
     if not AUTH_ENABLED.value:
         raise RuntimeError("AUTH-dedicated features are explicitly disabled!")
 
     jwk = get_matching_jwk(auth_jwt_token)
-    for idx, aud in enumerate(ALLOWED_AUDIENCES.value, start=1):
+    for aud in ALLOWED_AUDIENCES.value:
         try:
             decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
             validate_jwt_properties(decoded_jwt)
             return decoded_jwt
-        except JWTClaimsError as error:
-            if idx == len(ALLOWED_AUDIENCES.value):
-                raise Unauthorized() from error
         except ExpiredSignatureError as error:
             # All the other cases mean the token is malformed/invalid and must be reissued
             raise Unauthorized("Your token has expired. Please refresh it.") from error
+        except JWTClaimsError:
+            continue  # Let's try the next audience, maybe it's just not the right one
         except JWTError as error:
             raise Unauthorized() from error
 
