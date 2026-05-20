@@ -405,7 +405,38 @@ Released 2026-04-15
 
 - Treat the LambdaFWException as the real base class for all Exceptions
 
+## 0.9.x
+
 ### Version 0.9.0
+Released 2026-06-03
+
+- Upgrade the version of the libraries recently marked as vulnerable
+- Always declare what type of the EnvValue will be after fetching/parsing
+- Parse the allowed issuers to always rely on the list of them in the code
+- Do not assume that the list of allowed public JWT keys can be skipped
+- Never raise the MissingConfigValue custom Exception explicitly in code
+- Do not rely on the public keys to say whether auth is enabled or not
+- Silently skip the Authentication header whenever the auth is disabled
+- Raise an error for developers when AUTH is disabled but used anyway
+- Move validating the list of public keys directly to the ConfigParser
+- Do not expose user-provided credentials (simply allow them to fail)
+- Treat the malformed auth token as a completely client-side problem
+- Do not expose the entire user-supplied payload in the error message
+- Do not overcomplicate the code by making unnecessary/additional checks
+- Keep all event-sending failures in the logs and only in the logs
+- Always clear event queues at the beginning of triggering the function
+- Do not treat get_remaining_time_in_millis() as a static method
+- Treat an unsupported body as something that hasn't been implemented yet
+- Treat an empty policy as fully valid, but without access to anything
+- Raise the PermissionDenied error directly without putting debug logs
+- Raise the PermissionDenied even if the user forgot about Authorization
+- Do not log additional warnings when the user-provided token is invalid
+- Get rid of enumerating that unnecessarily adds complexity in handling
+- Always log client-side errors, sharing the Exception info in DEBUG mode
+- Treat every CONTRACT_ERROR as the invoker's problem (aka. the client)
+- Do not create custom logs for errors that are re-raised anyway
+
+### Version 0.10.0
 Release ETA 2026-12-31 ;)
 
 - Moves REST (API Gateway) related modules into one package
