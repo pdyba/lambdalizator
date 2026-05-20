@@ -23,10 +23,8 @@ class LambdaBroker(BaseBroker[LambdaResponse]):
 
     def handle(self) -> LambdaResponse:
         if not (op := self.raw_event.get("op")):
-            logger.error('Missing "op" field in the processed event: %r', self.raw_event)
             return lambda_error_response(LambdaResult.CONTRACT_ERROR, 'Missing "op" field.')
         if not (handler := self.mapper.get(op)):
-            logger.error('No handler declared for requested operation: "%s"', op)
             return lambda_error_response(LambdaResult.CONTRACT_ERROR, f'"{op}" not implemented.')
         try:
             return handler(self.raw_event.get("data") or {})
