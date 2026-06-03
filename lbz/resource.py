@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from copy import deepcopy
 from http import HTTPStatus
@@ -7,7 +8,7 @@ from urllib.parse import urlencode
 
 from multidict import CIMultiDict
 
-from lbz._cfg import ALLOWED_PUBLIC_KEYS, CORS_HEADERS, CORS_ORIGIN
+from lbz._cfg import AUTH_ENABLED, CORS_HEADERS, CORS_ORIGIN
 from lbz.authentication import User
 from lbz.collector import authz_collector
 from lbz.events.api import EventAPI
@@ -16,7 +17,6 @@ from lbz.exceptions import (
     LambdaFWServerException,
     NotFound,
     ServerError,
-    Unauthorized,
     UnsupportedMethod,
 )
 from lbz.misc import get_logger
@@ -71,7 +71,7 @@ class Resource:
             endpoint: Callable = getattr(self, self._router[self.path][self.method])
             self.response = endpoint(**self.path_params)
         except LambdaFWClientException as err:
-            logger.debug(err, exc_info=True)
+            logger.info(err, exc_info=logger.isEnabledFor(logging.DEBUG))
             self.response = Response.from_exception(err, self.request.context["requestId"])
         except LambdaFWServerException as err:
             logger.exception(err)
@@ -88,11 +88,10 @@ class Resource:
         return f"<Resource {self.method} @ {self.urn} >"
 
     def _get_user(self, headers: CIMultiDict) -> User | None:
-        authentication = headers.get("Authentication")
-        if authentication and ALLOWED_PUBLIC_KEYS.value:
+        # TODO: Make a User always available, even if they are a guest user with no permissions
+        # TODO: Do not allow using the Authentication header alone (without Authorization)
+        if AUTH_ENABLED.value and (authentication := headers.get("Authentication")):
             return User(authentication)
-        if authentication:
-            raise Unauthorized("Authentication method not supported")
         return None
 
     def _post_request_hook(self) -> None:

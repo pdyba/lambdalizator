@@ -6,10 +6,6 @@ from http import HTTPStatus
 from typing import Any
 
 
-class SecurityError(Exception):
-    """Request did not match security requirements expected by server."""
-
-
 class MissingConfigValue(Exception):
     def __init__(self, key: str) -> None:
         super().__init__(f"'{key}' was not defined.")

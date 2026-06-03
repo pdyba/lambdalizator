@@ -16,12 +16,13 @@ DENY = 0
 LIMITED_ALLOW = -1
 
 
+# TODO: Reimplement the entire Authorizer class to be more intuitive and much much easier to use
 class Authorizer:
     """Authorizer class responsible for Authorization."""
 
     def __init__(
         self,
-        auth_jwt: str | None,
+        auth_jwt: str | None,  # TODO: Accept an already-cooked policy instead of the Auth token
         resource_name: str,
         permission_name: str,
         base_permission_policy: dict | None = None,
@@ -49,15 +50,8 @@ class Authorizer:
         if auth_jwt is not None:
             deep_update(policy, decode_jwt(auth_jwt))
         self.refs = policy.get("refs", {})
-        try:
-            self.allow = policy["allow"]
-            self.deny = policy["deny"]
-        except KeyError as error:
-            raise PermissionDenied("Invalid policy in the authorization token") from error
-
-    def _raise_permission_denied(self) -> None:
-        logger.debug("You don't have permission to %s on %s", self.permission, self.resource)
-        raise PermissionDenied()
+        self.allow = policy.get("allow", {})
+        self.deny = policy.get("deny", {})
 
     def check_access(self) -> None:
         """Main authorization checking logic."""
@@ -69,11 +63,11 @@ class Authorizer:
         if self.denied_resource and self.outcome:
             self.outcome = LIMITED_ALLOW
         if self.outcome == DENY:
-            self._raise_permission_denied()
+            raise PermissionDenied()
 
     def _deny_if_all(self, permission: dict | str | None) -> None:
         if permission == ALL:
-            self._raise_permission_denied()
+            raise PermissionDenied()
 
     def _check_deny(self) -> None:
         self._deny_if_all(self.deny.get("*", self.allow.get(self.resource)))
@@ -101,15 +95,16 @@ class Authorizer:
     def _get_effective_permissions(self, permissions: dict) -> dict:
         if ref_name := permissions.get("ref"):
             if ref_name not in self.refs:
+                # TODO: Implement a function that will verify the policy at an early stage
                 logger.error('Missing "%s" ref in the policy', ref_name)
                 self.outcome = DENY
-                self._raise_permission_denied()
+                raise PermissionDenied()
             return self.refs[ref_name]
         return permissions
 
     def _check_allow_and_set_resources(self) -> None:
         if not self.allow:
-            self._raise_permission_denied()
+            raise PermissionDenied()
         if self._allow_if_allow_all(self.allow) or self._allow_if_allow_all(
             self.allow.get("*", self.allow.get(self.resource))
         ):
@@ -131,12 +126,10 @@ class Authorizer:
     @staticmethod
     def sign_authz(authz_data: dict, private_key_jwk: dict) -> str:
         """Signs authorization in JWT format."""
-        if not isinstance(private_key_jwk, dict):
-            raise ValueError("private_key_jwk must be a jwk dict")
-        if "kid" not in private_key_jwk:
-            raise ValueError("private_key_jwk must have the 'kid' field")
-
         authz: str = jwt.encode(
-            authz_data, private_key_jwk, algorithm="RS256", headers={"kid": private_key_jwk["kid"]}
+            claims=authz_data,
+            key=private_key_jwk,
+            algorithm="RS256",
+            headers={"kid": private_key_jwk["kid"]},
         )
         return authz

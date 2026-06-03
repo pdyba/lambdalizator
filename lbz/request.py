@@ -64,7 +64,7 @@ class Request:
         try:
             return json.loads(payload)
         except ValueError as error:
-            raise BadRequestError(f"Invalid payload.\nPayload body:\n {repr(payload)}") from error
+            raise BadRequestError("Request body could not be parsed as valid JSON") from error
 
     @property
     def json_body(self) -> dict | None:

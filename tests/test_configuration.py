@@ -11,8 +11,6 @@ from lbz.exceptions import ConfigValueParsingFailed, MissingConfigValue
 
 
 class TestConfigValue:
-    # We are using EnvValue instead ConfigValue in order to not create artificial class
-    # that wouldn't add any value.
     @patch.dict(environ, {"key": "42"})
     def test_if_getter_was_used_only_once(self) -> None:
         cfg = EnvValue[str]("key")
@@ -101,7 +99,10 @@ class TestSSMConfig:
 
 
 class TestConfigParser:
-    def test__split_by_comma__returns_list(self) -> None:
+    def test__split_by_comma__returns_empty_list_when_declared_so(self) -> None:
+        assert ConfigParser.split_by_comma("") == []
+
+    def test__split_by_comma__returns_list_of_values(self) -> None:
         assert ConfigParser.split_by_comma("a,b") == ["a", "b"]
 
     @pytest.mark.parametrize(
@@ -111,6 +112,7 @@ class TestConfigParser:
             ("true", True),
             ("TRUE", True),
             ("TruE", True),
+            ("", False),
             ("0", False),
             ("False", False),
             ("fLase", False),
@@ -122,5 +124,17 @@ class TestConfigParser:
     def test__cast_to_bool__returns_bool(self, input_value: str, expected_value: bool) -> None:
         assert ConfigParser.cast_to_bool(input_value) == expected_value
 
-    def test__load_jwt_keys__return_value_of_keys(self) -> None:
-        assert ConfigParser.load_jwt_keys('{"keys": [{"key": "a"}]}') == [{"key": "a"}]
+    def test__load_jwt_keys__returns_empty_list_when_declared_so(self) -> None:
+        assert ConfigParser.load_jwt_keys('{"keys": []}') == []
+
+    def test__load_jwt_keys__returns_list_of_keys(self) -> None:
+        original_value = '{"keys": [{"kid": "key-1"}, {"kid": "key-2"}]}'
+
+        assert ConfigParser.load_jwt_keys(original_value) == [
+            {"kid": "key-1"},
+            {"kid": "key-2"},
+        ]
+
+    def test__load_jwt_keys__raises_error_when_at_least_one_key_misses_kid(self) -> None:
+        with pytest.raises(ValueError, match="Missing 'kid' in one of the declared JWT keys!"):
+            ConfigParser.load_jwt_keys('{"keys": [{"kid": "key-x"}, {"kty": "RSA"}]}')

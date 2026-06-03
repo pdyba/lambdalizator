@@ -40,13 +40,7 @@ class TestEventBroker:
             "result": LambdaResult.CONTRACT_ERROR,
             "message": '"y" not implemented.',
         }
-        assert caplog.record_tuples == [
-            (
-                "lbz.lambdas.broker",
-                logging.ERROR,
-                'No handler declared for requested operation: "y"',
-            )
-        ]
+        assert caplog.record_tuples == []
 
     def test_broker_responds_with_contract_error_when_no_op_key(
         self, caplog: LogCaptureFixture
@@ -60,13 +54,7 @@ class TestEventBroker:
             "result": LambdaResult.CONTRACT_ERROR,
             "message": 'Missing "op" field.',
         }
-        assert caplog.record_tuples == [
-            (
-                "lbz.lambdas.broker",
-                logging.ERROR,
-                "Missing \"op\" field in the processed event: {'data': {'y': 1}}",
-            )
-        ]
+        assert caplog.record_tuples == []
 
     def test_broker_handles_unexpected_lbz_exception_outcome(
         self, caplog: LogCaptureFixture

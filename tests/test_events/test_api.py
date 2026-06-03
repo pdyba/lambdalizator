@@ -138,13 +138,11 @@ class TestEventAPI:
         for i in range(33):  # AWS allows sending maximum 10 events at once
             self.event_api.register(MyTestEvent({"x": i}))
 
-        error_message = "Sending events has failed. Check logs for more details!"
-        with pytest.raises(RuntimeError, match=error_message):
-            self.event_api.send()
+        self.event_api.send()
 
         assert mock_send.put_events.call_count == 4
         assert len(self.event_api.sent_events) == 20
-        assert not self.event_api.pending_events
+        assert len(self.event_api.pending_events) == 0
         assert len(self.event_api.failed_events) == 13
         assert caplog.record_tuples == [
             ("lbz.events.api", logging.ERROR, "Event data is too big to be sent"),
@@ -159,8 +157,7 @@ class TestEventAPI:
         event = MyTestEvent({"x": 1})
         self.event_api.register(event)
 
-        with pytest.raises(RuntimeError):
-            self.event_api.send()
+        self.event_api.send()
 
         assert self.event_api.failed_events == [event]
 
@@ -197,24 +194,6 @@ class TestEventAPI:
                 }
             ]
         )
-
-    @patch.object(Boto3Client, "eventbridge")
-    def test__send__raises_error_only_when_particular_attempt_failed(
-        self, mock_send: MagicMock
-    ) -> None:
-        mock_send.put_events.side_effect = [NotADirectoryError, None]
-        event = MyTestEvent({"x": 1})
-
-        self.event_api.register(event)
-        with pytest.raises(RuntimeError):
-            self.event_api.send()
-        self.event_api.register(event)
-        self.event_api.register(event)
-        self.event_api.send()
-
-        assert self.event_api.failed_events == [event]
-        assert self.event_api.sent_events == [event, event]
-        assert self.event_api.pending_events == []
 
     @patch.object(Boto3Client, "eventbridge", MagicMock())
     def test__send__continuously_extends_lists_of_events_during_next_attempts(self) -> None:
@@ -276,8 +255,7 @@ class TestEventAPI:
         mock_send.put_events.side_effect = NotADirectoryError
         event = MyTestEvent({"x": 1})
         self.event_api.register(event)
-        with pytest.raises(RuntimeError):
-            self.event_api.send()
+        self.event_api.send()
         self.event_api.register(event)
 
         self.event_api.clear_failed()
@@ -319,23 +297,22 @@ class TestEventEmitter:
             EventAPI().register(MyTestEvent({"x": 1}))
             raise RuntimeError
 
-        EventAPI().register(MyTestEvent({"x": 2}))
-        EventAPI().send()
         with pytest.raises(RuntimeError):
             decorated_function()
 
-        assert EventAPI().sent_events == [MyTestEvent({"x": 2})]
+        assert not EventAPI().sent_events
         assert not EventAPI().pending_events
         assert not EventAPI().failed_events
 
-    def test_always_clears_queues_before_actually_decorating_function(self) -> None:
-        EventAPI().register(MyTestEvent({"x": 1}))
-        EventAPI().send()
-        EventAPI().register(MyTestEvent({"x": 2}))
-
+    def test_always_clears_queues_before_actually_triggering_function(self) -> None:
         @event_emitter
         def decorated_function() -> None:
             pass
+
+        EventAPI().register(MyTestEvent({"x": 1}))
+        EventAPI().send()
+        EventAPI().register(MyTestEvent({"x": 2}))
+        decorated_function()
 
         assert not EventAPI().sent_events
         assert not EventAPI().pending_events

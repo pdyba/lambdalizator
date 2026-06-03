@@ -15,7 +15,7 @@ T = TypeVar("T")
 class ConfigParser:
     @staticmethod
     def split_by_comma(value: str) -> list[str]:
-        return value.split(",")
+        return value.split(",") if value else []
 
     @staticmethod
     def cast_to_bool(value: str) -> bool:
@@ -25,8 +25,10 @@ class ConfigParser:
 
     @staticmethod
     def load_jwt_keys(value: str) -> list[dict]:
-        deserialized_value: dict[str, list[dict]] = json.loads(value)
-        return deserialized_value["keys"]
+        deserialized_keys: list[dict] = json.loads(value)["keys"]
+        if any("kid" not in key for key in deserialized_keys):
+            raise ValueError("Missing 'kid' in one of the declared JWT keys!")
+        return deserialized_keys
 
 
 class ConfigValue(Generic[T], metaclass=ABCMeta):

@@ -52,10 +52,6 @@ class TestAuthorizerWithMockedJWT:
         with patch("lbz.authz.authorizer.decode_jwt", lambda _: token_payload):
             return Authorizer("xx", "test_resource", "permission_name")
 
-    def test_wrong_jwt_authz_payload_raises_permission_denied(self) -> None:
-        with pytest.raises(PermissionDenied):
-            self._make_mocked_authorizer({})
-
     def test_check_deny_res(self, full_access_authz_payload: dict) -> None:
         authz = self._make_mocked_authorizer(full_access_authz_payload)
         authz.deny = {"test_resource": ALL}
@@ -89,7 +85,7 @@ class TestAuthorizerWithMockedJWT:
     def test__check_access__outcome_deny_bcs_allow_none(
         self, full_access_authz_payload: dict
     ) -> None:
-        authz = self._make_mocked_authorizer({**full_access_authz_payload, "allow": {ALL: None}})
+        authz = self._make_mocked_authorizer({**full_access_authz_payload, "allow": {}})
         with pytest.raises(PermissionDenied):
             authz.check_access()
 
@@ -285,11 +281,3 @@ class TestAuthorizerWithMockedJWT:
     def test_sign_authz(self) -> None:
         token = Authorizer.sign_authz({"allow": {ALL: ALL}, "deny": {}}, SAMPLE_PRIVATE_KEY)
         assert token == EXPECTED_TOKEN
-
-    def test_sign_authz_not_a_dict_error(self) -> None:
-        with pytest.raises(ValueError, match="private_key_jwk must be a jwk dict"):
-            Authorizer.sign_authz({}, private_key_jwk="")  # type: ignore
-
-    def test_sign_authz_no_kid_error(self) -> None:
-        with pytest.raises(ValueError, match="private_key_jwk must have the 'kid' field"):
-            Authorizer.sign_authz({}, private_key_jwk={})

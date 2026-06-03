@@ -79,4 +79,4 @@ class Response:
             return {"Content-Type": ContentType.JSON}
         if isinstance(self.body, str):
             return {"Content-Type": ContentType.TEXT}
-        raise RuntimeError("Response body type not supported yet.")
+        raise NotImplementedError(f"Unsupported body type: {type(self.body)}")

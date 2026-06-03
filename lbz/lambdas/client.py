@@ -96,11 +96,4 @@ class LambdaClient:
             # Lambda invoked asynchronously only includes a status code in the response
             return {"result": LambdaResult.ACCEPTED}
 
-        try:
-            response: dict = json.loads(raw_response["Payload"].read().decode("utf-8"))
-            return response
-        except Exception:
-            # f-string used directly to keep messages unique from a monitoring/tracking perspective
-            error_message = f"Invalid response received from {function_name} Lambda"
-            logger.error(error_message, extra={"payload": payload, "response": raw_response})
-            raise
+        return cast(dict, json.loads(raw_response["Payload"].read().decode("utf-8")))
