@@ -21,8 +21,17 @@ def event_api_fixture() -> Generator[EventAPI]:
     Singleton.drop_instance(cls=EventAPI)
 
 
+@pytest.fixture(name="mocked_eventbridge", autouse=True)
+def mocked_eventbridge_fixture() -> Generator[MagicMock]:
+    def mocked_put_events(Entries: list[dict]) -> dict:  # pylint: disable=invalid-name
+        return {"Entries": [{"EventId": f"Event-{i}"} for i in range(len(Entries))]}
+
+    with patch.object(Boto3Client, "eventbridge") as mocked_eventbridge:
+        mocked_eventbridge.put_events.side_effect = mocked_put_events
+        yield mocked_eventbridge
+
+
 class TestEventAPI:
-    @patch.object(Boto3Client, "eventbridge", MagicMock())
     def test___repr__(self, event_api: EventAPI) -> None:
         expected_repr = (
             "<EventAPI bus: million-dollar-lambda-event-bus Events: pending=0 sent=0 failed=0>"
@@ -40,8 +49,7 @@ class TestEventAPI:
         )
         assert str(event_api) == expected_repr
 
-    @patch.object(Boto3Client, "eventbridge")
-    def test_settters(self, mock_send: MagicMock, event_api: EventAPI) -> None:
+    def test_settters(self, mocked_eventbridge: MagicMock, event_api: EventAPI) -> None:
         event = MyTestEvent({"x": 1})
         event_api.register(event)
         event_api.set_resources(["Yy", "ZZ"])
@@ -50,7 +58,7 @@ class TestEventAPI:
 
         event_api.send()
 
-        mock_send.put_events.assert_called_once_with(
+        mocked_eventbridge.put_events.assert_called_once_with(
             Entries=[
                 {
                     "Detail": '{"x": 1}',
@@ -94,14 +102,13 @@ class TestEventAPI:
 
         assert event_api.pending_events == [event_1, event_2]
 
-    @patch.object(Boto3Client, "eventbridge")
-    def test_send(self, mock_send: MagicMock, event_api: EventAPI) -> None:
+    def test_send(self, mocked_eventbridge: MagicMock, event_api: EventAPI) -> None:
         event = MyTestEvent({"x": 1})
         event_api.register(event)
 
         event_api.send()
 
-        mock_send.put_events.assert_called_once_with(
+        mocked_eventbridge.put_events.assert_called_once_with(
             Entries=[
                 {
                     "Detail": '{"x": 1}',
@@ -114,32 +121,30 @@ class TestEventAPI:
         )
         assert event_api.sent_events == [event]
 
-    @patch.object(Boto3Client, "eventbridge")
     def test__send__sends_events_in_chunks_respecting_limits(
-        self, mock_send: MagicMock, event_api: EventAPI
+        self, mocked_eventbridge: MagicMock, event_api: EventAPI
     ) -> None:
         for i in range(33):  # AWS allows sending maximum 10 events at once
             event_api.register(MyTestEvent({"x": i}))
 
         event_api.send()
 
-        assert mock_send.put_events.call_count == 4
-        assert len(mock_send.put_events.call_args_list[0].kwargs["Entries"]) == 10
-        assert len(mock_send.put_events.call_args_list[1].kwargs["Entries"]) == 10
-        assert len(mock_send.put_events.call_args_list[2].kwargs["Entries"]) == 10
-        assert len(mock_send.put_events.call_args_list[3].kwargs["Entries"]) == 3
+        assert mocked_eventbridge.put_events.call_count == 4
+        assert len(mocked_eventbridge.put_events.call_args_list[0].kwargs["Entries"]) == 10
+        assert len(mocked_eventbridge.put_events.call_args_list[1].kwargs["Entries"]) == 10
+        assert len(mocked_eventbridge.put_events.call_args_list[2].kwargs["Entries"]) == 10
+        assert len(mocked_eventbridge.put_events.call_args_list[3].kwargs["Entries"]) == 3
         assert len(event_api.sent_events) == 33
         assert not event_api.pending_events
         assert not event_api.failed_events
 
-    @patch.object(Boto3Client, "eventbridge")
     def test__send__always_tries_to_send_all_events_treating_each_chunk_individually(
-        self, mock_send: MagicMock, event_api: EventAPI, caplog: LogCaptureFixture
+        self, mocked_eventbridge: MagicMock, event_api: EventAPI, caplog: LogCaptureFixture
     ) -> None:
-        mock_send.put_events.side_effect = (
-            None,  # no error == success
+        mocked_eventbridge.put_events.side_effect = (
+            {"Entries": [{"EventId": f"Event-{i}"} for i in range(0, 10)]},  # no error == success
             ValueError("Event data is too big to be sent"),
-            None,  # no error == success
+            {"Entries": [{"EventId": f"Event-{i}"} for i in range(10, 30)]},  # no error == success
             ValueError("Event type cannot be recognized"),
         )
         for i in range(33):  # AWS allows sending maximum 10 events at once
@@ -147,7 +152,7 @@ class TestEventAPI:
 
         event_api.send()
 
-        assert mock_send.put_events.call_count == 4
+        assert mocked_eventbridge.put_events.call_count == 4
         assert len(event_api.sent_events) == 20
         assert len(event_api.pending_events) == 0
         assert len(event_api.failed_events) == 13
@@ -156,13 +161,12 @@ class TestEventAPI:
             ("lbz.events.api", logging.ERROR, "Event type cannot be recognized"),
         ]
 
-    @patch.object(Boto3Client, "eventbridge")
     def test_sent_fail_saves_events_in_right_place(
-        self, mock_send: MagicMock, event_api: EventAPI
+        self, mocked_eventbridge: MagicMock, event_api: EventAPI
     ) -> None:
         assert event_api.failed_events == []
 
-        mock_send.put_events.side_effect = NotADirectoryError
+        mocked_eventbridge.put_events.side_effect = NotADirectoryError
         event = MyTestEvent({"x": 1})
         event_api.register(event)
 
@@ -170,18 +174,16 @@ class TestEventAPI:
 
         assert event_api.failed_events == [event]
 
-    @patch.object(Boto3Client, "eventbridge")
-    def test_send_no_events(self, mock_send: MagicMock, event_api: EventAPI) -> None:
+    def test_send_no_events(self, mocked_eventbridge: MagicMock, event_api: EventAPI) -> None:
         event_api.send()
 
-        mock_send.put_events.assert_not_called()
+        mocked_eventbridge.put_events.assert_not_called()
         assert event_api.failed_events == []
         assert event_api.sent_events == []
         assert event_api.pending_events == []
 
-    @patch.object(Boto3Client, "eventbridge")
     def test_singleton_pattern_working_correctly_for_event_api(
-        self, mock_send: MagicMock, event_api: EventAPI
+        self, mocked_eventbridge: MagicMock, event_api: EventAPI
     ) -> None:
         event = MyTestEvent({"x": 1})
         event_api.register(event)
@@ -194,7 +196,7 @@ class TestEventAPI:
         event_api_3.send()
 
         assert event_api_1 is event_api_2 is event_api_3 is event_api
-        mock_send.put_events.assert_called_once_with(
+        mocked_eventbridge.put_events.assert_called_once_with(
             Entries=[
                 {
                     "Detail": '{"x": 1}',
@@ -206,7 +208,6 @@ class TestEventAPI:
             ]
         )
 
-    @patch.object(Boto3Client, "eventbridge", MagicMock())
     def test__send__continuously_extends_lists_of_events_during_next_attempts(
         self, event_api: EventAPI
     ) -> None:
@@ -224,7 +225,6 @@ class TestEventAPI:
         assert event_api.sent_events == [event_1, event_2, event_3]
         assert event_api.pending_events == []
 
-    @patch.object(Boto3Client, "eventbridge", MagicMock())
     def test_clear(self, event_api: EventAPI) -> None:
         event = MyTestEvent({"x": 1})
         event_api.register(event)
@@ -237,7 +237,6 @@ class TestEventAPI:
         assert event_api.sent_events == []
         assert event_api.pending_events == []
 
-    @patch.object(Boto3Client, "eventbridge", MagicMock())
     def test__clear_pending__clears_only_pending_events(self, event_api: EventAPI) -> None:
         event = MyTestEvent({"x": 1})
         event_api.register(event)
@@ -250,7 +249,6 @@ class TestEventAPI:
         assert event_api.sent_events == [event]
         assert event_api.pending_events == []
 
-    @patch.object(Boto3Client, "eventbridge", MagicMock())
     def test__clear_sent__clears_only_sent_events(self, event_api: EventAPI) -> None:
         event = MyTestEvent({"x": 1})
         event_api.register(event)
@@ -263,11 +261,10 @@ class TestEventAPI:
         assert event_api.sent_events == []
         assert event_api.pending_events == [event]
 
-    @patch.object(Boto3Client, "eventbridge")
     def test__clear_failed__clears_only_failed_events(
-        self, mock_send: MagicMock, event_api: EventAPI
+        self, mocked_eventbridge: MagicMock, event_api: EventAPI
     ) -> None:
-        mock_send.put_events.side_effect = NotADirectoryError
+        mocked_eventbridge.put_events.side_effect = NotADirectoryError
         event = MyTestEvent({"x": 1})
         event_api.register(event)
         event_api.send()
@@ -280,7 +277,6 @@ class TestEventAPI:
         assert event_api.pending_events == [event]
 
 
-@patch.object(Boto3Client, "eventbridge", MagicMock())
 class TestEventEmitter:
     def test_does_nothing_when_thera_are_no_pending_events(self) -> None:
         @event_emitter
