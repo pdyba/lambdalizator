@@ -161,6 +161,44 @@ class TestEventAPI:
             ("lbz.events.api", logging.ERROR, "Event type cannot be recognized"),
         ]
 
+    def test__send__additionally_checks_each_of_sent_entries_individually_to_validate_result(
+        self, mocked_eventbridge: MagicMock, event_api: EventAPI, caplog: LogCaptureFixture
+    ) -> None:
+        mocked_eventbridge.put_events.side_effect = None
+        mocked_eventbridge.put_events.return_value = {
+            "Entries": [
+                {"EventId": "Event-1"},
+                {"ErrorCode": "MalformedDetail"},
+                {"EventId": "Event-3"},
+                {"EventId": "Event-4"},
+                {"ErrorCode": "InvalidArgument"},
+            ],
+        }
+        event_api.register(MyTestEvent({"x": 1}))
+        event_api.register(MyTestEvent({"x": 2}))
+        event_api.register(MyTestEvent({"x": 3}))
+        event_api.register(MyTestEvent({"x": 4}))
+        event_api.register(MyTestEvent({"x": 5}))
+
+        event_api.send()
+
+        assert mocked_eventbridge.put_events.call_count == 1
+        assert len(event_api.sent_events) == 3
+        assert len(event_api.pending_events) == 0
+        assert len(event_api.failed_events) == 2
+        assert caplog.record_tuples == [
+            (
+                "lbz.events.api",
+                logging.ERROR,
+                'Sending event "MY_TEST_EVENT" failed with error: MalformedDetail',
+            ),
+            (
+                "lbz.events.api",
+                logging.ERROR,
+                'Sending event "MY_TEST_EVENT" failed with error: InvalidArgument',
+            ),
+        ]
+
     def test_sent_fail_saves_events_in_right_place(
         self, mocked_eventbridge: MagicMock, event_api: EventAPI
     ) -> None:
