@@ -70,8 +70,18 @@ class EventAPI(metaclass=Singleton):
             events = self._pending_events[:MAX_EVENTS_TO_SEND_AT_ONCE]
             try:
                 entries = [self._create_eb_entry(event) for event in events]
-                client.eventbridge.put_events(Entries=entries)
-                self._sent_events.extend(events)
+                response = client.eventbridge.put_events(Entries=entries)
+
+                # https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsResultEntry.html
+                for event, result_entry in zip(events, response["Entries"]):
+                    if error_code := result_entry.get("ErrorCode"):
+                        logger.error(
+                            f'Sending event "{event.type}" failed with error: {error_code}',
+                            extra={"event.data": event.serialized_data},
+                        )
+                        self._failed_events.append(event)
+                    else:
+                        self._sent_events.append(event)
             except Exception as err:  # pylint: disable=broad-except
                 self._failed_events.extend(events)
                 logger.exception(err)
