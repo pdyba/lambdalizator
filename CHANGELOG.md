@@ -436,6 +436,12 @@ Released 2026-06-03
 - Treat every CONTRACT_ERROR as the invoker's problem (aka. the client)
 - Do not create custom logs for errors that are re-raised anyway
 
+### Version 0.9.1
+Released 2026-07-05
+
+- Always check the result of sending events to avoid skipping errors
+- Disable the rule of not using f-strings in loggers when they are useful
+
 ### Version 0.10.0
 Release ETA 2026-12-31 ;)
 
