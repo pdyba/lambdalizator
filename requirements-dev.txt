@@ -21,7 +21,9 @@ botocore-stubs==1.43.14
 build==1.5.0
     # via pip-tools
 cachecontrol[filecache]==0.14.4
-    # via pip-audit
+    # via
+    #   cachecontrol
+    #   pip-audit
 certifi==2026.5.20
     # via requests
 charset-normalizer==3.4.7
@@ -66,7 +68,7 @@ mccabe==0.7.0
     #   pylint
 mdurl==0.1.2
     # via markdown-it-py
-msgpack==1.1.2
+msgpack==1.2.1
     # via cachecontrol
 mypy==2.1.0
     # via -r requirements-dev.in
