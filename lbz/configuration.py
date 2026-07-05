@@ -6,6 +6,8 @@ from collections.abc import Callable
 from os import getenv
 from typing import Any, Generic, TypeVar
 
+from jwt.types import JWKDict
+
 from lbz.aws_ssm import SSM
 from lbz.exceptions import ConfigValueParsingFailed, MissingConfigValue
 
@@ -24,8 +26,8 @@ class ConfigParser:
         return False
 
     @staticmethod
-    def load_jwt_keys(value: str) -> list[dict]:
-        deserialized_keys: list[dict] = json.loads(value)["keys"]
+    def load_jwt_keys(value: str) -> list[JWKDict]:
+        deserialized_keys: list[JWKDict] = json.loads(value)["keys"]
         if any("kid" not in key for key in deserialized_keys):
             raise ValueError("Missing 'kid' in one of the declared JWT keys!")
         return deserialized_keys

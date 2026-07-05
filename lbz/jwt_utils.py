@@ -1,18 +1,20 @@
-from jose import jwt
-from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
+import jwt
+from jwt import PyJWK
+from jwt.exceptions import ExpiredSignatureError, InvalidAudienceError, InvalidTokenError
+from jwt.types import JWKDict
 
 from lbz._cfg import ALLOWED_AUDIENCES, ALLOWED_ISS, ALLOWED_PUBLIC_KEYS, AUTH_ENABLED
 from lbz.exceptions import Unauthorized
 
 
-def get_matching_jwk(auth_jwt_token: str) -> dict:
+def get_matching_public_jwk(token: str) -> JWKDict:
     try:
-        kid_from_jwt_header = jwt.get_unverified_header(auth_jwt_token)["kid"]
-        for key in ALLOWED_PUBLIC_KEYS.value:
-            if key["kid"] == kid_from_jwt_header:
-                return key
+        token_kid = jwt.get_unverified_header(token)["kid"]
+        for public_jwk in ALLOWED_PUBLIC_KEYS.value:
+            if public_jwk["kid"] == token_kid:
+                return public_jwk
         raise Unauthorized()
-    except JWTError as error:
+    except InvalidTokenError as error:
         raise Unauthorized() from error
     except KeyError as error:
         raise Unauthorized() from error
@@ -25,22 +27,36 @@ def validate_jwt_properties(decoded_jwt: dict) -> None:
         raise Unauthorized()
 
 
-def decode_jwt(auth_jwt_token: str) -> dict:
+def decode_jwt(token: str) -> dict:
     if not AUTH_ENABLED.value:
         raise RuntimeError("AUTH-dedicated features are explicitly disabled!")
 
-    jwk = get_matching_jwk(auth_jwt_token)
+    public_jwk = get_matching_public_jwk(token)
     for aud in ALLOWED_AUDIENCES.value:
         try:
-            decoded_jwt: dict = jwt.decode(auth_jwt_token, jwk, algorithms="RS256", audience=aud)
+            decoded_jwt: dict = jwt.decode(
+                jwt=token,
+                key=PyJWK(public_jwk, algorithm="RS256").key,
+                algorithms=["RS256"],
+                audience=aud,
+            )
             validate_jwt_properties(decoded_jwt)
             return decoded_jwt
         except ExpiredSignatureError as error:
             # All the other cases mean the token is malformed/invalid and must be reissued
             raise Unauthorized("Your token has expired. Please refresh it.") from error
-        except JWTClaimsError:
+        except InvalidAudienceError:
             continue  # Let's try the next audience, maybe it's just not the right one
-        except JWTError as error:
+        except InvalidTokenError as error:
             raise Unauthorized() from error
 
     raise Unauthorized()
+
+
+def encode_jwt(data: dict, private_jwk: JWKDict) -> str:
+    return jwt.encode(
+        payload=data,
+        key=PyJWK(private_jwk, algorithm="RS256").key,
+        algorithm="RS256",
+        headers={"kid": private_jwk["kid"]},
+    )

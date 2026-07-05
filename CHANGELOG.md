@@ -442,7 +442,14 @@ Released 2026-07-05
 - Always check the result of sending events to avoid skipping errors
 - Disable the rule of not using f-strings in loggers when they are useful
 
+## 0.10.x
+
 ### Version 0.10.0
+Released 2026-07-05
+
+- Replace python-jose with PyJWT with cryptography as a backend
+
+### Version 0.11.0
 Release ETA 2026-12-31 ;)
 
 - Moves REST (API Gateway) related modules into one package
@@ -450,4 +457,3 @@ Release ETA 2026-12-31 ;)
 - Redesigns authorization from ground up
 - Adds helpers and reduces jwt-related operations.
 - Removes deprecated pre and post requests hooks replaced by pre/post_handle in Resource
-- Fixes vulnerability `GHSA-wj6h-64fc-37mp`
