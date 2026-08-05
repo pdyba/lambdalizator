@@ -449,6 +449,13 @@ Released 2026-07-05
 
 - Replace python-jose with PyJWT with cryptography as a backend
 
+## 0.10.1
+
+### Version 0.10.1
+Released 2026-08-08
+
+- Bump cryptography to avoid already known vulnerabilities
+
 ### Version 0.11.0
 Release ETA 2026-12-31 ;)
 
