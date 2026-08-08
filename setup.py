@@ -17,7 +17,7 @@ setup(
     long_description=pathlib.Path("README.md").read_text("utf-8"),
     install_requires=[
         "boto3>=1.39.9",
-        "cryptography>=46.0.0",
+        "cryptography>=50.0.0",
         "multidict>=6.7.0",
         "PyJWT>=2.11.0",
     ],
