@@ -18,7 +18,7 @@ setup(
     install_requires=[
         "boto3>=1.39.9",
         "cryptography>=50.0.0",
-        "multidict>=6.7.0",
+        "multidict>=6.9.1",
         "PyJWT>=2.15.0",
     ],
     classifiers=[

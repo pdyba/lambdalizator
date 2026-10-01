@@ -6,23 +6,23 @@
 #
 backports-tarfile==1.2.0
     # via jaraco-context
-certifi==2026.6.17
+certifi==2026.7.22
     # via requests
-charset-normalizer==3.4.7
+charset-normalizer==3.5.2
     # via requests
 docutils==0.23
     # via readme-renderer
 id==1.6.1
     # via twine
-idna==3.18
+idna==3.20
     # via requests
-importlib-metadata==9.0.0
+importlib-metadata==9.0.1
     # via keyring
 jaraco-classes==3.4.0
     # via keyring
 jaraco-context==6.1.2
     # via keyring
-jaraco-functools==4.5.0
+jaraco-functools==4.6.0
     # via keyring
 keyring==25.7.0
     # via twine
@@ -34,17 +34,17 @@ more-itertools==11.1.0
     # via
     #   jaraco-classes
     #   jaraco-functools
-nh3==0.3.6
+nh3==0.3.7
     # via readme-renderer
-packaging==26.2
+packaging==26.3
     # via
     #   twine
     #   wheel
-pygments==2.20.0
+pygments==2.21.0
     # via
     #   readme-renderer
     #   rich
-readme-renderer==45.0
+readme-renderer==46.0
     # via twine
 requests==2.34.2
     # via
@@ -56,14 +56,14 @@ rfc3986==2.0.0
     # via twine
 rich==15.0.0
     # via twine
-twine==6.2.0
+twine==7.0.0
     # via -r requirements-deploy.in
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   id
     #   requests
     #   twine
-wheel==0.47.0
+wheel==0.48.0
     # via -r requirements-deploy.in
-zipp==4.1.0
+zipp==4.1.1
     # via importlib-metadata

@@ -4,25 +4,25 @@
 #
 #    pip-compile
 #
-boto3==1.43.67
+boto3==1.43.111
     # via lbz (setup.py)
-botocore==1.43.67
+botocore==1.43.111
     # via
     #   boto3
     #   s3transfer
 cffi==2.1.1
     # via cryptography
-cryptography==50.0.0
+cryptography==50.0.2
     # via lbz (setup.py)
 jmespath==1.1.0
     # via
     #   boto3
     #   botocore
-multidict==6.7.1
+multidict==7.1.0
     # via lbz (setup.py)
-pycparser==3.0
+pycparser==3.11
     # via cffi
-pyjwt==2.15.0
+pyjwt==2.15.1
     # via lbz (setup.py)
 python-dateutil==2.9.0.post0
     # via botocore
@@ -35,5 +35,5 @@ typing-extensions==4.16.0
     #   cryptography
     #   multidict
     #   pyjwt
-urllib3==2.7.0
+urllib3==2.8.0
     # via botocore
