@@ -19,7 +19,7 @@ setup(
         "boto3>=1.39.9",
         "cryptography>=50.0.0",
         "multidict>=6.7.0",
-        "PyJWT>=2.11.0",
+        "PyJWT>=2.15.0",
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
