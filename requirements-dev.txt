@@ -4,37 +4,37 @@
 #
 #    pip-compile requirements-dev.in
 #
-ast-serialize==0.8.0
+ast-serialize==0.12.1
     # via mypy
-astroid==4.0.4
+astroid==4.3.4
     # via pylint
 bandit==1.9.4
     # via -r requirements-dev.in
-black==26.5.1
+black==26.10.1
     # via -r requirements-dev.in
 boolean-py==5.0
     # via license-expression
-boto3-stubs[cognito-idp,dynamodb,events,lambda,s3,sns,sqs,ssm]==1.43.67
+boto3-stubs[cognito-idp,dynamodb,events,lambda,s3,sns,sqs,ssm]==1.43.111
     # via -r requirements-dev.in
-botocore-stubs==1.43.14
+botocore-stubs==1.43.67
     # via boto3-stubs
-build==1.5.0
+build==1.6.1
     # via pip-tools
 cachecontrol[filecache]==0.14.4
     # via pip-audit
 certifi==2026.7.22
     # via requests
-charset-normalizer==3.4.9
+charset-normalizer==3.5.2
     # via requests
-click==8.4.2
+click==8.5.0
     # via
     #   black
     #   pip-tools
-coverage[toml]==7.15.4
+coverage[toml]==7.16.2
     # via
     #   -r requirements-dev.in
     #   pytest-cov
-cyclonedx-python-lib==11.11.0
+cyclonedx-python-lib==11.12.0
     # via pip-audit
 defusedxml==0.7.1
     # via py-serializable
@@ -42,19 +42,19 @@ dill==0.4.1
     # via pylint
 exceptiongroup==1.3.1
     # via pytest
-filelock==3.32.2
+filelock==4.1.0
     # via cachecontrol
-flake8==7.3.0
+flake8==7.4.1
     # via -r requirements-dev.in
-idna==3.18
+idna==3.20
     # via requests
-iniconfig==2.3.0
+iniconfig==2.3.1
     # via pytest
-isort==8.0.1
+isort==9.0.2
     # via
     #   -r requirements-dev.in
     #   pylint
-librt==0.15.0
+librt==0.16.0
     # via mypy
 license-expression==30.4.4
     # via cyclonedx-python-lib
@@ -66,29 +66,30 @@ mccabe==0.7.0
     #   pylint
 mdurl==0.1.2
     # via markdown-it-py
-msgpack==1.2.1
+msgpack==1.2.3
     # via cachecontrol
-mypy==2.3.0
+mypy==2.4.0
     # via -r requirements-dev.in
-mypy-boto3-cognito-idp==1.43.56
+mypy-boto3-cognito-idp==1.43.108
     # via boto3-stubs
-mypy-boto3-dynamodb==1.43.64
+mypy-boto3-dynamodb==1.43.106
     # via boto3-stubs
-mypy-boto3-events==1.43.0
+mypy-boto3-events==1.43.102
     # via boto3-stubs
-mypy-boto3-lambda==1.43.60
+mypy-boto3-lambda==1.43.110
     # via boto3-stubs
-mypy-boto3-s3==1.43.66
+mypy-boto3-s3==1.43.106
     # via boto3-stubs
-mypy-boto3-sns==1.43.23
+mypy-boto3-sns==1.43.97
     # via boto3-stubs
 mypy-boto3-sqs==1.43.0
     # via boto3-stubs
-mypy-boto3-ssm==1.43.53
+mypy-boto3-ssm==1.43.104
     # via boto3-stubs
 mypy-extensions==1.1.0
     # via
     #   black
+    #   isort
     #   mypy
 packageurl-python==0.17.6
     # via cyclonedx-python-lib
@@ -104,15 +105,15 @@ pathspec==1.1.1
     # via
     #   black
     #   mypy
-pip-api==0.0.34
+pip-api==0.0.35
     # via pip-audit
 pip-audit==2.10.1
     # via -r requirements-dev.in
 pip-requirements-parser==32.0.1
     # via pip-audit
-pip-tools==7.6.0
+pip-tools==7.6.2
     # via -r requirements-dev.in
-platformdirs==4.11.1
+platformdirs==4.12.4
     # via
     #   black
     #   pip-audit
@@ -123,19 +124,19 @@ pluggy==1.6.0
     #   pytest-cov
 py-serializable==2.1.0
     # via cyclonedx-python-lib
-pycodestyle==2.14.0
+pycodestyle==2.15.0
     # via flake8
-pyflakes==3.4.0
+pyflakes==4.0.3
     # via flake8
-pygments==2.20.0
+pygments==2.21.0
     # via
     #   pytest
     #   rich
-pylint==4.0.6
+pylint==4.1.3
     # via -r requirements-dev.in
-pyparsing==3.3.2
+pyparsing==3.3.3
     # via pip-requirements-parser
-pyproject-hooks==1.2.0
+pyproject-hooks==1.3.3
     # via
     #   build
     #   pip-tools
@@ -146,7 +147,7 @@ pytest==9.1.1
     #   pytest-mock
 pytest-cov==7.1.0
     # via -r requirements-dev.in
-pytest-mock==3.15.1
+pytest-mock==3.16.0
     # via -r requirements-dev.in
 pytokens==0.4.1
     # via black
@@ -164,7 +165,7 @@ sortedcontainers==2.4.0
     # via cyclonedx-python-lib
 stevedore==5.8.0
     # via bandit
-tomli==2.4.1
+tomli==2.5.0
     # via
     #   black
     #   build
@@ -178,8 +179,6 @@ tomli-w==1.2.0
     # via pip-audit
 tomlkit==0.15.1
     # via pylint
-types-awscrt==0.34.1
-    # via botocore-stubs
 types-s3transfer==0.16.0
     # via boto3-stubs
 typing-extensions==4.16.0
@@ -199,11 +198,12 @@ typing-extensions==4.16.0
     #   mypy-boto3-sns
     #   mypy-boto3-sqs
     #   mypy-boto3-ssm
-urllib3==2.7.0
+    #   pip-tools
+urllib3==2.8.0
     # via
     #   -c requirements.txt
     #   requests
-wheel==0.47.0
+wheel==0.48.0
     # via pip-tools
 
 # The following packages are considered to be unsafe in a requirements file:
