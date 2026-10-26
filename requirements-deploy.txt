@@ -6,7 +6,7 @@
 #
 backports-tarfile==1.2.0
     # via jaraco-context
-certifi==2026.7.22
+certifi==2026.10.23
     # via requests
 charset-normalizer==3.5.2
     # via requests
@@ -65,5 +65,5 @@ urllib3==2.8.0
     #   twine
 wheel==0.48.0
     # via -r requirements-deploy.in
-zipp==4.1.1
+zipp==4.1.2
     # via importlib-metadata
